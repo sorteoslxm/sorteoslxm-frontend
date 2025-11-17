@@ -1,3 +1,4 @@
+// FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/AdminDashboard.js
 import React, { useState } from "react";
 import axios from "axios";
 import API_URL from "../config/api";
@@ -18,24 +19,19 @@ const AdminDashboard = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const token = localStorage.getItem("Token"); // 🔥 ahora SI coincide con login
-      if (!token) {
-        alert("No estás autenticado");
-        return;
-      }
+    const logged = localStorage.getItem("adminLogged");
+    if (!logged) {
+      alert("No estás autenticado");
+      return;
+    }
 
+    try {
       const res = await axios.post(
-        `${API_URL}/api/admin/sorteos`, // 🔥 ruta correcta del back
-        sorteo,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        `${API_URL}/sorteos`, // ruta del backend: /api/sorteos
+        sorteo
       );
 
-      alert("Sorteo creado correctamente ✅");
+      alert("Sorteo creado correctamente!");
       console.log("Sorteo creado:", res.data);
 
       setSorteo({
@@ -47,7 +43,7 @@ const AdminDashboard = () => {
       });
     } catch (err) {
       console.error("Error al crear sorteo:", err);
-      alert("Error al crear sorteo ❌");
+      alert("Error al crear sorteo");
     }
   };
 
@@ -64,6 +60,7 @@ const AdminDashboard = () => {
           onChange={handleChange}
           className="w-full p-2 border rounded"
         />
+
         <textarea
           name="descripcion"
           placeholder="Descripción"
@@ -71,6 +68,7 @@ const AdminDashboard = () => {
           onChange={handleChange}
           className="w-full p-2 border rounded"
         />
+
         <input
           type="number"
           name="precio"
@@ -79,6 +77,7 @@ const AdminDashboard = () => {
           onChange={handleChange}
           className="w-full p-2 border rounded"
         />
+
         <input
           type="number"
           name="numerosTotales"
@@ -87,6 +86,7 @@ const AdminDashboard = () => {
           onChange={handleChange}
           className="w-full p-2 border rounded"
         />
+
         <input
           type="text"
           name="imagenUrl"

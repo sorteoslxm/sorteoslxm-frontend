@@ -1,3 +1,4 @@
+// FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/AdminLogin.js
 import { useState } from "react";
 import API_URL from "../config/api";
 
@@ -16,13 +17,13 @@ export default function AdminLogin() {
       console.log("Respuesta login admin:", data);
 
       if (data.success) {
+        // guardamos flag simple en localStorage
         localStorage.setItem("adminLogged", "true");
         alert("Login correcto!");
         window.location.href = "/admin/home";
       } else {
         alert("Contraseña incorrecta");
       }
-
     } catch (err) {
       console.error("Error login admin:", err);
       alert("Error conectando con el servidor");
