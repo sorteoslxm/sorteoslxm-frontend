@@ -1,57 +1,43 @@
-// /Users/mustamusic/web/sorteos-lxm/client/src/pages/AdminLogin.js
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import API_URL from "../config/api";
 
 export default function AdminLogin() {
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-
+  const login = async () => {
     try {
-      // POST a: https://.../api/admin/login
-      const res = await fetch(`${API_URL}/api/admin/login`, {
+      const res = await fetch(`${API_URL}/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
       });
 
       const data = await res.json();
+      console.log("Respuesta login admin:", data);
 
-      if (res.ok && data.success) {
-        // Guarda token JWT del servidor
-        localStorage.setItem("adminToken", data.token);
+      if (data.success) {
         localStorage.setItem("adminLogged", "true");
-        navigate("/admin/home");
+        alert("Login correcto!");
+        window.location.href = "/admin/home";
       } else {
-        setError(data.message || "Contraseña incorrecta");
+        alert("Contraseña incorrecta");
       }
+
     } catch (err) {
-      console.error("Error al iniciar sesión:", err);
-      setError("Error de conexión con el servidor");
+      console.error("Error login admin:", err);
+      alert("Error conectando con el servidor");
     }
   };
 
   return (
-    <div style={{ maxWidth: 300, margin: "50px auto", textAlign: "center" }}>
-      <h2>Admin Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Contraseña"
-          style={{ width: "100%", padding: 8, marginBottom: 10 }}
-        />
-        <button type="submit" style={{ width: "100%", padding: 8 }}>
-          Ingresar
-        </button>
-      </form>
-      {error && <p style={{ color: "red", marginTop: 10 }}>{error}</p>}
+    <div style={{ padding: 50, textAlign: "center" }}>
+      <h2>Panel Admin</h2>
+      <input
+        placeholder="Contraseña"
+        type="password"
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <button onClick={login}>Entrar</button>
     </div>
   );
 }

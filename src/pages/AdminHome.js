@@ -6,6 +6,7 @@ export default function AdminHome() {
 
   const handleLogout = () => {
     localStorage.removeItem("adminLogged");
+    localStorage.removeItem("token");
     navigate("/admin/login");
   };
 

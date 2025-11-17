@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import API_URL from "../config/api";
 
 const AdminDashboard = () => {
   const [sorteo, setSorteo] = useState({
@@ -18,14 +19,14 @@ const AdminDashboard = () => {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("Token"); // 🔥 ahora SI coincide con login
       if (!token) {
         alert("No estás autenticado");
         return;
       }
 
       const res = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/sorteos`, // ✅ sin duplicar /api
+        `${API_URL}/api/admin/sorteos`, // 🔥 ruta correcta del back
         sorteo,
         {
           headers: {
@@ -34,8 +35,9 @@ const AdminDashboard = () => {
         }
       );
 
-      console.log("Sorteo creado:", res.data);
       alert("Sorteo creado correctamente ✅");
+      console.log("Sorteo creado:", res.data);
+
       setSorteo({
         titulo: "",
         descripcion: "",
@@ -93,6 +95,7 @@ const AdminDashboard = () => {
           onChange={handleChange}
           className="w-full p-2 border rounded"
         />
+
         <button
           type="submit"
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
