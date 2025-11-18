@@ -10,10 +10,17 @@ const AdminDashboard = () => {
     precio: "",
     numerosTotales: "",
     imagenUrl: "",
+    mpAccount: "cuenta1",
+    featured: false,
+    bannerPrincipal: false,
   });
 
   const handleChange = (e) => {
-    setSorteo({ ...sorteo, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setSorteo({
+      ...sorteo,
+      [name]: type === "checkbox" ? checked : value,
+    });
   };
 
   const onSubmit = async (e) => {
@@ -26,13 +33,8 @@ const AdminDashboard = () => {
     }
 
     try {
-      const res = await axios.post(
-        `${API_URL}/sorteos`, // ruta del backend: /api/sorteos
-        sorteo
-      );
-
+      await axios.post(`${API_URL}/sorteos`, sorteo);
       alert("Sorteo creado correctamente!");
-      console.log("Sorteo creado:", res.data);
 
       setSorteo({
         titulo: "",
@@ -40,6 +42,9 @@ const AdminDashboard = () => {
         precio: "",
         numerosTotales: "",
         imagenUrl: "",
+        mpAccount: "cuenta1",
+        featured: false,
+        bannerPrincipal: false
       });
     } catch (err) {
       console.error("Error al crear sorteo:", err);
@@ -52,54 +57,52 @@ const AdminDashboard = () => {
       <h1 className="text-2xl font-bold mb-4">Panel de Administración</h1>
 
       <form onSubmit={onSubmit} className="space-y-4">
-        <input
-          type="text"
-          name="titulo"
-          placeholder="Título del sorteo"
-          value={sorteo.titulo}
+
+        <input name="titulo" value={sorteo.titulo} onChange={handleChange} placeholder="Título" className="w-full p-2 border rounded" />
+
+        <textarea name="descripcion" value={sorteo.descripcion} onChange={handleChange} placeholder="Descripción" className="w-full p-2 border rounded" />
+
+        <input name="precio" type="number" value={sorteo.precio} onChange={handleChange} placeholder="Precio" className="w-full p-2 border rounded" />
+
+        <input name="numerosTotales" type="number" value={sorteo.numerosTotales} onChange={handleChange} placeholder="Cantidad total" className="w-full p-2 border rounded" />
+
+        <input name="imagenUrl" value={sorteo.imagenUrl} onChange={handleChange} placeholder="URL Imagen" className="w-full p-2 border rounded" />
+
+        {/* MERCADO PAGO */}
+        <select
+          name="mpAccount"
+          value={sorteo.mpAccount}
           onChange={handleChange}
           className="w-full p-2 border rounded"
-        />
-
-        <textarea
-          name="descripcion"
-          placeholder="Descripción"
-          value={sorteo.descripcion}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-        />
-
-        <input
-          type="number"
-          name="precio"
-          placeholder="Precio"
-          value={sorteo.precio}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-        />
-
-        <input
-          type="number"
-          name="numerosTotales"
-          placeholder="Cantidad total de números"
-          value={sorteo.numerosTotales}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-        />
-
-        <input
-          type="text"
-          name="imagenUrl"
-          placeholder="URL de la imagen"
-          value={sorteo.imagenUrl}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-        />
-
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
+          <option value="cuenta1">Cuenta Mercado Pago 1</option>
+          <option value="cuenta2">Cuenta Mercado Pago 2</option>
+          <option value="cuenta3">Cuenta Mercado Pago 3</option>
+        </select>
+
+        {/* ⭐ DESTACADO */}
+        <label className="flex gap-2 items-center">
+          <input
+            type="checkbox"
+            name="featured"
+            checked={sorteo.featured}
+            onChange={handleChange}
+          />
+          Destacar sorteo ⭐
+        </label>
+
+        {/* 🏆 BANNER PRINCIPAL */}
+        <label className="flex gap-2 items-center">
+          <input
+            type="checkbox"
+            name="bannerPrincipal"
+            checked={sorteo.bannerPrincipal}
+            onChange={handleChange}
+          />
+          Usar como banner principal 🏆
+        </label>
+
+        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
           Crear sorteo
         </button>
       </form>
