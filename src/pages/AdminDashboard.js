@@ -1,9 +1,15 @@
 // FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/AdminDashboard.js
+
 import React, { useState } from "react";
 import axios from "axios";
 import API_URL from "../config/api";
 
+const CLOUD_NAME = "dx9tmn9pu"; // <-- tu cloud name
+const UPLOAD_PRESET = "sorteos_lxm"; // <-- preset para permitir uploads
+
 const AdminDashboard = () => {
+  const [uploading, setUploading] = useState(false);
+
   const [sorteo, setSorteo] = useState({
     titulo: "",
     descripcion: "",
@@ -17,10 +23,35 @@ const AdminDashboard = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setSorteo({
-      ...sorteo,
-      [name]: type === "checkbox" ? checked : value,
-    });
+    setSorteo({ ...sorteo, [name]: type === "checkbox" ? checked : value });
+  };
+
+  const uploadToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET);
+
+    setUploading(true);
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const data = await res.json();
+    setUploading(false);
+    return data.secure_url;
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const url = await uploadToCloudinary(file);
+    setSorteo({ ...sorteo, imagenUrl: url });
   };
 
   const onSubmit = async (e) => {
@@ -44,7 +75,7 @@ const AdminDashboard = () => {
         imagenUrl: "",
         mpAccount: "cuenta1",
         featured: false,
-        bannerPrincipal: false
+        bannerPrincipal: false,
       });
     } catch (err) {
       console.error("Error al crear sorteo:", err);
@@ -66,7 +97,17 @@ const AdminDashboard = () => {
 
         <input name="numerosTotales" type="number" value={sorteo.numerosTotales} onChange={handleChange} placeholder="Cantidad total" className="w-full p-2 border rounded" />
 
-        <input name="imagenUrl" value={sorteo.imagenUrl} onChange={handleChange} placeholder="URL Imagen" className="w-full p-2 border rounded" />
+        {/* SUBIR IMAGEN */}
+        <div>
+          <label className="font-bold">Imagen del sorteo</label>
+          <input type="file" onChange={handleImageUpload} className="w-full p-2 border rounded" />
+        </div>
+
+        {uploading && <p className="text-blue-500">Subiendo imagen...</p>}
+
+        {sorteo.imagenUrl && (
+          <img src={sorteo.imagenUrl} alt="preview" className="w-full rounded border" />
+        )}
 
         {/* MERCADO PAGO */}
         <select
