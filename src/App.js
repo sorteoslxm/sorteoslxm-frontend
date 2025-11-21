@@ -6,8 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import SorteoDetalle from "./pages/SorteoDetalle";
 
-// Panel admin (ruta corregida)
-import AdminDashboard from "./pages/AdminDashboard";
+// Panel admin
+import AdminHome from "./pages/AdminHome";
 import AdminBanners from "./pages/AdminBanners";
 
 export default function App() {
@@ -20,8 +20,8 @@ export default function App() {
         {/* Página individual de sorteo */}
         <Route path="/sorteo/:id" element={<SorteoDetalle />} />
 
-        {/* Admin */}
-        <Route path="/admin/sorteos" element={<AdminDashboard />} />
+        {/* ADMIN */}
+        <Route path="/admin" element={<AdminHome />} />
         <Route path="/admin/banners" element={<AdminBanners />} />
       </Routes>
     </BrowserRouter>
