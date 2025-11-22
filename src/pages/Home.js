@@ -17,7 +17,7 @@ export default function Home() {
       const resBanners = await fetch(`${API_URL}/banners`);
       const dataBanners = await resBanners.json();
 
-      // SORTEOS DESTACADOS PRIMERO
+      // DESTACADOS PRIMERO
       const destacados = dataSorteos.filter((s) => s.featured);
       const normales = dataSorteos.filter((s) => !s.featured);
 
@@ -27,7 +27,7 @@ export default function Home() {
       const principal = dataBanners.find((b) => b.principal);
       setBannerPrincipal(principal ?? null);
 
-      // BANNERS DESTACADOS PARA INTERCALAR
+      // BANNERS DESTACADOS
       const destacadosBanners = dataBanners.filter((b) => b.destacado);
       setBannersDestacados(destacadosBanners);
 
@@ -41,7 +41,7 @@ export default function Home() {
     fetchData();
   }, []);
 
-  // Insertar un banner destacado cada 2 sorteos
+  // Insertar banner destacado cada 2 sorteos
   const generarListaConBanners = () => {
     if (bannersDestacados.length === 0) return sorteos;
 
@@ -51,7 +51,6 @@ export default function Home() {
     sorteos.forEach((s, i) => {
       resultado.push(s);
 
-      // Cada 2 sorteos metemos un banner destacado
       if ((i + 1) % 2 === 0) {
         const banner = bannersDestacados[indexBanner % bannersDestacados.length];
         resultado.push({ tipo: "banner", ...banner });
@@ -67,19 +66,24 @@ export default function Home() {
   return (
     <div className="w-full max-w-4xl mx-auto p-4 pb-20">
 
-      {/* 🏆 Banner principal arriba del todo */}
+      {/* 👇 TÍTULO PARA TESTEAR DEPLOY */}
+      <h1 className="text-3xl font-bold text-center mb-6">
+        🎉 Sorteos LXM — VERCEL DEPLOY TEST
+      </h1>
+
+      {/* 🏆 Banner principal */}
       {bannerPrincipal && (
         <div className="mb-6">
           <img
             src={bannerPrincipal.imagenUrl}
-            className="w-full rounded-xl shadow-lg object-cover"
+            className="w-full rounded-xl shadow-lg object-cover max-h-64"
             alt="banner principal"
           />
         </div>
       )}
 
-      {/* LISTADO DE SORTEOS + BANNERS INTERCALADOS */}
-      <div className="grid grid-cols-1 gap-6">
+      {/* LISTADO: SORTEOS + BANNERS */}
+      <div className="grid grid-cols-1 gap-4">
         {listaFinal.map((item, index) => {
           if (item.tipo === "banner") {
             return (
@@ -87,7 +91,7 @@ export default function Home() {
                 <img
                   src={item.imagenUrl}
                   alt="banner destacado"
-                  className="w-full rounded-xl shadow-md object-cover"
+                  className="w-full rounded-xl shadow-md object-cover max-h-48"
                 />
               </div>
             );
@@ -100,14 +104,14 @@ export default function Home() {
             >
               <img
                 src={item.imagenUrl}
-                className="w-full h-60 object-cover"
+                className="w-full h-48 object-cover"
                 alt={item.titulo}
               />
 
               <div className="p-4">
-                <h3 className="text-xl font-bold">{item.titulo}</h3>
+                <h3 className="text-lg font-bold">{item.titulo}</h3>
 
-                <p className="text-gray-600 text-sm mt-1">
+                <p className="text-gray-600 text-sm mt-1 line-clamp-2">
                   {item.descripcion}
                 </p>
 
