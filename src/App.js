@@ -9,11 +9,13 @@ import SorteoDetalle from "./pages/SorteoDetalle";
 // Panel admin
 import AdminHome from "./pages/AdminHome";
 import AdminBanners from "./pages/AdminBanners";
+import AdminSorteos from "./pages/AdminSorteos";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+
         {/* HOME */}
         <Route path="/" element={<Home />} />
 
@@ -23,6 +25,8 @@ export default function App() {
         {/* ADMIN */}
         <Route path="/admin" element={<AdminHome />} />
         <Route path="/admin/banners" element={<AdminBanners />} />
+        <Route path="/admin/sorteos" element={<AdminSorteos />} />
+
       </Routes>
     </BrowserRouter>
   );
