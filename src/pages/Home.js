@@ -17,20 +17,15 @@ export default function Home() {
       const resBanners = await fetch(`${API_URL}/banners`);
       const dataBanners = await resBanners.json();
 
-      // DESTACADOS PRIMERO
       const destacados = dataSorteos.filter((s) => s.featured);
       const normales = dataSorteos.filter((s) => !s.featured);
 
       setSorteos([...destacados, ...normales]);
 
-      // BANNER PRINCIPAL
       const principal = dataBanners.find((b) => b.principal);
       setBannerPrincipal(principal ?? null);
 
-      // BANNERS DESTACADOS
-      const destacadosBanners = dataBanners.filter((b) => b.destacado);
-      setBannersDestacados(destacadosBanners);
-
+      setBannersDestacados(dataBanners.filter((b) => b.destacado));
       setBanners(dataBanners);
     } catch (error) {
       console.error("Error en Home:", error);
@@ -41,20 +36,21 @@ export default function Home() {
     fetchData();
   }, []);
 
-  // Insertar banner destacado cada 2 sorteos
   const generarListaConBanners = () => {
     if (bannersDestacados.length === 0) return sorteos;
 
     let resultado = [];
-    let indexBanner = 0;
+    let iBanner = 0;
 
-    sorteos.forEach((s, i) => {
+    sorteos.forEach((s, idx) => {
       resultado.push(s);
 
-      if ((i + 1) % 2 === 0) {
-        const banner = bannersDestacados[indexBanner % bannersDestacados.length];
-        resultado.push({ tipo: "banner", ...banner });
-        indexBanner++;
+      if ((idx + 1) % 2 === 0) {
+        resultado.push({
+          tipo: "banner",
+          ...bannersDestacados[iBanner % bannersDestacados.length],
+        });
+        iBanner++;
       }
     });
 
@@ -64,26 +60,27 @@ export default function Home() {
   const listaFinal = generarListaConBanners();
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4 pb-20">
+    <div className="w-full max-w-3xl mx-auto p-4 pb-20">
 
-      {/* 👇 TÍTULO PARA TESTEAR DEPLOY */}
-      <h1 className="text-3xl font-bold text-center mb-6">
-        🎉 Sorteos LXM — VERCEL DEPLOY TEST
+      {/* Título de test (opcional)
+      <h1 className="text-2xl font-bold text-center mb-4">
+        🎉 Sorteos LXM
       </h1>
+      */}
 
       {/* 🏆 Banner principal */}
       {bannerPrincipal && (
-        <div className="mb-6">
+        <div className="mb-4">
           <img
             src={bannerPrincipal.imagenUrl}
-            className="w-full rounded-xl shadow-lg object-cover max-h-64"
+            className="w-full rounded-xl shadow-lg object-cover max-h-52"
             alt="banner principal"
           />
         </div>
       )}
 
-      {/* LISTADO: SORTEOS + BANNERS */}
-      <div className="grid grid-cols-1 gap-4">
+      {/* LISTADO: sorteos + banners */}
+      <div className="grid grid-cols-1 gap-3">
         {listaFinal.map((item, index) => {
           if (item.tipo === "banner") {
             return (
@@ -91,7 +88,7 @@ export default function Home() {
                 <img
                   src={item.imagenUrl}
                   alt="banner destacado"
-                  className="w-full rounded-xl shadow-md object-cover max-h-48"
+                  className="w-full rounded-xl shadow object-cover max-h-40"
                 />
               </div>
             );
@@ -100,30 +97,34 @@ export default function Home() {
           return (
             <div
               key={item.id}
-              className="bg-white rounded-xl shadow-lg overflow-hidden"
+              className="bg-white rounded-xl shadow overflow-hidden flex"
             >
               <img
                 src={item.imagenUrl}
-                className="w-full h-48 object-cover"
+                className="w-36 h-36 object-cover"
                 alt={item.titulo}
               />
 
-              <div className="p-4">
-                <h3 className="text-lg font-bold">{item.titulo}</h3>
+              <div className="p-3 flex flex-col justify-between w-full">
+                <div>
+                  <h3 className="text-md font-bold leading-tight">
+                    {item.titulo}
+                  </h3>
 
-                <p className="text-gray-600 text-sm mt-1 line-clamp-2">
-                  {item.descripcion}
-                </p>
+                  <p className="text-gray-600 text-xs mt-1 line-clamp-2">
+                    {item.descripcion}
+                  </p>
 
-                {item.featured && (
-                  <span className="inline-block mt-2 px-3 py-1 bg-yellow-400 text-white text-xs rounded">
-                    ⭐ Destacado
-                  </span>
-                )}
+                  {item.featured && (
+                    <span className="inline-block mt-1 px-2 py-0.5 bg-yellow-400 text-white text-[10px] rounded">
+                      ⭐ Destacado
+                    </span>
+                  )}
+                </div>
 
                 <button
                   onClick={() => (window.location = `/sorteo/${item.id}`)}
-                  className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg font-semibold"
+                  className="mt-2 w-full bg-blue-600 text-white py-1.5 rounded-md text-sm font-semibold"
                 >
                   Ver sorteo
                 </button>
@@ -133,7 +134,7 @@ export default function Home() {
         })}
       </div>
 
-      <div className="h-20"></div>
+      <div className="h-16"></div>
     </div>
   );
 }
