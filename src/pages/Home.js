@@ -36,7 +36,7 @@ export default function Home() {
 
       {/* 🟦 TÍTULO NUEVO */}
       <h1 className="text-3xl font-bold text-yellow-400 mb-4 text-center">
-        🚀 TEST NUEVO HOME — VERSIÓN 2 🚀
+        🚀 TEST NUEVO HOME — VERSIÓN 2 ok 🚀
       </h1>
 
       {/* 🟦 Banner principal */}
