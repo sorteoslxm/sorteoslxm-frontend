@@ -1,140 +1,123 @@
 // FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/Home.js
 
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import API_URL from "../config/api";
 
 export default function Home() {
   const [sorteos, setSorteos] = useState([]);
-  const [banners, setBanners] = useState([]);
   const [bannerPrincipal, setBannerPrincipal] = useState(null);
-  const [bannersDestacados, setBannersDestacados] = useState([]);
-
-  const fetchData = async () => {
-    try {
-      const resSorteos = await fetch(`${API_URL}/sorteos`);
-      const dataSorteos = await resSorteos.json();
-
-      const resBanners = await fetch(`${API_URL}/banners`);
-      const dataBanners = await resBanners.json();
-
-      const destacados = dataSorteos.filter((s) => s.featured);
-      const normales = dataSorteos.filter((s) => !s.featured);
-
-      setSorteos([...destacados, ...normales]);
-
-      const principal = dataBanners.find((b) => b.principal);
-      setBannerPrincipal(principal ?? null);
-
-      setBannersDestacados(dataBanners.filter((b) => b.destacado));
-      setBanners(dataBanners);
-    } catch (error) {
-      console.error("Error en Home:", error);
-    }
-  };
+  const [bannersSecundarios, setBannersSecundarios] = useState([]);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const s = await fetch(`${API_URL}/sorteos`);
+        const sorteosData = await s.json();
+        setSorteos(sorteosData);
+
+        const b1 = await fetch(`${API_URL}/banners/principal`);
+        const b1data = await b1.json();
+        setBannerPrincipal(b1data);
+
+        const b2 = await fetch(`${API_URL}/banners/secundarios`);
+        const b2data = await b2.json();
+        setBannersSecundarios(b2data);
+      } catch (err) {
+        console.error("Error cargando home:", err);
+      }
+    };
+
     fetchData();
   }, []);
 
-  const generarListaConBanners = () => {
-    if (bannersDestacados.length === 0) return sorteos;
-
-    let resultado = [];
-    let iBanner = 0;
-
-    sorteos.forEach((s, idx) => {
-      resultado.push(s);
-
-      if ((idx + 1) % 2 === 0) {
-        resultado.push({
-          tipo: "banner",
-          ...bannersDestacados[iBanner % bannersDestacados.length],
-        });
-        iBanner++;
-      }
-    });
-
-    return resultado;
-  };
-
-  const listaFinal = generarListaConBanners();
-
   return (
-    <div className="w-full max-w-3xl mx-auto p-4 pb-20">
+    <div className="w-full max-w-5xl mx-auto px-4 py-6">
 
-      {/* Título de test (opcional)
-      <h1 className="text-2xl font-bold text-center mb-4">
-        🎉 Sorteos LXM
+      {/* 🟦 TÍTULO (para verificar cambios) */}
+      <h1 className="text-3xl font-bold text-white mb-4 text-center">
+        🔥 NUEVO HOME — TEST CAMBIOS 🔥
       </h1>
-      */}
 
-      {/* 🏆 Banner principal */}
-      {bannerPrincipal && (
-        <div className="mb-4">
+      {/* 🟦 Banner principal */}
+      {bannerPrincipal?.imagenUrl && (
+        <img
+          src={bannerPrincipal.imagenUrl}
+          alt="banner principal"
+          className="w-full h-56 md:h-72 object-cover rounded-xl shadow-lg mb-6"
+        />
+      )}
+
+      {/* 🟦 Sorteo destacado (primer sorteo del array) */}
+      {sorteos[0] && (
+        <div className="bg-[#0e1525] rounded-xl shadow-xl overflow-hidden mb-10">
           <img
-            src={bannerPrincipal.imagenUrl}
-            className="w-full rounded-xl shadow-lg object-cover max-h-52"
-            alt="banner principal"
+            src={sorteos[0].imagenUrl}
+            alt={sorteos[0].titulo}
+            className="w-full h-64 object-cover"
           />
+          <div className="p-4 text-white">
+            <h2 className="text-xl font-bold">{sorteos[0].titulo}</h2>
+            <p className="opacity-70 text-sm">{sorteos[0].descripcion}</p>
+            <p className="mt-2 font-bold text-blue-400 text-lg">
+              ${sorteos[0].precio}
+            </p>
+
+            <Link
+              to={`/sorteo/${sorteos[0].id}`}
+              className="inline-block mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg shadow-md transition"
+            >
+              Ver sorteo
+            </Link>
+          </div>
         </div>
       )}
 
-      {/* LISTADO: sorteos + banners */}
-      <div className="grid grid-cols-1 gap-3">
-        {listaFinal.map((item, index) => {
-          if (item.tipo === "banner") {
-            return (
-              <div key={"banner-" + index} className="w-full">
-                <img
-                  src={item.imagenUrl}
-                  alt="banner destacado"
-                  className="w-full rounded-xl shadow object-cover max-h-40"
-                />
-              </div>
-            );
-          }
+      {/* 🟦 Banners + Sorteos alternados */}
+      <div className="flex flex-col gap-10">
 
-          return (
-            <div
-              key={item.id}
-              className="bg-white rounded-xl shadow overflow-hidden flex"
+        {sorteos.slice(1).map((sorteo, index) => (
+          <React.Fragment key={sorteo.id}>
+
+            {/* 🟩 Banner cada 2 sorteos */}
+            {index % 2 === 0 &&
+              bannersSecundarios.length > 0 && (
+                <img
+                  src={
+                    bannersSecundarios[
+                      (index / 2) % bannersSecundarios.length
+                    ]?.imagenUrl
+                  }
+                  alt="banner"
+                  className="w-full h-40 md:h-52 object-cover rounded-xl shadow-lg"
+                />
+              )}
+
+            {/* 🟧 Card del sorteo */}
+            <Link
+              to={`/sorteo/${sorteo.id}`}
+              className="bg-[#0e1525] rounded-xl overflow-hidden shadow-lg hover:scale-105 transition mx-auto w-full max-w-[300px]"
             >
               <img
-                src={item.imagenUrl}
-                className="w-36 h-36 object-cover"
-                alt={item.titulo}
+                src={sorteo.imagenUrl}
+                alt={sorteo.titulo}
+                className="w-full h-40 object-cover"
               />
 
-              <div className="p-3 flex flex-col justify-between w-full">
-                <div>
-                  <h3 className="text-md font-bold leading-tight">
-                    {item.titulo}
-                  </h3>
-
-                  <p className="text-gray-600 text-xs mt-1 line-clamp-2">
-                    {item.descripcion}
-                  </p>
-
-                  {item.featured && (
-                    <span className="inline-block mt-1 px-2 py-0.5 bg-yellow-400 text-white text-[10px] rounded">
-                      ⭐ Destacado
-                    </span>
-                  )}
-                </div>
-
-                <button
-                  onClick={() => (window.location = `/sorteo/${item.id}`)}
-                  className="mt-2 w-full bg-blue-600 text-white py-1.5 rounded-md text-sm font-semibold"
-                >
-                  Ver sorteo
-                </button>
+              <div className="p-3 text-white">
+                <h3 className="font-semibold text-sm">{sorteo.titulo}</h3>
+                <p className="text-xs opacity-70 line-clamp-2">
+                  {sorteo.descripcion}
+                </p>
+                <p className="mt-2 font-bold text-blue-400">
+                  ${sorteo.precio}
+                </p>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            </Link>
 
-      <div className="h-16"></div>
+          </React.Fragment>
+        ))}
+      </div>
     </div>
   );
 }
