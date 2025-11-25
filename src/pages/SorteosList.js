@@ -1,3 +1,5 @@
+// FILE: src/components/SorteosList.js
+
 import { useEffect, useState } from "react";
 import API_URL from "../config/api";
 
@@ -22,14 +24,24 @@ export default function SorteosList() {
   }, []);
 
   if (!sorteos.length) {
-    return <p style={{ textAlign: "center", marginTop: 20 }}>No hay sorteos disponibles.</p>;
+    return (
+      <p style={{ textAlign: "center", marginTop: 20 }}>
+        No hay sorteos disponibles.
+      </p>
+    );
   }
 
   return (
     <div style={{ padding: 20 }}>
       <h2 style={{ textAlign: "center", marginBottom: 20 }}>Sorteos</h2>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: 20 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+          gap: 20,
+        }}
+      >
         {sorteos.map((s) => (
           <div
             key={s.id}
@@ -42,12 +54,12 @@ export default function SorteosList() {
             }}
           >
             <img
-              src={s.imagen || s.imagenUrl || ""}
+              src={s.imagenUrl}
               style={{ width: "100%", borderRadius: 10, marginBottom: 10 }}
             />
 
-            <h3>{s.nombre || s.titulo}</h3>
-            <p>{s.descripcion || "Sin descripción"}</p>
+            <h3>{s.titulo}</h3>
+            <p>{s.descripcion}</p>
             <p style={{ fontWeight: "bold", marginTop: 8 }}>💰 ${s.precio}</p>
           </div>
         ))}
