@@ -1,7 +1,7 @@
 // FILE: /Users/mustamusic/web/sorteos-lxm/src/App.js
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
-import Sorteo from "./pages/Sorteo";
+import SorteoDetalle from "./pages/SorteoDetalle";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 
@@ -10,7 +10,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/sorteo/:id" element={<Sorteo />} />
+        <Route path="/sorteo/:id" element={<SorteoDetalle />} />
 
         {/* 🟦 Login admin */}
         <Route path="/admin/login" element={<AdminLogin />} />
