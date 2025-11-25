@@ -14,7 +14,6 @@ export default function Home() {
       try {
         const s = await fetch(`${API_URL}/sorteos`);
         const sorteosData = await s.json();
-        console.log("🔥 DEBUG sorteos:", sorteosData);
         setSorteos(sorteosData);
 
         const b1 = await fetch(`${API_URL}/banners/principal`);
@@ -34,8 +33,9 @@ export default function Home() {
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-6">
-      {/* 🟦 NUEVO TÍTULO PARA DEBUG */}
-      <h1 className="text-3xl font-bold text-yellow-300 mb-4 text-center">
+
+      {/* 🟦 TÍTULO NUEVO */}
+      <h1 className="text-3xl font-bold text-yellow-400 mb-4 text-center">
         🚀 TEST NUEVO HOME — VERSIÓN 2 🚀
       </h1>
 
@@ -62,6 +62,7 @@ export default function Home() {
             <p className="mt-2 font-bold text-blue-400 text-lg">
               ${sorteos[0].precio}
             </p>
+
             <Link
               to={`/sorteo/${sorteos[0].id}`}
               className="inline-block mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg shadow-md transition"
@@ -72,22 +73,20 @@ export default function Home() {
         </div>
       )}
 
-      {/* 🟦 Banners + sorteos alternados */}
+      {/* 🟦 Lista de sorteos + banners */}
       <div className="flex flex-col gap-10">
         {sorteos.slice(1).map((sorteo, index) => (
           <React.Fragment key={sorteo.id}>
-            {index % 2 === 0 &&
-              bannersSecundarios.length > 0 && (
-                <img
-                  src={
-                    bannersSecundarios[
-                      (index / 2) % bannersSecundarios.length
-                    ]?.imagenUrl
-                  }
-                  alt="banner"
-                  className="w-full h-40 md:h-52 object-cover rounded-xl shadow-lg"
-                />
-              )}
+            {index % 2 === 0 && bannersSecundarios.length > 0 && (
+              <img
+                src={
+                  bannersSecundarios[(index / 2) % bannersSecundarios.length]
+                    ?.imagenUrl
+                }
+                alt="banner"
+                className="w-full h-40 md:h-52 object-cover rounded-xl shadow-lg"
+              />
+            )}
 
             <Link
               to={`/sorteo/${sorteo.id}`}
@@ -104,7 +103,9 @@ export default function Home() {
                 <p className="text-xs opacity-70 line-clamp-2">
                   {sorteo.descripcion}
                 </p>
-                <p className="mt-2 font-bold text-blue-400">${sorteo.precio}</p>
+                <p className="mt-2 font-bold text-blue-400">
+                  ${sorteo.precio}
+                </p>
               </div>
             </Link>
           </React.Fragment>
