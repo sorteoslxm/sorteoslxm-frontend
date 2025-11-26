@@ -48,12 +48,21 @@ export default function AdminDashboard() {
         </button>
       </div>
 
-      <Link
-        to="/admin/sorteos/nuevo"
-        className="bg-blue-600 text-white px-4 py-2 rounded"
-      >
-        ➕ Nuevo sorteo
-      </Link>
+      <div className="flex gap-4 mb-6">
+        <Link
+          to="/admin/sorteos/nuevo"
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          ➕ Nuevo sorteo
+        </Link>
+
+        <Link
+          to="/admin/banners"
+          className="bg-purple-600 text-white px-4 py-2 rounded"
+        >
+          🎨 Gestionar banners
+        </Link>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         {sorteos.map((s) => (
