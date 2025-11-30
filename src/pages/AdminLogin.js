@@ -1,7 +1,8 @@
-// FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/AdminLogin.js
+// FILE: src/pages/AdminLogin.js
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API_URL from "../config/api";
 
 export default function AdminLogin() {
   const [password, setPassword] = useState("");
@@ -13,7 +14,7 @@ export default function AdminLogin() {
     setError("");
 
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/admin/login`, {
+      const res = await fetch(`${API_URL}/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
@@ -26,7 +27,7 @@ export default function AdminLogin() {
         return;
       }
 
-      // Guardar token
+      // Guardar token correcto
       localStorage.setItem("admin_token", data.token);
 
       navigate("/admin");
