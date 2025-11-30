@@ -12,14 +12,17 @@ export default function Home() {
   useEffect(() => {
     const load = async () => {
       try {
+        // Sorteos
         const s = await fetch(`${API_URL}/sorteos`);
         const sorteosData = await s.json();
         setSorteos(sorteosData);
 
+        // Banner principal
         const b1 = await fetch(`${API_URL}/banners/principal`);
         setBannerPrincipal(await b1.json());
 
-        const b2 = await fetch(`${API_URL}/banners/secundarios`);
+        // Banners secundarios (USAMOS /inferiores)
+        const b2 = await fetch(`${API_URL}/banners/inferiores`);
         setBannersSecundarios(await b2.json());
       } catch (err) {
         console.error("Error cargando home:", err);
@@ -65,10 +68,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* 🟦 Banners + Miniaturas en patrón 1-2 */}
+      {/* 🟦 Banners secundarios + 2 sorteos */}
       <div className="flex flex-col gap-8">
-
-        {/** Sacamos el primer sorteo */}
         {sorteos.slice(1).reduce((rows, item, index) => {
           if (index % 2 === 0) rows.push([item]);
           else rows[rows.length - 1].push(item);
@@ -77,10 +78,10 @@ export default function Home() {
           <React.Fragment key={idx}>
 
             {/* Banner Secundario */}
-            {bannersSecundarios.length > 0 && (
+            {bannersSecundarios.length > 0 && bannersSecundarios[idx % bannersSecundarios.length]?.imagenUrl && (
               <img
                 src={bannersSecundarios[idx % bannersSecundarios.length].imagenUrl}
-                alt="banner"
+                alt="banner secundario"
                 className="w-full h-40 md:h-52 object-cover rounded-xl shadow-lg"
               />
             )}
@@ -109,7 +110,6 @@ export default function Home() {
 
           </React.Fragment>
         ))}
-
       </div>
     </div>
   );
