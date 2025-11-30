@@ -27,7 +27,7 @@ export default function AdminLogin() {
         return;
       }
 
-      // 💥 TOKEN UNIFICADO
+      // 🔥 TOKEN UNIFICADO
       localStorage.setItem("adminToken", data.token);
 
       navigate("/admin");
