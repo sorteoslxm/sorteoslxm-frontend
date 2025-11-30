@@ -39,22 +39,19 @@ export default function AdminBanners() {
     try {
       const res = await fetch(`${API_URL}/banners/upload`, {
         method: "POST",
-        headers: {
-          "x-admin-token": token  // 🔥 TOKEN CORRECTO
-        },
+        headers: { "x-admin-token": token },
         body: formData,
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        console.error("Error subiendo banner:", data);
         alert(data.error);
         return;
       }
 
       setFile(null);
-      fetchBanners(); // 🔥 Actualiza la lista después de subir
+      fetchBanners();
     } catch (error) {
       console.error("Error:", error);
     }
@@ -66,9 +63,7 @@ export default function AdminBanners() {
     try {
       const res = await fetch(`${API_URL}/banners/${id}`, {
         method: "DELETE",
-        headers: {
-          "x-admin-token": token
-        }
+        headers: { "x-admin-token": token }
       });
 
       const data = await res.json();
@@ -82,6 +77,33 @@ export default function AdminBanners() {
     } catch (error) {
       console.error("Error:", error);
     }
+  };
+
+  const destacarBanner = async (id) => {
+    const token = localStorage.getItem("adminToken");
+
+    await fetch(`${API_URL}/banners/${id}/destacar`, {
+      method: "PATCH",
+      headers: { 
+        "Content-Type": "application/json",
+        "x-admin-token": token 
+      }
+    });
+
+    fetchBanners();
+  };
+
+  const actualizarLink = async (id, link) => {
+    const token = localStorage.getItem("adminToken");
+
+    await fetch(`${API_URL}/banners/${id}/link`, {
+      method: "PATCH",
+      headers: { 
+        "Content-Type": "application/json",
+        "x-admin-token": token 
+      },
+      body: JSON.stringify({ link })
+    });
   };
 
   return (
@@ -103,9 +125,29 @@ export default function AdminBanners() {
           <div key={b.id} className="bg-white shadow rounded p-3">
             <img src={b.url} className="w-full h-32 object-cover rounded" alt="banner" />
 
+            {/* ⭐ Destacar */}
+            <button
+              onClick={() => destacarBanner(b.id)}
+              className={`px-3 py-1 rounded mt-2 w-full text-white ${
+                b.destacado ? "bg-yellow-600" : "bg-gray-600"
+              }`}
+            >
+              {b.destacado ? "⭐ Destacado" : "Destacar"}
+            </button>
+
+            {/* 🔗 Link */}
+            <input
+              type="text"
+              placeholder="Link del banner"
+              defaultValue={b.link}
+              onBlur={(e) => actualizarLink(b.id, e.target.value)}
+              className="border p-1 rounded w-full mt-2 text-sm"
+            />
+
+            {/* 🗑 Eliminar */}
             <button
               onClick={() => deleteBanner(b.id)}
-              className="bg-red-600 text-white px-3 py-1 rounded mt-2"
+              className="bg-red-600 text-white px-3 py-1 rounded mt-2 w-full"
             >
               🗑 Eliminar
             </button>
