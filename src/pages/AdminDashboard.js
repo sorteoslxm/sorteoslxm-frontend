@@ -8,7 +8,7 @@ export default function AdminDashboard() {
   const [sorteos, setSorteos] = useState([]);
   const navigate = useNavigate();
 
-  // Verifica si hay token
+  // Verificar token
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
     if (!token) {
@@ -18,7 +18,14 @@ export default function AdminDashboard() {
 
   const fetchSorteos = async () => {
     try {
-      const res = await fetch(`${API_URL}/sorteos`);
+      const token = localStorage.getItem("adminToken");
+
+      const res = await fetch(`${API_URL}/sorteos`, {
+        headers: {
+          "x-admin-token": token   // 💥 CORREGIDO
+        },
+      });
+
       const data = await res.json();
       setSorteos(data);
     } catch (error) {

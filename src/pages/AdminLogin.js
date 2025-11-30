@@ -22,13 +22,13 @@ export default function AdminLogin() {
 
       const data = await res.json();
 
-      if (!data.success) {
-        setError(data.error || "Error desconocido");
+      if (!data.success || !data.token) {
+        setError(data.error || "Contraseña incorrecta");
         return;
       }
 
-      // Guardar token correcto
-      localStorage.setItem("admin_token", data.token);
+      // 💥 TOKEN UNIFICADO
+      localStorage.setItem("adminToken", data.token);
 
       navigate("/admin");
     } catch (err) {
