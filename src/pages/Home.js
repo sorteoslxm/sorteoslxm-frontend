@@ -1,4 +1,4 @@
-// FILE: src/pages/Home.js
+// FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/Home.js
 
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -12,18 +12,23 @@ export default function Home() {
   useEffect(() => {
     const load = async () => {
       try {
-        // Sorteos
+        // 🔹 Sorteos
         const s = await fetch(`${API_URL}/sorteos`);
         const sorteosData = await s.json();
         setSorteos(sorteosData);
 
-        // Banner principal
-        const b1 = await fetch(`${API_URL}/banners/principal`);
-        setBannerPrincipal(await b1.json());
+        // 🔹 Todos los banners
+        const resBanners = await fetch(`${API_URL}/banners`);
+        const bannersData = await resBanners.json();
 
-        // Banners secundarios (USAMOS /inferiores)
-        const b2 = await fetch(`${API_URL}/banners/inferiores`);
-        setBannersSecundarios(await b2.json());
+        // 🔹 Banner principal (destacado)
+        const principal = bannersData.find(b => b.destacado) || null;
+        setBannerPrincipal(principal);
+
+        // 🔹 Banners secundarios (no destacados)
+        const secundarios = bannersData.filter(b => !b.destacado);
+        setBannersSecundarios(secundarios);
+
       } catch (err) {
         console.error("Error cargando home:", err);
       }
@@ -35,9 +40,9 @@ export default function Home() {
     <div className="w-full max-w-5xl mx-auto px-4 py-6">
 
       {/* 🟦 Banner Principal */}
-      {bannerPrincipal?.imagenUrl && (
+      {bannerPrincipal?.url && (
         <img
-          src={bannerPrincipal.imagenUrl}
+          src={bannerPrincipal.url}
           alt="banner principal"
           className="w-full h-56 md:h-72 object-cover rounded-xl shadow-lg mb-8"
         />
@@ -78,9 +83,9 @@ export default function Home() {
           <React.Fragment key={idx}>
 
             {/* Banner Secundario */}
-            {bannersSecundarios.length > 0 && bannersSecundarios[idx % bannersSecundarios.length]?.imagenUrl && (
+            {bannersSecundarios.length > 0 && bannersSecundarios[idx % bannersSecundarios.length]?.url && (
               <img
-                src={bannersSecundarios[idx % bannersSecundarios.length].imagenUrl}
+                src={bannersSecundarios[idx % bannersSecundarios.length].url}
                 alt="banner secundario"
                 className="w-full h-40 md:h-52 object-cover rounded-xl shadow-lg"
               />
