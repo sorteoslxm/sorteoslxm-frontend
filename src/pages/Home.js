@@ -1,5 +1,5 @@
 // FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/Home.js
-
+// 
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API_URL from "../config/api";
@@ -12,35 +12,43 @@ export default function Home() {
   useEffect(() => {
     const load = async () => {
       try {
-        // 🔹 Sorteos
+        // --- SORTEOS ---
         const s = await fetch(`${API_URL}/sorteos`);
+        if (!s.ok) throw new Error("Error cargando sorteos");
         const sorteosData = await s.json();
-        setSorteos(sorteosData);
+        setSorteos(Array.isArray(sorteosData) ? sorteosData : []);
 
-        // 🔹 Todos los banners
+        // --- BANNERS ---
         const resBanners = await fetch(`${API_URL}/banners`);
+        if (!resBanners.ok) throw new Error("Error cargando banners");
         const bannersData = await resBanners.json();
 
-        // 🔹 Banner principal (destacado)
-        const principal = bannersData.find(b => b.destacado) || null;
+        // Validamos que sea un array
+        const bannersValidos = Array.isArray(bannersData)
+          ? bannersData.filter(b => b && b.url)
+          : [];
+
+        // Banner principal = destacado con URL
+        const principal = bannersValidos.find(b => b.destacado === true) || null;
         setBannerPrincipal(principal);
 
-        // 🔹 Banners secundarios (no destacados)
-        const secundarios = bannersData.filter(b => !b.destacado);
+        // Secundarios = todos los banners con URL que NO sean destacados
+        const secundarios = bannersValidos.filter(b => b.destacado !== true);
         setBannersSecundarios(secundarios);
 
       } catch (err) {
-        console.error("Error cargando home:", err);
+        console.error("Error cargando home:", err.message);
       }
     };
+
     load();
   }, []);
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-6">
 
-      {/* 🟦 Banner Principal */}
-      {bannerPrincipal?.url && (
+      {/* Banner Principal */}
+      {bannerPrincipal && bannerPrincipal.url && (
         <img
           src={bannerPrincipal.url}
           alt="banner principal"
@@ -48,7 +56,7 @@ export default function Home() {
         />
       )}
 
-      {/* 🟦 Sorteo destacado */}
+      {/* Sorteo destacado */}
       {sorteos[0] && (
         <div className="bg-[#0e1525] rounded-xl overflow-hidden shadow-lg mb-10">
           <img
@@ -73,48 +81,56 @@ export default function Home() {
         </div>
       )}
 
-      {/* 🟦 Banners secundarios + 2 sorteos */}
+      {/* Banners secundarios + miniaturas */}
       <div className="flex flex-col gap-8">
-        {sorteos.slice(1).reduce((rows, item, index) => {
-          if (index % 2 === 0) rows.push([item]);
-          else rows[rows.length - 1].push(item);
-          return rows;
-        }, []).map((pair, idx) => (
-          <React.Fragment key={idx}>
+        {sorteos
+          .slice(1)
+          .reduce((rows, item, index) => {
+            if (index % 2 === 0) rows.push([item]);
+            else rows[rows.length - 1].push(item);
+            return rows;
+          }, [])
+          .map((pair, idx) => (
+            <React.Fragment key={idx}>
 
-            {/* Banner Secundario */}
-            {bannersSecundarios.length > 0 && bannersSecundarios[idx % bannersSecundarios.length]?.url && (
-              <img
-                src={bannersSecundarios[idx % bannersSecundarios.length].url}
-                alt="banner secundario"
-                className="w-full h-40 md:h-52 object-cover rounded-xl shadow-lg"
-              />
-            )}
-
-            {/* 2 Miniaturas */}
-            <div className="grid grid-cols-2 gap-4">
-              {pair.map((sorteo) => (
-                <Link
-                  key={sorteo.id}
-                  to={`/sorteo/${sorteo.id}`}
-                  className="bg-[#0e1525] rounded-xl overflow-hidden shadow-lg hover:scale-105 transition"
-                >
+              {/* Banner Secundario */}
+              {bannersSecundarios.length > 0 &&
+                bannersSecundarios[idx % bannersSecundarios.length]?.url && (
                   <img
-                    src={sorteo.imagenUrl}
-                    alt={sorteo.titulo}
-                    className="w-full h-40 object-cover"
+                    src={bannersSecundarios[idx % bannersSecundarios.length].url}
+                    alt="banner secundario"
+                    className="w-full h-40 md:h-52 object-cover rounded-xl shadow-lg"
                   />
-                  <div className="p-3 text-white">
-                    <h3 className="font-semibold text-sm">{sorteo.titulo}</h3>
-                    <p className="text-xs opacity-70 line-clamp-2">{sorteo.descripcion}</p>
-                    <p className="mt-2 font-bold text-blue-400">${sorteo.precio}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                )}
 
-          </React.Fragment>
-        ))}
+              {/* 2 Miniaturas */}
+              <div className="grid grid-cols-2 gap-4">
+                {pair.map((sorteo) => (
+                  <Link
+                    key={sorteo.id}
+                    to={`/sorteo/${sorteo.id}`}
+                    className="bg-[#0e1525] rounded-xl overflow-hidden shadow-lg hover:scale-105 transition"
+                  >
+                    <img
+                      src={sorteo.imagenUrl}
+                      alt={sorteo.titulo}
+                      className="w-full h-40 object-cover"
+                    />
+                    <div className="p-3 text-white">
+                      <h3 className="font-semibold text-sm">{sorteo.titulo}</h3>
+                      <p className="text-xs opacity-70 line-clamp-2">
+                        {sorteo.descripcion}
+                      </p>
+                      <p className="mt-2 font-bold text-blue-400">
+                        ${sorteo.precio}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+            </React.Fragment>
+          ))}
       </div>
     </div>
   );
