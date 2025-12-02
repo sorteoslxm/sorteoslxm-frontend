@@ -23,18 +23,14 @@ export default function Home() {
         if (!resBanners.ok) throw new Error("Error cargando banners");
         const bannersData = await resBanners.json();
 
-        // Validamos que sea array
         const bannersValidos = Array.isArray(bannersData)
           ? bannersData.filter(b => b && b.url)
           : [];
 
-        // Principal destacado
-        const principal =
-          bannersValidos.find(b => b.destacado === true) || null;
-        setBannerPrincipal(principal);
-
-        // Secundarios
+        const principal = bannersValidos.find(b => b.destacado === true) || null;
         const secundarios = bannersValidos.filter(b => b.destacado !== true);
+
+        setBannerPrincipal(principal);
         setBannersSecundarios(secundarios);
 
       } catch (err) {
@@ -45,11 +41,14 @@ export default function Home() {
     load();
   }, []);
 
+  const formatPrice = (value) =>
+    `$ ${Number(value).toLocaleString("es-AR")}`;
+
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-6">
 
       {/* Banner Principal */}
-      {bannerPrincipal && bannerPrincipal.url && (
+      {bannerPrincipal?.url && (
         bannerPrincipal.link ? (
           <a
             href={bannerPrincipal.link}
@@ -59,36 +58,44 @@ export default function Home() {
             <img
               src={bannerPrincipal.url}
               alt="banner principal"
-              className="w-full h-56 md:h-72 object-cover rounded-xl shadow-lg mb-8 cursor-pointer"
+              className="w-full max-h-72 object-contain rounded-2xl shadow-2xl mb-10 cursor-pointer transition-all hover:scale-[1.01]"
             />
           </a>
         ) : (
           <img
             src={bannerPrincipal.url}
             alt="banner principal"
-            className="w-full h-56 md:h-72 object-cover rounded-xl shadow-lg mb-8"
+            className="w-full max-h-72 object-contain rounded-2xl shadow-2xl mb-10"
           />
         )
       )}
 
       {/* Sorteo destacado */}
       {sorteos[0] && (
-        <div className="bg-[#0e1525] rounded-xl overflow-hidden shadow-lg mb-10">
+        <div className="relative rounded-2xl overflow-hidden shadow-2xl mb-12 bg-[#0e1525]/90 backdrop-blur-md transition hover:scale-[1.01]">
+          
+          {/* Imagen */}
           <img
             src={sorteos[0].imagenUrl}
             alt={sorteos[0].titulo}
-            className="w-full h-64 object-cover"
+            className="w-full h-72 object-cover"
           />
-          <div className="p-4 text-white">
-            <h2 className="text-xl font-bold">{sorteos[0].titulo}</h2>
-            <p className="opacity-70 text-sm">{sorteos[0].descripcion}</p>
-            <p className="mt-2 font-bold text-blue-400 text-lg">
-              ${sorteos[0].precio}
+
+          {/* Degradado */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0e1525] via-[#0e1525]/60 to-transparent" />
+
+          {/* Contenido */}
+          <div className="absolute bottom-0 p-5 text-white">
+            <h2 className="text-2xl font-bold drop-shadow-lg">{sorteos[0].titulo}</h2>
+            <p className="opacity-80 text-sm line-clamp-2">{sorteos[0].descripcion}</p>
+
+            <p className="mt-2 font-bold text-blue-400 text-2xl drop-shadow-lg">
+              {formatPrice(sorteos[0].precio)}
             </p>
 
             <Link
               to={`/sorteo/${sorteos[0].id}`}
-              className="inline-block mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg shadow-md"
+              className="inline-block mt-4 bg-blue-600 hover:bg-blue-700 px-5 py-2.5 rounded-lg shadow-md font-semibold transition"
             >
               Ver sorteo
             </Link>
@@ -97,11 +104,11 @@ export default function Home() {
       )}
 
       {/* Banners secundarios + miniaturas */}
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-10">
         {sorteos
           .slice(1)
-          .reduce((rows, item, index) => {
-            if (index % 2 === 0) rows.push([item]);
+          .reduce((rows, item, i) => {
+            if (i % 2 === 0) rows.push([item]);
             else rows[rows.length - 1].push(item);
             return rows;
           }, [])
@@ -112,7 +119,7 @@ export default function Home() {
               <React.Fragment key={idx}>
 
                 {/* Banner Secundario */}
-                {banner && banner.url && (
+                {banner?.url && (
                   banner.link ? (
                     <a
                       href={banner.link}
@@ -122,38 +129,41 @@ export default function Home() {
                       <img
                         src={banner.url}
                         alt="banner secundario"
-                        className="w-full h-40 md:h-52 object-cover rounded-xl shadow-lg cursor-pointer"
+                        className="w-full h-44 md:h-56 object-contain rounded-2xl shadow-xl cursor-pointer transition hover:scale-[1.01]"
                       />
                     </a>
                   ) : (
                     <img
                       src={banner.url}
                       alt="banner secundario"
-                      className="w-full h-40 md:h-52 object-cover rounded-xl shadow-lg"
+                      className="w-full h-44 md:h-56 object-contain rounded-2xl shadow-xl"
                     />
                   )
                 )}
 
-                {/* 2 Miniaturas */}
-                <div className="grid grid-cols-2 gap-4">
+                {/* Miniaturas */}
+                <div className="grid grid-cols-2 gap-5">
                   {pair.map((sorteo) => (
                     <Link
                       key={sorteo.id}
                       to={`/sorteo/${sorteo.id}`}
-                      className="bg-[#0e1525] rounded-xl overflow-hidden shadow-lg hover:scale-105 transition"
+                      className="bg-[#0e1525]/80 backdrop-blur-md rounded-2xl overflow-hidden shadow-xl hover:scale-[1.03] transition-all"
                     >
                       <img
                         src={sorteo.imagenUrl}
                         alt={sorteo.titulo}
-                        className="w-full h-40 object-cover"
+                        className="w-full h-44 object-cover"
                       />
-                      <div className="p-3 text-white">
-                        <h3 className="font-semibold text-sm">{sorteo.titulo}</h3>
+
+                      <div className="p-4 text-white">
+                        <h3 className="font-semibold text-base line-clamp-1">{sorteo.titulo}</h3>
+
                         <p className="text-xs opacity-70 line-clamp-2">
                           {sorteo.descripcion}
                         </p>
-                        <p className="mt-2 font-bold text-blue-400">
-                          ${sorteos[0].precio}
+
+                        <p className="mt-2 font-bold text-blue-400 text-lg">
+                          {formatPrice(sorteo.precio)}
                         </p>
                       </div>
                     </Link>
