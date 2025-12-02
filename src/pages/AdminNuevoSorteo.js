@@ -1,6 +1,10 @@
 // FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/AdminNuevoSorteo.js
+
 import React, { useState } from "react";
-import API_URL from "../config/api";
+
+// ⚠️ Ruta API puesta directamente:
+const API = "https://sorteoslxm-server-clean.onrender.com/sorteos";
+// Si estás trabajando local:  const API = "http://localhost:5000/sorteos";
 
 export default function AdminNuevoSorteo() {
   const [form, setForm] = useState({
@@ -9,7 +13,7 @@ export default function AdminNuevoSorteo() {
     precio: "",
     numerosTotales: "",
     imagenUrl: "",
-    mpCuenta: "", // ⭐ cuenta destino Mercadopago
+    mpCuenta: "",
   });
 
   const handleChange = (e) =>
@@ -18,17 +22,17 @@ export default function AdminNuevoSorteo() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const res = await fetch(`${API_URL}/sorteos`, {
+    const res = await fetch(API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
 
     if (res.ok) {
-      alert("Sorteo creado");
+      alert("Sorteo creado correctamente");
       window.location.href = "/admin/sorteos";
     } else {
-      alert("Error al crear sorteo");
+      alert("❌ Error al crear sorteo");
     }
   };
 
@@ -43,6 +47,7 @@ export default function AdminNuevoSorteo() {
           className="border p-2 rounded w-full"
           onChange={handleChange}
         />
+
         <textarea
           name="descripcion"
           placeholder="Descripción"
@@ -53,7 +58,7 @@ export default function AdminNuevoSorteo() {
         <input
           name="precio"
           type="number"
-          placeholder="Precio"
+          placeholder="Precio (ej: 500)"
           className="border p-2 rounded w-full"
           onChange={handleChange}
         />
@@ -61,7 +66,7 @@ export default function AdminNuevoSorteo() {
         <input
           name="numerosTotales"
           type="number"
-          placeholder="Números totales"
+          placeholder="Cantidad de números"
           className="border p-2 rounded w-full"
           onChange={handleChange}
         />
@@ -75,13 +80,13 @@ export default function AdminNuevoSorteo() {
 
         <input
           name="mpCuenta"
-          placeholder="Cuenta MercadoPago"
+          placeholder="Cuenta de MercadoPago"
           className="border p-2 rounded w-full"
           onChange={handleChange}
         />
 
         <button className="bg-blue-600 text-white py-2 rounded w-full">
-          Crear
+          Crear Sorteo
         </button>
       </form>
     </div>

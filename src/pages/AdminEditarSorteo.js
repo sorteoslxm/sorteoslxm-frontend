@@ -5,15 +5,43 @@ import API_URL from "../config/api";
 
 export default function AdminEditarSorteo() {
   const { id } = useParams();
-  const [form, setForm] = useState(null);
+
+  const [form, setForm] = useState({
+    titulo: "",
+    descripcion: "",
+    precio: "",
+    numerosTotales: "",
+    imagenUrl: "",
+    mpCuenta: "",
+  });
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_URL}/sorteos/${id}`)
-      .then((r) => r.json())
-      .then(setForm);
+    const cargar = async () => {
+      try {
+        const res = await fetch(`${API_URL}/sorteos/${id}`);
+        const data = await res.json();
+
+        setForm({
+          titulo: data.titulo || "",
+          descripcion: data.descripcion || "",
+          precio: data.precio || "",
+          numerosTotales: data.numerosTotales || "",
+          imagenUrl: data.imagenUrl || "",
+          mpCuenta: data.mpCuenta || "",
+        });
+      } catch (err) {
+        console.error("Error cargando sorteo:", err);
+      }
+
+      setLoading(false);
+    };
+
+    cargar();
   }, [id]);
 
-  if (!form) return <p>Cargando...</p>;
+  if (loading) return <p>Cargando...</p>;
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -23,11 +51,13 @@ export default function AdminEditarSorteo() {
 
     await fetch(`${API_URL}/sorteos/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json", // ✔ corregido
+      },
       body: JSON.stringify(form),
     });
 
-    alert("Guardado");
+    alert("Cambios guardados");
   };
 
   return (
@@ -35,49 +65,55 @@ export default function AdminEditarSorteo() {
       <h1 className="text-3xl font-bold mb-4">✏️ Editar Sorteo</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+
         <input
           name="titulo"
           value={form.titulo}
-          className="border p-2 rounded w-full"
           onChange={handleChange}
+          className="border p-2 rounded w-full"
+          placeholder="Título"
         />
 
         <textarea
           name="descripcion"
           value={form.descripcion}
-          className="border p-2 rounded w-full"
           onChange={handleChange}
+          className="border p-2 rounded w-full"
+          placeholder="Descripción"
         />
 
         <input
           name="precio"
           type="number"
           value={form.precio}
-          className="border p-2 rounded w-full"
           onChange={handleChange}
+          className="border p-2 rounded w-full"
+          placeholder="Precio"
         />
 
         <input
           name="numerosTotales"
           type="number"
           value={form.numerosTotales}
-          className="border p-2 rounded w-full"
           onChange={handleChange}
+          className="border p-2 rounded w-full"
+          placeholder="Números totales"
         />
 
         <input
           name="imagenUrl"
           value={form.imagenUrl}
-          className="border p-2 rounded w-full"
           onChange={handleChange}
+          className="border p-2 rounded w-full"
+          placeholder="URL imagen"
         />
 
         <input
           name="mpCuenta"
-          value={form.mpCuenta || ""}
-          placeholder="Cuenta MercadoPago"
-          className="border p-2 rounded w-full"
+          value={form.mpCuenta}
           onChange={handleChange}
+          className="border p-2 rounded w-full"
+          placeholder="Cuenta MercadoPago"
         />
 
         <button className="bg-green-600 text-white py-2 rounded w-full">
