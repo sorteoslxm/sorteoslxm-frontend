@@ -1,4 +1,5 @@
 // FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/AdminEditarSorteo.js
+
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import API_URL from "../config/api";
@@ -13,6 +14,7 @@ export default function AdminEditarSorteo() {
     numerosTotales: "",
     imagenUrl: "",
     mpCuenta: "",
+    destacado: false,
   });
 
   const [loading, setLoading] = useState(true);
@@ -30,6 +32,7 @@ export default function AdminEditarSorteo() {
           numerosTotales: data.numerosTotales || "",
           imagenUrl: data.imagenUrl || "",
           mpCuenta: data.mpCuenta || "",
+          destacado: data.destacado || false,
         });
       } catch (err) {
         console.error("Error cargando sorteo:", err);
@@ -52,7 +55,7 @@ export default function AdminEditarSorteo() {
     await fetch(`${API_URL}/sorteos/${id}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json", // ✔ corregido
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(form),
     });
@@ -115,6 +118,18 @@ export default function AdminEditarSorteo() {
           className="border p-2 rounded w-full"
           placeholder="Cuenta MercadoPago"
         />
+
+        {/* ⭐ Campo destacado */}
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={form.destacado}
+            onChange={(e) =>
+              setForm({ ...form, destacado: e.target.checked })
+            }
+          />
+          <span>⭐ Destacar sorteo</span>
+        </label>
 
         <button className="bg-green-600 text-white py-2 rounded w-full">
           Guardar cambios

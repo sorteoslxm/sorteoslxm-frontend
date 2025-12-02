@@ -24,6 +24,18 @@ export default function AdminSorteos() {
     fetchSorteos();
   };
 
+  const toggleDestacado = async (sorteo) => {
+    const nuevoEstado = !sorteo.destacado;
+
+    await fetch(`${API_URL}/sorteos/${sorteo.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ destacado: nuevoEstado }),
+    });
+
+    fetchSorteos();
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-6">🎁 Gestión de Sorteos</h1>
@@ -37,7 +49,15 @@ export default function AdminSorteos() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         {sorteos.map((s) => (
-          <div key={s.id} className="bg-white p-4 rounded shadow">
+          <div key={s.id} className="bg-white p-4 rounded shadow relative">
+
+            {/* ⭐ Badge si está destacado */}
+            {s.destacado && (
+              <span className="absolute top-2 right-2 bg-yellow-400 text-black text-sm px-2 py-1 rounded">
+                ⭐ Destacado
+              </span>
+            )}
+
             <img
               src={s.imagenUrl}
               className="w-full h-40 object-cover rounded"
@@ -50,7 +70,8 @@ export default function AdminSorteos() {
               {s.descripcion?.substring(0, 80)}...
             </p>
 
-            <div className="flex gap-2 mt-4">
+            <div className="flex flex-wrap gap-2 mt-4">
+
               <Link
                 to={`/admin/sorteos/editar/${s.id}`}
                 className="bg-yellow-500 text-white px-3 py-1 rounded"
@@ -64,6 +85,16 @@ export default function AdminSorteos() {
               >
                 ❌ Borrar
               </button>
+
+              <button
+                onClick={() => toggleDestacado(s)}
+                className={`px-3 py-1 rounded text-white ${
+                  s.destacado ? "bg-gray-600" : "bg-green-600"
+                }`}
+              >
+                {s.destacado ? "⛔ Quitar destacado" : "⭐ Destacar"}
+              </button>
+
             </div>
           </div>
         ))}
