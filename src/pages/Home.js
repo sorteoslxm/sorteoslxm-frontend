@@ -1,5 +1,5 @@
 // FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/Home.js
-// 
+
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API_URL from "../config/api";
@@ -23,16 +23,17 @@ export default function Home() {
         if (!resBanners.ok) throw new Error("Error cargando banners");
         const bannersData = await resBanners.json();
 
-        // Validamos que sea un array
+        // Validamos que sea array
         const bannersValidos = Array.isArray(bannersData)
           ? bannersData.filter(b => b && b.url)
           : [];
 
-        // Banner principal = destacado con URL
-        const principal = bannersValidos.find(b => b.destacado === true) || null;
+        // Principal destacado
+        const principal =
+          bannersValidos.find(b => b.destacado === true) || null;
         setBannerPrincipal(principal);
 
-        // Secundarios = todos los banners con URL que NO sean destacados
+        // Secundarios
         const secundarios = bannersValidos.filter(b => b.destacado !== true);
         setBannersSecundarios(secundarios);
 
@@ -49,11 +50,25 @@ export default function Home() {
 
       {/* Banner Principal */}
       {bannerPrincipal && bannerPrincipal.url && (
-        <img
-          src={bannerPrincipal.url}
-          alt="banner principal"
-          className="w-full h-56 md:h-72 object-cover rounded-xl shadow-lg mb-8"
-        />
+        bannerPrincipal.link ? (
+          <a
+            href={bannerPrincipal.link}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src={bannerPrincipal.url}
+              alt="banner principal"
+              className="w-full h-56 md:h-72 object-cover rounded-xl shadow-lg mb-8 cursor-pointer"
+            />
+          </a>
+        ) : (
+          <img
+            src={bannerPrincipal.url}
+            alt="banner principal"
+            className="w-full h-56 md:h-72 object-cover rounded-xl shadow-lg mb-8"
+          />
+        )
       )}
 
       {/* Sorteo destacado */}
@@ -90,47 +105,64 @@ export default function Home() {
             else rows[rows.length - 1].push(item);
             return rows;
           }, [])
-          .map((pair, idx) => (
-            <React.Fragment key={idx}>
+          .map((pair, idx) => {
+            const banner = bannersSecundarios[idx % bannersSecundarios.length];
 
-              {/* Banner Secundario */}
-              {bannersSecundarios.length > 0 &&
-                bannersSecundarios[idx % bannersSecundarios.length]?.url && (
-                  <img
-                    src={bannersSecundarios[idx % bannersSecundarios.length].url}
-                    alt="banner secundario"
-                    className="w-full h-40 md:h-52 object-cover rounded-xl shadow-lg"
-                  />
+            return (
+              <React.Fragment key={idx}>
+
+                {/* Banner Secundario */}
+                {banner && banner.url && (
+                  banner.link ? (
+                    <a
+                      href={banner.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <img
+                        src={banner.url}
+                        alt="banner secundario"
+                        className="w-full h-40 md:h-52 object-cover rounded-xl shadow-lg cursor-pointer"
+                      />
+                    </a>
+                  ) : (
+                    <img
+                      src={banner.url}
+                      alt="banner secundario"
+                      className="w-full h-40 md:h-52 object-cover rounded-xl shadow-lg"
+                    />
+                  )
                 )}
 
-              {/* 2 Miniaturas */}
-              <div className="grid grid-cols-2 gap-4">
-                {pair.map((sorteo) => (
-                  <Link
-                    key={sorteo.id}
-                    to={`/sorteo/${sorteo.id}`}
-                    className="bg-[#0e1525] rounded-xl overflow-hidden shadow-lg hover:scale-105 transition"
-                  >
-                    <img
-                      src={sorteo.imagenUrl}
-                      alt={sorteo.titulo}
-                      className="w-full h-40 object-cover"
-                    />
-                    <div className="p-3 text-white">
-                      <h3 className="font-semibold text-sm">{sorteo.titulo}</h3>
-                      <p className="text-xs opacity-70 line-clamp-2">
-                        {sorteo.descripcion}
-                      </p>
-                      <p className="mt-2 font-bold text-blue-400">
-                        ${sorteo.precio}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+                {/* 2 Miniaturas */}
+                <div className="grid grid-cols-2 gap-4">
+                  {pair.map((sorteo) => (
+                    <Link
+                      key={sorteo.id}
+                      to={`/sorteo/${sorteo.id}`}
+                      className="bg-[#0e1525] rounded-xl overflow-hidden shadow-lg hover:scale-105 transition"
+                    >
+                      <img
+                        src={sorteo.imagenUrl}
+                        alt={sorteo.titulo}
+                        className="w-full h-40 object-cover"
+                      />
+                      <div className="p-3 text-white">
+                        <h3 className="font-semibold text-sm">{sorteo.titulo}</h3>
+                        <p className="text-xs opacity-70 line-clamp-2">
+                          {sorteo.descripcion}
+                        </p>
+                        <p className="mt-2 font-bold text-blue-400">
+                          ${sorteos[0].precio}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
 
-            </React.Fragment>
-          ))}
+              </React.Fragment>
+            );
+          })}
       </div>
     </div>
   );
