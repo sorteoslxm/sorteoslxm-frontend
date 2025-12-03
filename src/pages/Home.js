@@ -1,6 +1,6 @@
 // FILE: src/pages/Home.js
 import React, { useEffect, useState } from "react";
-import { API_URL } from "../config";
+import API_URL from "../config/api";
 import { Link } from "react-router-dom";
 
 export default function Home() {
@@ -17,20 +17,21 @@ export default function Home() {
         const lista = await res.json();
 
         // 🥇 PRINCIPAL
-        const principal = lista.find(s => s.sorteoPrincipal === true) || null;
+        const principal =
+          lista.find((s) => s.sorteoPrincipal === true) || null;
         setSorteoPrincipal(principal);
 
         // ⭐ DESTACADOS NUMERADOS
         const destacados = lista
-          .filter(s => s.destacado && !s.sorteoPrincipal)
+          .filter((s) => s.destacado && !s.sorteoPrincipal)
           .map((s, index) => ({
             ...s,
-            numeroDestacado: index + 1
+            numeroDestacado: index + 1,
           }));
 
         // 👉 RESTO
         const otros = lista.filter(
-          s => !s.sorteoPrincipal && !s.destacado
+          (s) => !s.sorteoPrincipal && !s.destacado
         );
 
         setResto([...destacados, ...otros]);
@@ -38,16 +39,15 @@ export default function Home() {
         // 🔵 BANNERS
         const resBanners = await fetch(`${API_URL}/banners`);
         const banners = await resBanners.json();
-        const validos = banners.filter(b => b?.url);
+        const validos = banners.filter((b) => b?.url);
 
         setBannerPrincipal(
-          validos.find(b => b.bannerPrincipal === true) || null
+          validos.find((b) => b.bannerPrincipal === true) || null
         );
 
         setBannersSecundarios(
-          validos.filter(b => !b.bannerPrincipal)
+          validos.filter((b) => !b.bannerPrincipal)
         );
-
       } catch (err) {
         console.error("Error cargando home:", err);
       }
@@ -65,13 +65,12 @@ export default function Home() {
 
     bloques.push({
       banner,
-      sorteos: [s1, s2].filter(Boolean)
+      sorteos: [s1, s2].filter(Boolean),
     });
   }
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-6">
-
       {/* BANNER PRINCIPAL */}
       {bannerPrincipal && (
         <div className="mb-10">
@@ -107,7 +106,6 @@ export default function Home() {
       {/* BLOQUES */}
       {bloques.map((bloque, i) => (
         <section key={i} className="mb-14">
-
           {/* Banner secundario */}
           {bloque.banner && (
             <div className="mb-6">
@@ -121,12 +119,11 @@ export default function Home() {
 
           {/* 2 sorteos */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
             {bloque.sorteos.map((s) => (
               <Link
                 to={`/sorteo/${s.id}`}
                 key={s.id}
-                className="bg-[#0e1525]/80 rounded-2xl overflow-hidden shadow-xl hover:scale-[1.03] transition"
+                className="bg-[#0e1525]/80 rounded-2xl overflow-hidden shadow-xl hover:scale-[1.03] transition relative"
               >
                 {s.destacado && (
                   <span className="absolute bg-yellow-500 text-black px-3 py-1 rounded-br-xl font-bold text-sm">
@@ -145,11 +142,9 @@ export default function Home() {
                 </div>
               </Link>
             ))}
-
           </div>
         </section>
       ))}
-
     </div>
   );
 }
