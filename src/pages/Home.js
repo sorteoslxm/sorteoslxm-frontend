@@ -20,11 +20,14 @@ export default function Home() {
 
         const lista = Array.isArray(sorteosData) ? sorteosData : [];
 
-        // 📌 Aquí buscamos el destacado real
-        const dest = lista.find(s => s.featured === true) || lista[0] || null;
+        // ✅ BUSCAMOS EL DESTACADO REAL (propiedad "destacado")
+        const dest =
+          lista.find((s) => s.destacado === true) ||
+          lista[0] ||
+          null;
 
-        // El resto de los sorteos sin el destacado
-        const otros = lista.filter(s => s.id !== dest?.id);
+        // El resto sin el destacado
+        const otros = lista.filter((s) => s.id !== dest?.id);
 
         setDestacado(dest);
         setResto(otros);
@@ -35,7 +38,7 @@ export default function Home() {
         const bannersData = await resBanners.json();
 
         const bannersValidos = Array.isArray(bannersData)
-          ? bannersData.filter(b => b && b.url)
+          ? bannersData.filter((b) => b && b.url)
           : [];
 
         const principal = bannersValidos.find(b => b.destacado === true) || null;
@@ -61,11 +64,7 @@ export default function Home() {
       {/* Banner Principal */}
       {bannerPrincipal?.url && (
         bannerPrincipal.link ? (
-          <a
-            href={bannerPrincipal.link}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href={bannerPrincipal.link} target="_blank" rel="noopener noreferrer">
             <img
               src={bannerPrincipal.url}
               alt="banner principal"
@@ -124,15 +123,10 @@ export default function Home() {
 
             return (
               <React.Fragment key={idx}>
-
                 {/* Banner Secundario */}
                 {banner?.url && (
                   banner.link ? (
-                    <a
-                      href={banner.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                    <a href={banner.link} target="_blank" rel="noopener noreferrer">
                       <img
                         src={banner.url}
                         alt="banner secundario"
@@ -164,11 +158,7 @@ export default function Home() {
 
                       <div className="p-4 text-white">
                         <h3 className="font-semibold text-base line-clamp-1">{sorteo.titulo}</h3>
-
-                        <p className="text-xs opacity-70 line-clamp-2">
-                          {sorteo.descripcion}
-                        </p>
-
+                        <p className="text-xs opacity-70 line-clamp-2">{sorteo.descripcion}</p>
                         <p className="mt-2 font-bold text-blue-400 text-lg">
                           {formatPrice(sorteo.precio)}
                         </p>
@@ -176,7 +166,6 @@ export default function Home() {
                     </Link>
                   ))}
                 </div>
-
               </React.Fragment>
             );
           })}
