@@ -1,4 +1,4 @@
-// FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/Home.js
+// FILE: src/pages/Home.js
 
 import React, { useEffect, useState } from "react";
 import API_URL from "../config/api";
@@ -21,7 +21,7 @@ export default function Home() {
         const principal = lista.find((s) => s.sorteoPrincipal) || null;
         setSorteoPrincipal(principal);
 
-        // ⭐ DESTACADOS NUMERADOS
+        // ⭐ DESTACADOS (numerados internamente, sin mostrar)
         const destacados = lista
           .filter((s) => s.destacado && !s.sorteoPrincipal)
           .map((s, index) => ({
@@ -49,7 +49,7 @@ export default function Home() {
     load();
   }, []);
 
-  // 🧩 Crear bloques de 1 banner + 2 sorteos
+  // 🧩 Bloques de 1 banner + 2 sorteos
   const bloques = [];
   for (let i = 0; i < resto.length; i += 2) {
     bloques.push({
@@ -64,7 +64,11 @@ export default function Home() {
       {/* BANNER PRINCIPAL */}
       {bannerPrincipal && (
         <div className="mb-10">
-          <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
+          <a
+            href={bannerPrincipal.link || "#"}
+            target="_blank"
+            rel="noreferrer"
+          >
             <img
               src={bannerPrincipal.url}
               alt="Banner principal"
@@ -78,15 +82,19 @@ export default function Home() {
       {sorteoPrincipal && (
         <Link
           to={`/sorteo/${sorteoPrincipal.id}`}
-          className="block relative rounded-2xl overflow-hidden shadow-2xl mb-12 bg-gradient-to-br from-blue-900 via-[#0e1525] to-black"
+          className="block relative rounded-2xl overflow-hidden shadow-2xl mb-12 
+          bg-gradient-to-br from-blue-900 via-[#0e1525] to-black"
         >
           <img
             src={sorteoPrincipal.imagenUrl || sorteoPrincipal.imagen}
             alt={sorteoPrincipal.titulo}
-            className="w-full h-80 object-cover opacity-70"
+            className="w-full h-80 object-cover brightness-110 saturate-125"
           />
 
-          <div className="absolute inset-0 flex flex-col justify-end p-6 text-white bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+          <div
+            className="absolute inset-0 flex flex-col justify-end p-6 text-white
+            bg-gradient-to-t from-black/40 via-black/10 to-transparent"
+          >
             <span className="text-sm bg-red-600 px-3 py-1 rounded-full w-fit mb-3 shadow-lg">
               🥇 SORTEO PRINCIPAL
             </span>
@@ -102,6 +110,7 @@ export default function Home() {
       {bloques.map((bloque, index) => (
         <section key={index} className="mb-14">
 
+          {/* Banner secundario */}
           {bloque.banner && (
             <div className="mb-6">
               <a
@@ -118,23 +127,19 @@ export default function Home() {
             </div>
           )}
 
+          {/* 2 sorteos */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {bloque.sorteos.map((s) => (
               <Link
                 key={s.id}
                 to={`/sorteo/${s.id}`}
-                className="relative bg-[#0e1525]/80 rounded-2xl overflow-hidden shadow-xl hover:scale-[1.03] transition"
+                className="relative bg-[#0e1525]/80 rounded-2xl overflow-hidden 
+                shadow-xl hover:scale-[1.03] transition"
               >
-                {s.destacado && (
-                  <span className="absolute bg-yellow-500 text-black px-3 py-1 rounded-br-xl font-bold text-sm z-10">
-                    ⭐ DESTACADO #{s.numeroDestacado}
-                  </span>
-                )}
-
                 <img
                   src={s.imagenUrl || s.imagen}
                   alt={s.titulo}
-                  className="w-full h-44 object-cover"
+                  className="w-full h-44 object-contain bg-black/40"
                 />
 
                 <div className="p-4 text-white">
