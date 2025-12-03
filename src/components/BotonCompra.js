@@ -1,16 +1,21 @@
-// /Users/mustamusic/web/sorteos-lxm/src/components/BotonCompra.js
+// FILE: /Users/mustamusic/web/sorteos-lxm/src/components/BotonCompra.js
 import React, { useState } from "react";
+import API_URL from "../config/api";
 
-export default function BotonCompra({ titulo, precio }) {
+export default function BotonCompra({ sorteo }) {
   const [loading, setLoading] = useState(false);
 
   const handleCompra = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:4000/api/crear-preferencia", {
+      const res = await fetch(`${API_URL}/mercadopago/crear-preferencia`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ titulo, precio }),
+        body: JSON.stringify({
+          titulo: sorteo.titulo,
+          precio: sorteo.precio,
+          mpCuenta: sorteo.mpCuenta, // ⚡ Importante: enviamos la cuenta
+        }),
       });
 
       const data = await res.json();
@@ -22,10 +27,8 @@ export default function BotonCompra({ titulo, precio }) {
         return;
       }
 
-      // Si el backend devuelve init_point lo usamos (mejor experiencia).
-      // init_point es la URL de checkout; si no, usamos redirect clásico.
       if (data.init_point) {
-        window.location.href = data.init_point; // redirige al checkout web
+        window.location.href = data.init_point;
       } else if (data.id) {
         window.location.href = `https://www.mercadopago.com.ar/checkout/v1/redirect?preference-id=${data.id}`;
       } else {
@@ -41,8 +44,12 @@ export default function BotonCompra({ titulo, precio }) {
 
   return (
     <div>
-      <button onClick={handleCompra} disabled={loading}>
-        {loading ? "Procesando..." : `Comprar - $${precio}`}
+      <button
+        onClick={handleCompra}
+        disabled={loading}
+        className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-2 px-4 rounded"
+      >
+        {loading ? "Procesando..." : `Comprar - $${sorteo.precio}`}
       </button>
     </div>
   );
