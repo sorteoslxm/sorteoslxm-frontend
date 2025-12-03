@@ -1,4 +1,4 @@
-// FILE: src/pages/Home.js
+// FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/Home.js
 
 import React, { useEffect, useState } from "react";
 import API_URL from "../config/api";
@@ -21,13 +21,10 @@ export default function Home() {
         const principal = lista.find((s) => s.sorteoPrincipal) || null;
         setSorteoPrincipal(principal);
 
-        // ⭐ DESTACADOS (numerados internamente, sin mostrar)
+        // ORDEN
         const destacados = lista
           .filter((s) => s.destacado && !s.sorteoPrincipal)
-          .map((s, index) => ({
-            ...s,
-            numeroDestacado: index + 1,
-          }));
+          .map((s, index) => ({ ...s, numeroDestacado: index + 1 }));
 
         const otros = lista.filter(
           (s) => !s.destacado && !s.sorteoPrincipal
@@ -49,7 +46,7 @@ export default function Home() {
     load();
   }, []);
 
-  // 🧩 Bloques de 1 banner + 2 sorteos
+  // 🧩 Generar bloques
   const bloques = [];
   for (let i = 0; i < resto.length; i += 2) {
     bloques.push({
@@ -63,12 +60,8 @@ export default function Home() {
 
       {/* BANNER PRINCIPAL */}
       {bannerPrincipal && (
-        <div className="mb-10">
-          <a
-            href={bannerPrincipal.link || "#"}
-            target="_blank"
-            rel="noreferrer"
-          >
+        <div className="mb-12">
+          <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
             <img
               src={bannerPrincipal.url}
               alt="Banner principal"
@@ -82,8 +75,7 @@ export default function Home() {
       {sorteoPrincipal && (
         <Link
           to={`/sorteo/${sorteoPrincipal.id}`}
-          className="block relative rounded-2xl overflow-hidden shadow-2xl mb-12 
-          bg-gradient-to-br from-blue-900 via-[#0e1525] to-black"
+          className="block relative rounded-2xl overflow-hidden shadow-2xl mb-14 bg-gradient-to-br from-blue-900 via-[#0e1525] to-black"
         >
           <img
             src={sorteoPrincipal.imagenUrl || sorteoPrincipal.imagen}
@@ -91,10 +83,7 @@ export default function Home() {
             className="w-full h-80 object-cover brightness-110 saturate-125"
           />
 
-          <div
-            className="absolute inset-0 flex flex-col justify-end p-6 text-white
-            bg-gradient-to-t from-black/40 via-black/10 to-transparent"
-          >
+          <div className="absolute inset-0 flex flex-col justify-end p-6 text-white bg-gradient-to-t from-black/40 via-black/10 to-transparent">
             <span className="text-sm bg-red-600 px-3 py-1 rounded-full w-fit mb-3 shadow-lg">
               🥇 SORTEO PRINCIPAL
             </span>
@@ -108,11 +97,11 @@ export default function Home() {
 
       {/* BLOQUES */}
       {bloques.map((bloque, index) => (
-        <section key={index} className="mb-14">
-
-          {/* Banner secundario */}
+        <section key={index} className="mb-16">
+          
+          {/* Banner */}
           {bloque.banner && (
-            <div className="mb-6">
+            <div className="mb-8">
               <a
                 href={bloque.banner.link || "#"}
                 target="_blank"
@@ -127,20 +116,21 @@ export default function Home() {
             </div>
           )}
 
-          {/* 2 sorteos */}
+          {/* Miniaturas de sorteos */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {bloque.sorteos.map((s) => (
               <Link
                 key={s.id}
                 to={`/sorteo/${s.id}`}
-                className="relative bg-[#0e1525]/80 rounded-2xl overflow-hidden 
-                shadow-xl hover:scale-[1.03] transition"
+                className="relative bg-[#0e1525]/80 rounded-2xl overflow-hidden shadow-xl hover:scale-[1.03] transition"
               >
-                <img
-                  src={s.imagenUrl || s.imagen}
-                  alt={s.titulo}
-                  className="w-full h-44 object-contain bg-black/40"
-                />
+                <div className="w-full h-44 bg-black/40 flex items-center justify-center overflow-hidden">
+                  <img
+                    src={s.imagenUrl || s.imagen}
+                    alt={s.titulo}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
 
                 <div className="p-4 text-white">
                   <h4 className="font-bold text-lg">{s.titulo}</h4>
