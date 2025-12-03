@@ -1,4 +1,5 @@
-// FILE: src/pages/Home.js
+// FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/Home.js
+
 import React, { useEffect, useState } from "react";
 import API_URL from "../config/api";
 import { Link } from "react-router-dom";
@@ -38,10 +39,7 @@ export default function Home() {
         const resBanners = await fetch(`${API_URL}/banners`);
         const banners = await resBanners.json();
 
-        // principal = destacado = true
         setBannerPrincipal(banners.find((b) => b.destacado) || null);
-
-        // secundarios
         setBannersSecundarios(banners.filter((b) => !b.destacado));
       } catch (err) {
         console.error("Error cargando home:", err);
@@ -83,7 +81,7 @@ export default function Home() {
           className="block relative rounded-2xl overflow-hidden shadow-2xl mb-12 bg-gradient-to-br from-blue-900 via-[#0e1525] to-black"
         >
           <img
-            src={sorteoPrincipal.imagen}
+            src={sorteoPrincipal.imagenUrl || sorteoPrincipal.imagen}
             alt={sorteoPrincipal.titulo}
             className="w-full h-80 object-cover opacity-70"
           />
@@ -134,7 +132,7 @@ export default function Home() {
                 )}
 
                 <img
-                  src={s.imagen}
+                  src={s.imagenUrl || s.imagen}
                   alt={s.titulo}
                   className="w-full h-44 object-cover"
                 />
