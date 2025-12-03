@@ -1,7 +1,7 @@
 // FILE: src/pages/Home.js
-
 import React, { useEffect, useState } from "react";
 import { API_URL } from "../config";
+import { Link } from "react-router-dom";
 
 export default function Home() {
   const [sorteoPrincipal, setSorteoPrincipal] = useState(null);
@@ -19,22 +19,23 @@ export default function Home() {
         const lista = await res.json();
 
         // 🥇 SORTEO PRINCIPAL
-        const principal = lista.find(s => s.sorteoPrincipal) || null;
+        const principal = lista.find(s => s.sorteoPrincipal === true) || null;
         setSorteoPrincipal(principal);
 
-        // ⭐ DESTACADOS
+        // ⭐ DESTACADOS (numerados)
         const destacados = lista
-          .filter(s => s.destacado && !s.sorteoPrincipal)
+          .filter(s => s.destacado === true && !s.sorteoPrincipal)
           .map((s, index) => ({
             ...s,
             numeroDestacado: index + 1
           }));
 
-        // OTROS SORTEOS
+        // OTROS SORTEOS (no destacados)
         const otros = lista.filter(
           s => !s.sorteoPrincipal && !s.destacado
         );
 
+        // ORDEN FINAL DEL RESTO
         setResto([...destacados, ...otros]);
 
         // ==============================
@@ -51,6 +52,7 @@ export default function Home() {
         setBannersSecundarios(
           validos.filter(b => !b.bannerPrincipal)
         );
+
       } catch (err) {
         console.error("Error cargando home:", err);
       }
@@ -62,7 +64,6 @@ export default function Home() {
   // ================================================
   // 🧩 ARMAR BLOQUES: 1 banner + 2 sorteos
   // ================================================
-
   const bloques = [];
   for (let i = 0; i < resto.length; i += 2) {
     const banner = bannersSecundarios[Math.floor(i / 2)];
@@ -75,65 +76,15 @@ export default function Home() {
     });
   }
 
-  // ====================================
-  //   🔽 RENDER DEL HOME
-  // ====================================
-
   return (
-    <div className="home-container">
+    <div className="w-full max-w-5xl mx-auto px-4 py-6">
 
       {/* ---------------------------
           🖼️ BANNER PRINCIPAL
       ---------------------------- */}
       {bannerPrincipal && (
-        <section className="banner-principal">
-          <img src={bannerPrincipal.url} alt="Banner principal" />
-        </section>
-      )}
-
-      {/* ---------------------------
-          🥇 SORTEO PRINCIPAL
-      ---------------------------- */}
-      {sorteoPrincipal && (
-        <section className="sorteo-principal">
-          <h2>🥇 SORTEO PRINCIPAL</h2>
-          <img src={sorteoPrincipal.imagen} alt={sorteoPrincipal.titulo} />
-          <h3>{sorteoPrincipal.titulo}</h3>
-        </section>
-      )}
-
-      {/* -------------------------------------
-          🔁 BLOQUES: 1 banner + 2 sorteos
-      -------------------------------------- */}
-      {bloques.map((bloque, i) => (
-        <section key={i} className="bloque-home">
-
-          {/* Banner secundario */}
-          {bloque.banner && (
-            <div className="banner-secundario">
-              <img src={bloque.banner.url} alt="Banner" />
-            </div>
-          )}
-
-          {/* 2 sorteos */}
-          <div className="fila-sorteos grid grid-cols-2 gap-4 px-4">
-
-            {bloque.sorteos.map((s) => (
-              <div key={s.id} className={`item-sorteo ${s.destacado ? "destacado" : ""}`}>
-                {s.destacado && (
-                  <span className="badge-destacado">
-                    ⭐ DESTACADO #{s.numeroDestacado}
-                  </span>
-                )}
-                <img src={s.imagen} alt={s.titulo} />
-                <h4>{s.titulo}</h4>
-              </div>
-            ))}
-          </div>
-
-        </section>
-      ))}
-
-    </div>
-  );
-}
+        <div className="mb-10">
+          <img
+            src={bannerPrincipal.url}
+            alt="Banner principal"
+            className="w-full max-h-72 object-contain rounded-2xl shadow-xl"
