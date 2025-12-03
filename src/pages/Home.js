@@ -12,7 +12,7 @@ export default function Home() {
   useEffect(() => {
     const load = async () => {
       try {
-        // 🔵 LISTA DE SORTEOS
+        // 🔵 SORTEOS
         const res = await fetch(`${API_URL}/sorteos`);
         const lista = await res.json();
 
@@ -29,7 +29,7 @@ export default function Home() {
             numeroDestacado: index + 1,
           }));
 
-        // 👉 RESTO
+        // 👉 Resto
         const otros = lista.filter(
           (s) => !s.sorteoPrincipal && !s.destacado
         );
@@ -39,14 +39,15 @@ export default function Home() {
         // 🔵 BANNERS
         const resBanners = await fetch(`${API_URL}/banners`);
         const banners = await resBanners.json();
-        const validos = banners.filter((b) => b?.url);
 
-        setBannerPrincipal(
-          validos.find((b) => b.bannerPrincipal === true) || null
-        );
+        // 🥇 Banner principal = destacado === true
+        const bPrincipal =
+          banners.find((b) => b.destacado === true) || null;
+        setBannerPrincipal(bPrincipal);
 
+        // restantes
         setBannersSecundarios(
-          validos.filter((b) => !b.bannerPrincipal)
+          banners.filter((b) => b.destacado !== true)
         );
       } catch (err) {
         console.error("Error cargando home:", err);
@@ -56,7 +57,7 @@ export default function Home() {
     load();
   }, []);
 
-  // 🧩 ARMAR BLOQUES 1 banner + 2 sorteos
+  // 🧩 Crear bloques de 1 banner + 2 sorteos
   const bloques = [];
   for (let i = 0; i < resto.length; i += 2) {
     const banner = bannersSecundarios[Math.floor(i / 2)];
@@ -71,14 +72,17 @@ export default function Home() {
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-6">
+
       {/* BANNER PRINCIPAL */}
       {bannerPrincipal && (
         <div className="mb-10">
-          <img
-            src={bannerPrincipal.url}
-            alt="Banner principal"
-            className="w-full max-h-72 object-contain rounded-2xl shadow-xl"
-          />
+          <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
+            <img
+              src={bannerPrincipal.url}
+              alt="Banner principal"
+              className="w-full max-h-72 object-contain rounded-2xl shadow-xl"
+            />
+          </a>
         </div>
       )}
 
@@ -86,7 +90,7 @@ export default function Home() {
       {sorteoPrincipal && (
         <div className="relative rounded-2xl overflow-hidden shadow-2xl mb-12 bg-gradient-to-br from-blue-900 via-[#0e1525] to-black">
           <img
-            src={sorteoPrincipal.imagen}
+            src={sorteoPrincipal.imagenUrl}
             alt={sorteoPrincipal.titulo}
             className="w-full h-80 object-cover opacity-70"
           />
@@ -106,14 +110,17 @@ export default function Home() {
       {/* BLOQUES */}
       {bloques.map((bloque, i) => (
         <section key={i} className="mb-14">
+
           {/* Banner secundario */}
           {bloque.banner && (
             <div className="mb-6">
-              <img
-                src={bloque.banner.url}
-                alt="Banner"
-                className="w-full rounded-2xl shadow-xl object-contain max-h-48"
-              />
+              <a href={bloque.banner.link || "#"} target="_blank" rel="noreferrer">
+                <img
+                  src={bloque.banner.url}
+                  alt="Banner"
+                  className="w-full rounded-2xl shadow-xl object-contain max-h-48"
+                />
+              </a>
             </div>
           )}
 
@@ -123,16 +130,16 @@ export default function Home() {
               <Link
                 to={`/sorteo/${s.id}`}
                 key={s.id}
-                className="bg-[#0e1525]/80 rounded-2xl overflow-hidden shadow-xl hover:scale-[1.03] transition relative"
+                className="relative bg-[#0e1525]/80 rounded-2xl overflow-hidden shadow-xl hover:scale-[1.03] transition"
               >
                 {s.destacado && (
-                  <span className="absolute bg-yellow-500 text-black px-3 py-1 rounded-br-xl font-bold text-sm">
+                  <span className="absolute bg-yellow-500 text-black px-3 py-1 rounded-br-xl font-bold text-sm z-10">
                     ⭐ DESTACADO #{s.numeroDestacado}
                   </span>
                 )}
 
                 <img
-                  src={s.imagen}
+                  src={s.imagenUrl}
                   alt={s.titulo}
                   className="w-full h-44 object-cover"
                 />
@@ -143,6 +150,7 @@ export default function Home() {
               </Link>
             ))}
           </div>
+
         </section>
       ))}
     </div>
