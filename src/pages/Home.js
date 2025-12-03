@@ -1,5 +1,4 @@
 // FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/Home.js
-
 import React, { useEffect, useState, useRef } from "react";
 import API_URL from "../config/api";
 import { Link } from "react-router-dom";
@@ -20,9 +19,10 @@ export default function Home() {
         const principal = lista.find((s) => s.sorteoPrincipal) || null;
         setSorteoPrincipal(principal);
 
+        // Destacados ordenados por ordenDestacado asc
         const destacados = lista
           .filter((s) => s.destacado && !s.sorteoPrincipal)
-          .map((s, index) => ({ ...s, numeroDestacado: index + 1 }));
+          .sort((a, b) => (a.ordenDestacado || 0) - (b.ordenDestacado || 0));
 
         const otros = lista.filter(
           (s) => !s.destacado && !s.sorteoPrincipal
