@@ -116,7 +116,8 @@ export default function Home() {
           )}
 
           {/* 2 sorteos */}
-          <div className="fila-sorteos">
+          <div className="fila-sorteos grid grid-cols-2 gap-4 px-4">
+
             {bloque.sorteos.map((s) => (
               <div key={s.id} className={`item-sorteo ${s.destacado ? "destacado" : ""}`}>
                 {s.destacado && (
