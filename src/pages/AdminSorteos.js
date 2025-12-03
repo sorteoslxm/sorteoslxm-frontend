@@ -1,3 +1,4 @@
+// FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/AdminSorteos.js
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API_URL from "../config/api";
@@ -67,7 +68,7 @@ export default function AdminSorteos() {
             {/* ⭐ Badge de destacado */}
             {!s.sorteoPrincipal && s.destacado && (
               <span className="absolute top-2 right-2 bg-yellow-400 text-black text-sm px-2 py-1 rounded">
-                ⭐ Destacado
+                ⭐ Destacado ({s.ordenDestacado})
               </span>
             )}
 
@@ -79,13 +80,9 @@ export default function AdminSorteos() {
 
             <h2 className="text-xl font-bold mt-2">{s.titulo}</h2>
 
-            <p className="text-gray-700">
-              {s.descripcion?.substring(0, 80)}...
-            </p>
+            <p className="text-gray-700">{s.descripcion?.substring(0, 80)}...</p>
 
             <div className="flex flex-wrap gap-2 mt-4">
-
-              {/* EDITAR */}
               <Link
                 to={`/admin/sorteos/editar/${s.id}`}
                 className="bg-yellow-500 text-white px-3 py-1 rounded"
@@ -93,7 +90,6 @@ export default function AdminSorteos() {
                 ✏️ Editar
               </Link>
 
-              {/* BORRAR */}
               <button
                 onClick={() => eliminar(s.id)}
                 className="bg-red-500 text-white px-3 py-1 rounded"
@@ -101,7 +97,6 @@ export default function AdminSorteos() {
                 ❌ Borrar
               </button>
 
-              {/* ⭐ DESTACADO */}
               <button
                 onClick={() => toggleDestacado(s)}
                 className={`px-3 py-1 rounded text-white ${
@@ -112,7 +107,6 @@ export default function AdminSorteos() {
                 {s.destacado ? "⛔ Quitar destacado" : "⭐ Destacar"}
               </button>
 
-              {/* 🥇 PRINCIPAL */}
               <button
                 onClick={() => togglePrincipal(s)}
                 className={`px-3 py-1 rounded text-white ${
