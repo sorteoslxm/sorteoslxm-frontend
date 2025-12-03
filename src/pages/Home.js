@@ -1,11 +1,12 @@
 // FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/Home.js
-
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API_URL from "../config/api";
 
 export default function Home() {
   const [sorteos, setSorteos] = useState([]);
+  const [destacado, setDestacado] = useState(null);
+  const [resto, setResto] = useState([]);
   const [bannerPrincipal, setBannerPrincipal] = useState(null);
   const [bannersSecundarios, setBannersSecundarios] = useState([]);
 
@@ -16,7 +17,17 @@ export default function Home() {
         const s = await fetch(`${API_URL}/sorteos`);
         if (!s.ok) throw new Error("Error cargando sorteos");
         const sorteosData = await s.json();
-        setSorteos(Array.isArray(sorteosData) ? sorteosData : []);
+
+        const lista = Array.isArray(sorteosData) ? sorteosData : [];
+
+        // 📌 Aquí buscamos el destacado real
+        const dest = lista.find(s => s.featured === true) || lista[0] || null;
+
+        // El resto de los sorteos sin el destacado
+        const otros = lista.filter(s => s.id !== dest?.id);
+
+        setDestacado(dest);
+        setResto(otros);
 
         // --- BANNERS ---
         const resBanners = await fetch(`${API_URL}/banners`);
@@ -71,30 +82,27 @@ export default function Home() {
       )}
 
       {/* Sorteo destacado */}
-      {sorteos[0] && (
+      {destacado && (
         <div className="relative rounded-2xl overflow-hidden shadow-2xl mb-12 bg-[#0e1525]/90 backdrop-blur-md transition hover:scale-[1.01]">
-          
-          {/* Imagen */}
+
           <img
-            src={sorteos[0].imagenUrl}
-            alt={sorteos[0].titulo}
+            src={destacado.imagen || destacado.imagenUrl}
+            alt={destacado.titulo}
             className="w-full h-72 object-cover"
           />
 
-          {/* Degradado */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0e1525] via-[#0e1525]/60 to-transparent" />
 
-          {/* Contenido */}
           <div className="absolute bottom-0 p-5 text-white">
-            <h2 className="text-2xl font-bold drop-shadow-lg">{sorteos[0].titulo}</h2>
-            <p className="opacity-80 text-sm line-clamp-2">{sorteos[0].descripcion}</p>
+            <h2 className="text-2xl font-bold drop-shadow-lg">{destacado.titulo}</h2>
+            <p className="opacity-80 text-sm line-clamp-2">{destacado.descripcion}</p>
 
             <p className="mt-2 font-bold text-blue-400 text-2xl drop-shadow-lg">
-              {formatPrice(sorteos[0].precio)}
+              {formatPrice(destacado.precio)}
             </p>
 
             <Link
-              to={`/sorteo/${sorteos[0].id}`}
+              to={`/sorteo/${destacado.id}`}
               className="inline-block mt-4 bg-blue-600 hover:bg-blue-700 px-5 py-2.5 rounded-lg shadow-md font-semibold transition"
             >
               Ver sorteo
@@ -105,8 +113,7 @@ export default function Home() {
 
       {/* Banners secundarios + miniaturas */}
       <div className="flex flex-col gap-10">
-        {sorteos
-          .slice(1)
+        {resto
           .reduce((rows, item, i) => {
             if (i % 2 === 0) rows.push([item]);
             else rows[rows.length - 1].push(item);
@@ -150,7 +157,7 @@ export default function Home() {
                       className="bg-[#0e1525]/80 backdrop-blur-md rounded-2xl overflow-hidden shadow-xl hover:scale-[1.03] transition-all"
                     >
                       <img
-                        src={sorteo.imagenUrl}
+                        src={sorteo.imagen || sorteo.imagenUrl}
                         alt={sorteo.titulo}
                         className="w-full h-44 object-cover"
                       />
