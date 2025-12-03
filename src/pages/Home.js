@@ -17,8 +17,7 @@ export default function Home() {
         const lista = await res.json();
 
         // 🥇 PRINCIPAL
-        const principal =
-          lista.find((s) => s.sorteoPrincipal === true) || null;
+        const principal = lista.find((s) => s.sorteoPrincipal) || null;
         setSorteoPrincipal(principal);
 
         // ⭐ DESTACADOS NUMERADOS
@@ -29,9 +28,8 @@ export default function Home() {
             numeroDestacado: index + 1,
           }));
 
-        // 👉 Resto
         const otros = lista.filter(
-          (s) => !s.sorteoPrincipal && !s.destacado
+          (s) => !s.destacado && !s.sorteoPrincipal
         );
 
         setResto([...destacados, ...otros]);
@@ -40,15 +38,11 @@ export default function Home() {
         const resBanners = await fetch(`${API_URL}/banners`);
         const banners = await resBanners.json();
 
-        // 🥇 Banner principal = destacado === true
-        const bPrincipal =
-          banners.find((b) => b.destacado === true) || null;
-        setBannerPrincipal(bPrincipal);
+        // principal = destacado = true
+        setBannerPrincipal(banners.find((b) => b.destacado) || null);
 
-        // restantes
-        setBannersSecundarios(
-          banners.filter((b) => b.destacado !== true)
-        );
+        // secundarios
+        setBannersSecundarios(banners.filter((b) => !b.destacado));
       } catch (err) {
         console.error("Error cargando home:", err);
       }
@@ -60,13 +54,9 @@ export default function Home() {
   // 🧩 Crear bloques de 1 banner + 2 sorteos
   const bloques = [];
   for (let i = 0; i < resto.length; i += 2) {
-    const banner = bannersSecundarios[Math.floor(i / 2)];
-    const s1 = resto[i];
-    const s2 = resto[i + 1];
-
     bloques.push({
-      banner,
-      sorteos: [s1, s2].filter(Boolean),
+      banner: bannersSecundarios[Math.floor(i / 2)],
+      sorteos: resto.slice(i, i + 2),
     });
   }
 
@@ -88,9 +78,12 @@ export default function Home() {
 
       {/* SORTEO PRINCIPAL */}
       {sorteoPrincipal && (
-        <div className="relative rounded-2xl overflow-hidden shadow-2xl mb-12 bg-gradient-to-br from-blue-900 via-[#0e1525] to-black">
+        <Link
+          to={`/sorteo/${sorteoPrincipal.id}`}
+          className="block relative rounded-2xl overflow-hidden shadow-2xl mb-12 bg-gradient-to-br from-blue-900 via-[#0e1525] to-black"
+        >
           <img
-            src={sorteoPrincipal.imagenUrl}
+            src={sorteoPrincipal.imagen}
             alt={sorteoPrincipal.titulo}
             className="w-full h-80 object-cover opacity-70"
           />
@@ -104,17 +97,20 @@ export default function Home() {
               {sorteoPrincipal.titulo}
             </h2>
           </div>
-        </div>
+        </Link>
       )}
 
       {/* BLOQUES */}
-      {bloques.map((bloque, i) => (
-        <section key={i} className="mb-14">
+      {bloques.map((bloque, index) => (
+        <section key={index} className="mb-14">
 
-          {/* Banner secundario */}
           {bloque.banner && (
             <div className="mb-6">
-              <a href={bloque.banner.link || "#"} target="_blank" rel="noreferrer">
+              <a
+                href={bloque.banner.link || "#"}
+                target="_blank"
+                rel="noreferrer"
+              >
                 <img
                   src={bloque.banner.url}
                   alt="Banner"
@@ -124,12 +120,11 @@ export default function Home() {
             </div>
           )}
 
-          {/* 2 sorteos */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {bloque.sorteos.map((s) => (
               <Link
-                to={`/sorteo/${s.id}`}
                 key={s.id}
+                to={`/sorteo/${s.id}`}
                 className="relative bg-[#0e1525]/80 rounded-2xl overflow-hidden shadow-xl hover:scale-[1.03] transition"
               >
                 {s.destacado && (
@@ -139,7 +134,7 @@ export default function Home() {
                 )}
 
                 <img
-                  src={s.imagenUrl}
+                  src={s.imagen}
                   alt={s.titulo}
                   className="w-full h-44 object-cover"
                 />

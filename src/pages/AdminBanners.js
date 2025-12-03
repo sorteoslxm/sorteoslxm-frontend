@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 export default function AdminBanners() {
   const [banners, setBanners] = useState([]);
   const [file, setFile] = useState(null);
+  const [link, setLink] = useState(""); // <--- AGREGADO
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,6 +27,7 @@ export default function AdminBanners() {
     const token = localStorage.getItem("adminToken");
     const formData = new FormData();
     formData.append("banner", file);
+    formData.append("link", link);  // <--- guardamos link también
 
     const res = await fetch(`${API_URL}/banners/upload`, {
       method: "POST",
@@ -34,6 +36,7 @@ export default function AdminBanners() {
     });
 
     setFile(null);
+    setLink("");
     fetchBanners();
   };
 
@@ -59,18 +62,42 @@ export default function AdminBanners() {
     fetchBanners();
   };
 
+  const updateLink = async (id, newLink) => {
+    const token = localStorage.getItem("adminToken");
+
+    await fetch(`${API_URL}/banners/${id}/link`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-token": token,
+      },
+      body: JSON.stringify({ link: newLink }),
+    });
+
+    fetchBanners();
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-4">Banners</h1>
 
       {/* SUBIR */}
-      <div className="mb-6">
+      <div className="mb-6 space-y-2">
         <input type="file" onChange={e => setFile(e.target.files[0])} />
+
+        <input
+          type="text"
+          placeholder="Link (opcional)"
+          value={link}
+          onChange={(e) => setLink(e.target.value)}
+          className="border p-2 rounded w-full"
+        />
+
         <button
           onClick={uploadBanner}
-          className="bg-blue-600 text-white px-4 py-2 rounded ml-2"
+          className="bg-blue-600 text-white px-4 py-2 rounded"
         >
-          Subir
+          Subir banner
         </button>
       </div>
 
@@ -81,10 +108,19 @@ export default function AdminBanners() {
 
             <img src={b.url} className="w-full h-32 object-cover rounded" alt="banner" />
 
+            {/* EDITAR LINK */}
+            <input
+              type="text"
+              className="border p-2 rounded w-full mt-3"
+              value={b.link || ""}
+              placeholder="Agregar/editar link"
+              onChange={(e) => updateLink(b.id, e.target.value)}
+            />
+
             {/* PRINCIPAL */}
             <button
               onClick={() => togglePrincipal(b.id)}
-              className={`px-3 py-1 rounded mt-2 w-full text-white ${
+              className={`px-3 py-1 rounded mt-3 w-full text-white ${
                 b.bannerPrincipal ? "bg-red-600" : "bg-blue-600"
               }`}
             >
