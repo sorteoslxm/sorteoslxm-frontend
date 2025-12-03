@@ -1,5 +1,3 @@
-// FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/AdminSorteos.js
-
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API_URL from "../config/api";
@@ -25,12 +23,20 @@ export default function AdminSorteos() {
   };
 
   const toggleDestacado = async (sorteo) => {
-    const nuevoEstado = !sorteo.destacado;
-
     await fetch(`${API_URL}/sorteos/${sorteo.id}`, {
-      method: "PUT",
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ destacado: nuevoEstado }),
+      body: JSON.stringify({ destacado: !sorteo.destacado }),
+    });
+
+    fetchSorteos();
+  };
+
+  const togglePrincipal = async (sorteo) => {
+    await fetch(`${API_URL}/sorteos/${sorteo.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sorteoPrincipal: !sorteo.sorteoPrincipal }),
     });
 
     fetchSorteos();
@@ -51,8 +57,15 @@ export default function AdminSorteos() {
         {sorteos.map((s) => (
           <div key={s.id} className="bg-white p-4 rounded shadow relative">
 
-            {/* ⭐ Badge si está destacado */}
-            {s.destacado && (
+            {/* 🥇 Badge de sorteo principal */}
+            {s.sorteoPrincipal && (
+              <span className="absolute top-2 right-2 bg-red-500 text-white text-sm px-2 py-1 rounded">
+                🥇 Sorteo Principal
+              </span>
+            )}
+
+            {/* ⭐ Badge de destacado */}
+            {!s.sorteoPrincipal && s.destacado && (
               <span className="absolute top-2 right-2 bg-yellow-400 text-black text-sm px-2 py-1 rounded">
                 ⭐ Destacado
               </span>
@@ -72,6 +85,7 @@ export default function AdminSorteos() {
 
             <div className="flex flex-wrap gap-2 mt-4">
 
+              {/* EDITAR */}
               <Link
                 to={`/admin/sorteos/editar/${s.id}`}
                 className="bg-yellow-500 text-white px-3 py-1 rounded"
@@ -79,6 +93,7 @@ export default function AdminSorteos() {
                 ✏️ Editar
               </Link>
 
+              {/* BORRAR */}
               <button
                 onClick={() => eliminar(s.id)}
                 className="bg-red-500 text-white px-3 py-1 rounded"
@@ -86,15 +101,26 @@ export default function AdminSorteos() {
                 ❌ Borrar
               </button>
 
+              {/* ⭐ DESTACADO */}
               <button
                 onClick={() => toggleDestacado(s)}
                 className={`px-3 py-1 rounded text-white ${
                   s.destacado ? "bg-gray-600" : "bg-green-600"
                 }`}
+                disabled={s.sorteoPrincipal}
               >
                 {s.destacado ? "⛔ Quitar destacado" : "⭐ Destacar"}
               </button>
 
+              {/* 🥇 PRINCIPAL */}
+              <button
+                onClick={() => togglePrincipal(s)}
+                className={`px-3 py-1 rounded text-white ${
+                  s.sorteoPrincipal ? "bg-red-600" : "bg-blue-600"
+                }`}
+              >
+                {s.sorteoPrincipal ? "❌ Quitar principal" : "🥇 Hacer principal"}
+              </button>
             </div>
           </div>
         ))}

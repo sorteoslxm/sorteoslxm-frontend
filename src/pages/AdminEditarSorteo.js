@@ -15,6 +15,7 @@ export default function AdminEditarSorteo() {
     imagenUrl: "",
     mpCuenta: "",
     destacado: false,
+    sorteoPrincipal: false,
   });
 
   const [loading, setLoading] = useState(true);
@@ -33,6 +34,7 @@ export default function AdminEditarSorteo() {
           imagenUrl: data.imagenUrl || "",
           mpCuenta: data.mpCuenta || "",
           destacado: data.destacado || false,
+          sorteoPrincipal: data.sorteoPrincipal || false,
         });
       } catch (err) {
         console.error("Error cargando sorteo:", err);
@@ -68,7 +70,6 @@ export default function AdminEditarSorteo() {
       <h1 className="text-3xl font-bold mb-4">✏️ Editar Sorteo</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-
         <input
           name="titulo"
           value={form.titulo}
@@ -119,7 +120,7 @@ export default function AdminEditarSorteo() {
           placeholder="Cuenta MercadoPago"
         />
 
-        {/* ⭐ Campo destacado */}
+        {/* ⭐ Destacado */}
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -128,7 +129,19 @@ export default function AdminEditarSorteo() {
               setForm({ ...form, destacado: e.target.checked })
             }
           />
-          <span>⭐ Destacar sorteo</span>
+          <span>⭐ Mostrar como destacado</span>
+        </label>
+
+        {/* 🔥 Sorteo Principal */}
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={form.sorteoPrincipal}
+            onChange={(e) =>
+              setForm({ ...form, sorteoPrincipal: e.target.checked })
+            }
+          />
+          <span>🔥 Marcar como SORTEO PRINCIPAL (solo 1)</span>
         </label>
 
         <button className="bg-green-600 text-white py-2 rounded w-full">
