@@ -1,5 +1,4 @@
 // FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/AdminEditarSorteo.js
-
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import API_URL from "../config/api";
@@ -16,6 +15,7 @@ export default function AdminEditarSorteo() {
     mpCuenta: "",
     destacado: false,
     sorteoPrincipal: false,
+    ordenDestacado: 0, // nuevo campo
   });
 
   const [loading, setLoading] = useState(true);
@@ -35,6 +35,7 @@ export default function AdminEditarSorteo() {
           mpCuenta: data.mpCuenta || "",
           destacado: data.destacado || false,
           sorteoPrincipal: data.sorteoPrincipal || false,
+          ordenDestacado: data.ordenDestacado || 0,
         });
       } catch (err) {
         console.error("Error cargando sorteo:", err);
@@ -56,9 +57,7 @@ export default function AdminEditarSorteo() {
 
     await fetch(`${API_URL}/sorteos/${id}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
 
@@ -131,6 +130,17 @@ export default function AdminEditarSorteo() {
           />
           <span>⭐ Mostrar como destacado</span>
         </label>
+
+        {form.destacado && (
+          <input
+            name="ordenDestacado"
+            type="number"
+            value={form.ordenDestacado}
+            onChange={handleChange}
+            className="border p-2 rounded w-full"
+            placeholder="Número de orden del destacado"
+          />
+        )}
 
         {/* 🔥 Sorteo Principal */}
         <label className="flex items-center gap-2">
