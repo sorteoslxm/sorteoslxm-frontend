@@ -12,35 +12,30 @@ export default function Home() {
   useEffect(() => {
     const load = async () => {
       try {
-        // ==============================
-        //   🔵 OBTENER LISTA DE SORTEOS
-        // ==============================
+        // 🔵 LISTA DE SORTEOS
         const res = await fetch(`${API_URL}/sorteos`);
         const lista = await res.json();
 
-        // 🥇 SORTEO PRINCIPAL
+        // 🥇 PRINCIPAL
         const principal = lista.find(s => s.sorteoPrincipal === true) || null;
         setSorteoPrincipal(principal);
 
-        // ⭐ DESTACADOS (numerados)
+        // ⭐ DESTACADOS NUMERADOS
         const destacados = lista
-          .filter(s => s.destacado === true && !s.sorteoPrincipal)
+          .filter(s => s.destacado && !s.sorteoPrincipal)
           .map((s, index) => ({
             ...s,
             numeroDestacado: index + 1
           }));
 
-        // OTROS SORTEOS (no destacados)
+        // 👉 RESTO
         const otros = lista.filter(
           s => !s.sorteoPrincipal && !s.destacado
         );
 
-        // ORDEN FINAL DEL RESTO
         setResto([...destacados, ...otros]);
 
-        // ==============================
-        //   🖼️ BANNERS
-        // ==============================
+        // 🔵 BANNERS
         const resBanners = await fetch(`${API_URL}/banners`);
         const banners = await resBanners.json();
         const validos = banners.filter(b => b?.url);
@@ -61,9 +56,7 @@ export default function Home() {
     load();
   }, []);
 
-  // ================================================
-  // 🧩 ARMAR BLOQUES: 1 banner + 2 sorteos
-  // ================================================
+  // 🧩 ARMAR BLOQUES 1 banner + 2 sorteos
   const bloques = [];
   for (let i = 0; i < resto.length; i += 2) {
     const banner = bannersSecundarios[Math.floor(i / 2)];
@@ -79,12 +72,84 @@ export default function Home() {
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-6">
 
-      {/* ---------------------------
-          🖼️ BANNER PRINCIPAL
-      ---------------------------- */}
+      {/* BANNER PRINCIPAL */}
       {bannerPrincipal && (
         <div className="mb-10">
           <img
             src={bannerPrincipal.url}
             alt="Banner principal"
             className="w-full max-h-72 object-contain rounded-2xl shadow-xl"
+          />
+        </div>
+      )}
+
+      {/* SORTEO PRINCIPAL */}
+      {sorteoPrincipal && (
+        <div className="relative rounded-2xl overflow-hidden shadow-2xl mb-12 bg-gradient-to-br from-blue-900 via-[#0e1525] to-black">
+          <img
+            src={sorteoPrincipal.imagen}
+            alt={sorteoPrincipal.titulo}
+            className="w-full h-80 object-cover opacity-70"
+          />
+
+          <div className="absolute inset-0 flex flex-col justify-end p-6 text-white bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+            <span className="text-sm bg-red-600 px-3 py-1 rounded-full w-fit mb-3 shadow-lg">
+              🥇 SORTEO PRINCIPAL
+            </span>
+
+            <h2 className="text-3xl font-extrabold drop-shadow-xl">
+              {sorteoPrincipal.titulo}
+            </h2>
+          </div>
+        </div>
+      )}
+
+      {/* BLOQUES */}
+      {bloques.map((bloque, i) => (
+        <section key={i} className="mb-14">
+
+          {/* Banner secundario */}
+          {bloque.banner && (
+            <div className="mb-6">
+              <img
+                src={bloque.banner.url}
+                alt="Banner"
+                className="w-full rounded-2xl shadow-xl object-contain max-h-48"
+              />
+            </div>
+          )}
+
+          {/* 2 sorteos */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {bloque.sorteos.map((s) => (
+              <Link
+                to={`/sorteo/${s.id}`}
+                key={s.id}
+                className="bg-[#0e1525]/80 rounded-2xl overflow-hidden shadow-xl hover:scale-[1.03] transition"
+              >
+                {s.destacado && (
+                  <span className="absolute bg-yellow-500 text-black px-3 py-1 rounded-br-xl font-bold text-sm">
+                    ⭐ DESTACADO #{s.numeroDestacado}
+                  </span>
+                )}
+
+                <img
+                  src={s.imagen}
+                  alt={s.titulo}
+                  className="w-full h-44 object-cover"
+                />
+
+                <div className="p-4 text-white">
+                  <h4 className="font-bold text-lg">{s.titulo}</h4>
+                </div>
+              </Link>
+            ))}
+
+          </div>
+        </section>
+      ))}
+
+    </div>
+  );
+}
