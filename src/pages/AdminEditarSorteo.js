@@ -1,4 +1,4 @@
-// FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/AdminEditarSorteo.js
+// FILE: web/sorteos-lxm/src/pages/AdminEditarSorteo.js
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import API_URL from "../config/api";
@@ -17,6 +17,7 @@ export default function AdminEditarSorteo() {
     sorteoPrincipal: false,
     mostrarCuentaRegresiva: false,
     textoCuentaRegresiva: "",
+    activarAutoUltimas: 0,
   });
 
   const [loading, setLoading] = useState(true);
@@ -33,11 +34,12 @@ export default function AdminEditarSorteo() {
           precio: data.precio,
           numerosTotales: data.numerosTotales,
           imagenUrl: data.imagenUrl,
-          mpCuenta: data.mpCuenta,
-          destacado: data.destacado,
-          sorteoPrincipal: data.sorteoPrincipal,
+          mpCuenta: data.mpCuenta || "",
+          destacado: data.destacado || false,
+          sorteoPrincipal: data.sorteoPrincipal || false,
           mostrarCuentaRegresiva: data.mostrarCuentaRegresiva || false,
           textoCuentaRegresiva: data.textoCuentaRegresiva || "",
+          activarAutoUltimas: data.activarAutoUltimas || 0,
         });
 
       } catch (err) {
@@ -50,8 +52,6 @@ export default function AdminEditarSorteo() {
     cargar();
   }, [id]);
 
-  if (loading) return <p>Cargando...</p>;
-
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -61,11 +61,16 @@ export default function AdminEditarSorteo() {
     await fetch(`${API_URL}/sorteos/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({
+        ...form,
+        activarAutoUltimas: Number(form.activarAutoUltimas),
+      }),
     });
 
     alert("Cambios guardados correctamente");
   };
+
+  if (loading) return <p>Cargando...</p>;
 
   return (
     <div className="p-6 max-w-xl mx-auto">
@@ -83,7 +88,7 @@ export default function AdminEditarSorteo() {
 
         <input name="imagenUrl" value={form.imagenUrl} onChange={handleChange} className="border p-2 w-full rounded" placeholder="URL imagen" />
 
-        {/* CUENTA MERCADOPAGO */}
+        {/* CUENTA MP */}
         <select
           name="mpCuenta"
           value={form.mpCuenta}
@@ -91,23 +96,23 @@ export default function AdminEditarSorteo() {
           className="border p-2 rounded w-full"
         >
           <option value="">Seleccionar Cuenta MP</option>
-          <option value="MERCADOPAGO_ACCESS_TOKEN_1">Cuenta MP #1</option>
-          <option value="MERCADOPAGO_ACCESS_TOKEN_2">Cuenta MP #2</option>
+          <option value="MERCADOPAGO_ACCESS_TOKEN_1">Cuenta #1</option>
+          <option value="MERCADOPAGO_ACCESS_TOKEN_2">Cuenta #2</option>
         </select>
 
-        {/* ⭐ destacado */}
+        {/* Destacado */}
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={form.destacado} onChange={(e) => setForm({ ...form, destacado: e.target.checked })} />
           <span>⭐ Mostrar como destacado</span>
         </label>
 
-        {/* 🔥 principal */}
+        {/* Principal */}
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={form.sorteoPrincipal} onChange={(e) => setForm({ ...form, sorteoPrincipal: e.target.checked })} />
           <span>🔥 Marcar como principal</span>
         </label>
 
-        {/* COUNTDOWN */}
+        {/* Contador manual */}
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -116,7 +121,7 @@ export default function AdminEditarSorteo() {
               setForm({ ...form, mostrarCuentaRegresiva: e.target.checked })
             }
           />
-          <span>⏳ Activar contador regresivo</span>
+          <span>⏳ Activar contador manual</span>
         </label>
 
         {form.mostrarCuentaRegresiva && (
@@ -128,6 +133,19 @@ export default function AdminEditarSorteo() {
             placeholder="Ej: Últimas 50 chances!"
           />
         )}
+
+        {/* Automático */}
+        <div>
+          <label className="font-bold">⏳ Activar automático cuando queden:</label>
+          <input
+            name="activarAutoUltimas"
+            type="number"
+            value={form.activarAutoUltimas}
+            onChange={handleChange}
+            className="border p-2 rounded w-full mt-1"
+            placeholder="Ej: 50"
+          />
+        </div>
 
         <button className="bg-green-600 py-2 text-white rounded w-full">
           Guardar cambios

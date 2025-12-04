@@ -1,10 +1,12 @@
 // FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/SorteoDetalle.js
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import API_URL from "../config/api";
 
 export default function SorteoDetalle() {
   const { id } = useParams();
+  const navigate = useNavigate();
+
   const [sorteo, setSorteo] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [telefono, setTelefono] = useState("");
@@ -23,14 +25,20 @@ export default function SorteoDetalle() {
 
   const enviarTelefono = () => {
     if (!telefono.trim()) return alert("Ingresá tu WhatsApp!");
-    console.log("Tel enviado:", telefono);
+
+    // Guardamos el número para usarlo en el pago
+    localStorage.setItem("telefonoComprador", telefono);
+
     cerrarModal();
+
+    // Ir al checkout del sorteo
+    navigate(`/pago/${id}`);
   };
 
   return (
     <div className="max-w-3xl mx-auto p-4">
 
-      {/* 🟥 Imagen principal */}
+      {/* Imagen principal */}
       <div className="w-full bg-black rounded-xl mb-4 flex items-center justify-center">
         <img
           src={sorteo.imagenUrl}
@@ -39,10 +47,10 @@ export default function SorteoDetalle() {
         />
       </div>
 
-      {/* 🟦 Título */}
+      {/* Título */}
       <h1 className="text-3xl font-bold mb-2">{sorteo.titulo}</h1>
 
-      {/* 🔥 Contador */}
+      {/* Contador */}
       {sorteo.mostrarCuentaRegresiva && (
         <div className="mb-3">
           <div className="inline-block bg-red-600 text-white font-bold px-4 py-2 rounded">
@@ -51,17 +59,17 @@ export default function SorteoDetalle() {
         </div>
       )}
 
-      {/* 💰 Precio */}
+      {/* Precio */}
       <p className="text-2xl font-bold text-green-600 mb-4">
         💰 Precio por chance: ${sorteo.precio}
       </p>
 
-      {/* 📝 Descripción */}
+      {/* Descripción */}
       <p className="text-lg mb-4 whitespace-pre-line text-gray-800">
         {sorteo.descripcion}
       </p>
 
-      {/* 📸 Galería */}
+      {/* Galería */}
       {sorteo.galeria?.length > 0 && (
         <div className="mt-4">
           <h2 className="text-xl font-bold mb-2">Galería</h2>
@@ -78,7 +86,7 @@ export default function SorteoDetalle() {
         </div>
       )}
 
-      {/* 🟦 BOTÓN FIJO ABAJO */}
+      {/* BOTÓN ABAJO */}
       <div className="fixed bottom-0 left-0 w-full p-4 bg-white shadow-2xl">
         <button
           className="w-full bg-blue-600 text-white py-3 rounded-xl text-xl font-bold"
@@ -88,14 +96,14 @@ export default function SorteoDetalle() {
         </button>
       </div>
 
-      {/* 🟣 MODAL INGRESO WHATSAPP */}
+      {/* MODAL WHATSAPP */}
       {mostrarModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md p-6 rounded-xl shadow-xl text-center">
 
             <h2 className="text-2xl font-bold mb-2">📱 Antes de continuar…</h2>
             <p className="text-gray-700 mb-4">
-              Pedimos tu WhatsApp para poder contactarte si ganás el sorteo.
+              Ingresá tu WhatsApp para contactarte si ganás.
             </p>
 
             <input

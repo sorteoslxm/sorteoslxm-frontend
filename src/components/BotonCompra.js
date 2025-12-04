@@ -4,21 +4,20 @@ import API_URL from "../config/api";
 
 export default function BotonCompra({ sorteo }) {
   const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [telefono, setTelefono] = useState("");
 
-  const promptTelefono = () => {
-    // Podés reemplazar este prompt por un modal más lindo si querés.
-    const t = window.prompt("Dejanos tu WhatsApp (ej. 54911xxxxxxx) para contactarte si ganás:");
-    return t ? t.trim() : "";
+  const abrirModal = () => {
+    setShowModal(true);
   };
 
-  const handleCompra = async () => {
+  const enviarCompra = async () => {
+    if (!telefono.trim()) {
+      alert("Por favor ingresá tu teléfono.");
+      return;
+    }
+
     try {
-      if (!sorteo.activo) return alert("Sorteo no está disponible.");
-
-      // Si admin configuró mostrar contador y se usa, dejamos comprar
-      const telefono = promptTelefono();
-      if (!telefono) return alert("Necesitamos un teléfono para completar la compra.");
-
       setLoading(true);
 
       const res = await fetch(`${API_URL}/mercadopago/crear-preferencia`, {
@@ -27,44 +26,76 @@ export default function BotonCompra({ sorteo }) {
         body: JSON.stringify({
           titulo: sorteo.titulo,
           precio: sorteo.precio,
-          mpCuenta: sorteo.mpCuenta,
+          telefono: telefono,            // 🔥 ahora enviamos teléfono
           sorteoId: sorteo.id,
-          telefono,
+          mpCuenta: sorteo.mpCuenta,     // 🔥 cuenta seleccionada en admin
         }),
       });
 
       const data = await res.json();
 
-      if (!res.ok) {
-        alert(data.error || "No se pudo crear la preferencia.");
-        setLoading(false);
-        return;
-      }
-
       if (data.init_point) {
         window.location.href = data.init_point;
-      } else if (data.id) {
-        window.location.href = `https://www.mercadopago.com.ar/checkout/v1/redirect?preference-id=${data.id}`;
       } else {
-        alert("Respuesta inválida del servidor.");
+        alert("No se pudo iniciar el pago.");
       }
+
     } catch (err) {
-      console.error("Error al crear preferencia:", err);
-      alert("Error al iniciar pago.");
+      console.error("Error:", err);
+      alert("Hubo un problema al conectar con MercadoPago.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!sorteo.activo) return <p className="text-red-500">Sorteo no disponible</p>;
-
   return (
-    <button
-      onClick={handleCompra}
-      disabled={loading}
-      className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-2 px-4 rounded"
-    >
-      {loading ? "Procesando..." : `Comprar - $${sorteo.precio}`}
-    </button>
+    <>
+      {/* BOTÓN PRINCIPAL */}
+      <button
+        onClick={abrirModal}
+        disabled={loading}
+        className="bg-blue-600 hover:bg-blue-500 text-white w-full py-3 rounded-xl text-xl font-bold"
+      >
+        {loading ? "Procesando..." : `Participar por $${sorteo.precio}`}
+      </button>
+
+      {/* MODAL */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl max-w-sm w-full shadow-xl">
+
+            <h2 className="text-2xl font-bold mb-4 text-center">
+              📱 Tu Whatsapp
+            </h2>
+
+            <p className="text-gray-700 mb-3 text-center">
+              Pedimos tu número para poder contactarte si ganás el sorteo.
+            </p>
+
+            <input
+              type="text"
+              value={telefono}
+              onChange={(e) => setTelefono(e.target.value)}
+              placeholder="Ej: 1122334455"
+              className="border p-2 rounded w-full mb-4"
+            />
+
+            <button
+              onClick={enviarCompra}
+              className="bg-green-600 text-white w-full py-2 rounded font-bold"
+            >
+              Continuar al pago
+            </button>
+
+            <button
+              onClick={() => setShowModal(false)}
+              className="mt-3 text-center w-full text-gray-600"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

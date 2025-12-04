@@ -1,5 +1,4 @@
 // FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/AdminDashboard.js
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API_URL from "../config/api";
@@ -22,7 +21,7 @@ export default function AdminDashboard() {
 
       const res = await fetch(`${API_URL}/sorteos`, {
         headers: {
-          "x-admin-token": token   // 💥 CORREGIDO
+          "x-admin-token": token
         },
       });
 
@@ -68,6 +67,13 @@ export default function AdminDashboard() {
           className="bg-purple-600 text-white px-4 py-2 rounded"
         >
           🎨 Gestionar banners
+        </Link>
+
+        <Link
+          to="/admin/compras"
+          className="bg-gray-600 text-white px-4 py-2 rounded"
+        >
+          🧾 Ver Compras
         </Link>
       </div>
 
