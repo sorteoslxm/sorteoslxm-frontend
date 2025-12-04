@@ -5,24 +5,38 @@ import API_URL from "../config/api";
 export default function BotonCompra({ sorteo }) {
   const [loading, setLoading] = useState(false);
 
+  const promptTelefono = () => {
+    // Podés reemplazar este prompt por un modal más lindo si querés.
+    const t = window.prompt("Dejanos tu WhatsApp (ej. 54911xxxxxxx) para contactarte si ganás:");
+    return t ? t.trim() : "";
+  };
+
   const handleCompra = async () => {
     try {
+      if (!sorteo.activo) return alert("Sorteo no está disponible.");
+
+      // Si admin configuró mostrar contador y se usa, dejamos comprar
+      const telefono = promptTelefono();
+      if (!telefono) return alert("Necesitamos un teléfono para completar la compra.");
+
       setLoading(true);
+
       const res = await fetch(`${API_URL}/mercadopago/crear-preferencia`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           titulo: sorteo.titulo,
           precio: sorteo.precio,
-          mpCuenta: sorteo.mpCuenta, // ⚡ Importante: enviamos la cuenta
+          mpCuenta: sorteo.mpCuenta,
+          sorteoId: sorteo.id,
+          telefono,
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        console.error("Error backend:", data);
-        alert("No se pudo crear la preferencia de pago.");
+        alert(data.error || "No se pudo crear la preferencia.");
         setLoading(false);
         return;
       }
@@ -32,7 +46,7 @@ export default function BotonCompra({ sorteo }) {
       } else if (data.id) {
         window.location.href = `https://www.mercadopago.com.ar/checkout/v1/redirect?preference-id=${data.id}`;
       } else {
-        alert("Respuesta inválida al crear preferencia.");
+        alert("Respuesta inválida del servidor.");
       }
     } catch (err) {
       console.error("Error al crear preferencia:", err);
@@ -42,15 +56,15 @@ export default function BotonCompra({ sorteo }) {
     }
   };
 
+  if (!sorteo.activo) return <p className="text-red-500">Sorteo no disponible</p>;
+
   return (
-    <div>
-      <button
-        onClick={handleCompra}
-        disabled={loading}
-        className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-2 px-4 rounded"
-      >
-        {loading ? "Procesando..." : `Comprar - $${sorteo.precio}`}
-      </button>
-    </div>
+    <button
+      onClick={handleCompra}
+      disabled={loading}
+      className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-2 px-4 rounded"
+    >
+      {loading ? "Procesando..." : `Comprar - $${sorteo.precio}`}
+    </button>
   );
 }

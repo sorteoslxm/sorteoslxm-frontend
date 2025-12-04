@@ -15,7 +15,8 @@ export default function AdminEditarSorteo() {
     mpCuenta: "",
     destacado: false,
     sorteoPrincipal: false,
-    ordenDestacado: 0, // nuevo campo
+    mostrarCuentaRegresiva: false,
+    textoCuentaRegresiva: "",
   });
 
   const [loading, setLoading] = useState(true);
@@ -27,16 +28,18 @@ export default function AdminEditarSorteo() {
         const data = await res.json();
 
         setForm({
-          titulo: data.titulo || "",
-          descripcion: data.descripcion || "",
-          precio: data.precio || "",
-          numerosTotales: data.numerosTotales || "",
-          imagenUrl: data.imagenUrl || "",
-          mpCuenta: data.mpCuenta || "",
-          destacado: data.destacado || false,
-          sorteoPrincipal: data.sorteoPrincipal || false,
-          ordenDestacado: data.ordenDestacado || 0,
+          titulo: data.titulo,
+          descripcion: data.descripcion,
+          precio: data.precio,
+          numerosTotales: data.numerosTotales,
+          imagenUrl: data.imagenUrl,
+          mpCuenta: data.mpCuenta,
+          destacado: data.destacado,
+          sorteoPrincipal: data.sorteoPrincipal,
+          mostrarCuentaRegresiva: data.mostrarCuentaRegresiva || false,
+          textoCuentaRegresiva: data.textoCuentaRegresiva || "",
         });
+
       } catch (err) {
         console.error("Error cargando sorteo:", err);
       }
@@ -61,7 +64,7 @@ export default function AdminEditarSorteo() {
       body: JSON.stringify(form),
     });
 
-    alert("Cambios guardados");
+    alert("Cambios guardados correctamente");
   };
 
   return (
@@ -69,92 +72,64 @@ export default function AdminEditarSorteo() {
       <h1 className="text-3xl font-bold mb-4">✏️ Editar Sorteo</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          name="titulo"
-          value={form.titulo}
-          onChange={handleChange}
-          className="border p-2 rounded w-full"
-          placeholder="Título"
-        />
 
-        <textarea
-          name="descripcion"
-          value={form.descripcion}
-          onChange={handleChange}
-          className="border p-2 rounded w-full"
-          placeholder="Descripción"
-        />
+        <input name="titulo" value={form.titulo} onChange={handleChange} className="border p-2 w-full rounded" placeholder="Título" />
 
-        <input
-          name="precio"
-          type="number"
-          value={form.precio}
-          onChange={handleChange}
-          className="border p-2 rounded w-full"
-          placeholder="Precio"
-        />
+        <textarea name="descripcion" value={form.descripcion} onChange={handleChange} className="border p-2 w-full rounded" placeholder="Descripción" />
 
-        <input
-          name="numerosTotales"
-          type="number"
-          value={form.numerosTotales}
-          onChange={handleChange}
-          className="border p-2 rounded w-full"
-          placeholder="Números totales"
-        />
+        <input name="precio" type="number" value={form.precio} onChange={handleChange} className="border p-2 w-full rounded" placeholder="Precio" />
 
-        <input
-          name="imagenUrl"
-          value={form.imagenUrl}
-          onChange={handleChange}
-          className="border p-2 rounded w-full"
-          placeholder="URL imagen"
-        />
+        <input name="numerosTotales" type="number" value={form.numerosTotales} onChange={handleChange} className="border p-2 w-full rounded" placeholder="Números totales" />
 
-        <input
+        <input name="imagenUrl" value={form.imagenUrl} onChange={handleChange} className="border p-2 w-full rounded" placeholder="URL imagen" />
+
+        {/* CUENTA MERCADOPAGO */}
+        <select
           name="mpCuenta"
           value={form.mpCuenta}
           onChange={handleChange}
           className="border p-2 rounded w-full"
-          placeholder="Cuenta MercadoPago"
-        />
+        >
+          <option value="">Seleccionar Cuenta MP</option>
+          <option value="MERCADOPAGO_ACCESS_TOKEN_1">Cuenta MP #1</option>
+          <option value="MERCADOPAGO_ACCESS_TOKEN_2">Cuenta MP #2</option>
+        </select>
 
-        {/* ⭐ Destacado */}
+        {/* ⭐ destacado */}
         <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={form.destacado}
-            onChange={(e) =>
-              setForm({ ...form, destacado: e.target.checked })
-            }
-          />
+          <input type="checkbox" checked={form.destacado} onChange={(e) => setForm({ ...form, destacado: e.target.checked })} />
           <span>⭐ Mostrar como destacado</span>
         </label>
 
-        {form.destacado && (
-          <input
-            name="ordenDestacado"
-            type="number"
-            value={form.ordenDestacado}
-            onChange={handleChange}
-            className="border p-2 rounded w-full"
-            placeholder="Número de orden del destacado"
-          />
-        )}
+        {/* 🔥 principal */}
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={form.sorteoPrincipal} onChange={(e) => setForm({ ...form, sorteoPrincipal: e.target.checked })} />
+          <span>🔥 Marcar como principal</span>
+        </label>
 
-        {/* 🔥 Sorteo Principal */}
+        {/* COUNTDOWN */}
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
-            checked={form.sorteoPrincipal}
+            checked={form.mostrarCuentaRegresiva}
             onChange={(e) =>
-              setForm({ ...form, sorteoPrincipal: e.target.checked })
+              setForm({ ...form, mostrarCuentaRegresiva: e.target.checked })
             }
           />
-          <span>🔥 Marcar como SORTEO PRINCIPAL (solo 1)</span>
+          <span>⏳ Activar contador regresivo</span>
         </label>
 
-        <button className="bg-green-600 text-white py-2 rounded w-full">
+        {form.mostrarCuentaRegresiva && (
+          <input
+            name="textoCuentaRegresiva"
+            value={form.textoCuentaRegresiva}
+            onChange={handleChange}
+            className="border p-2 rounded w-full"
+            placeholder="Ej: Últimas 50 chances!"
+          />
+        )}
+
+        <button className="bg-green-600 py-2 text-white rounded w-full">
           Guardar cambios
         </button>
       </form>
