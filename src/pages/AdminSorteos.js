@@ -1,124 +1,153 @@
-// FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/AdminSorteos.js
+// FILE: web/sorteos-lxm/src/pages/AdminSorteos.js
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import API_URL from "../config/api";
+import axios from "axios";
 
 export default function AdminSorteos() {
   const [sorteos, setSorteos] = useState([]);
-
-  const fetchSorteos = async () => {
-    const res = await fetch(`${API_URL}/sorteos`);
-    const data = await res.json();
-    setSorteos(data);
-  };
+  const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    fetchSorteos();
+    axios.get("/api/sorteos").then((res) => setSorteos(res.data));
   }, []);
 
-  const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar este sorteo?")) return;
-
-    await fetch(`${API_URL}/sorteos/${id}`, { method: "DELETE" });
-    fetchSorteos();
+  const seleccionar = (s) => {
+    setSelected({
+      ...s,
+      activarAutoUltimas: s.activarAutoUltimas || 0,
+      textoCuentaRegresiva: s.textoCuentaRegresiva || "",
+    });
   };
 
-  const toggleDestacado = async (sorteo) => {
-    await fetch(`${API_URL}/sorteos/${sorteo.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ destacado: !sorteo.destacado }),
+  const guardarCambios = async () => {
+    if (!selected) return;
+
+    await axios.put(`/api/sorteos/${selected.id}`, {
+      ...selected,
+      activarAutoUltimas: Number(selected.activarAutoUltimas),
     });
 
-    fetchSorteos();
-  };
-
-  const togglePrincipal = async (sorteo) => {
-    await fetch(`${API_URL}/sorteos/${sorteo.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sorteoPrincipal: !sorteo.sorteoPrincipal }),
-    });
-
-    fetchSorteos();
+    alert("Guardado correctamente ✔️");
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">🎁 Gestión de Sorteos</h1>
+    <div style={{ padding: 20 }}>
+      <h2>Administrar Sorteos</h2>
 
-      <Link
-        to="/admin/sorteos/nuevo"
-        className="bg-blue-600 text-white px-4 py-2 rounded"
-      >
-        ➕ Nuevo sorteo
-      </Link>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+      {/* LISTA DE SORTEOS */}
+      <div style={{ marginBottom: 20 }}>
         {sorteos.map((s) => (
-          <div key={s.id} className="bg-white p-4 rounded shadow relative">
-
-            {/* 🥇 Badge de sorteo principal */}
-            {s.sorteoPrincipal && (
-              <span className="absolute top-2 right-2 bg-red-500 text-white text-sm px-2 py-1 rounded">
-                🥇 Sorteo Principal
-              </span>
-            )}
-
-            {/* ⭐ Badge de destacado */}
-            {!s.sorteoPrincipal && s.destacado && (
-              <span className="absolute top-2 right-2 bg-yellow-400 text-black text-sm px-2 py-1 rounded">
-                ⭐ Destacado ({s.ordenDestacado})
-              </span>
-            )}
-
-            <img
-              src={s.imagenUrl}
-              className="w-full h-40 object-cover rounded"
-              alt=""
-            />
-
-            <h2 className="text-xl font-bold mt-2">{s.titulo}</h2>
-
-            <p className="text-gray-700">{s.descripcion?.substring(0, 80)}...</p>
-
-            <div className="flex flex-wrap gap-2 mt-4">
-              <Link
-                to={`/admin/sorteos/editar/${s.id}`}
-                className="bg-yellow-500 text-white px-3 py-1 rounded"
-              >
-                ✏️ Editar
-              </Link>
-
-              <button
-                onClick={() => eliminar(s.id)}
-                className="bg-red-500 text-white px-3 py-1 rounded"
-              >
-                ❌ Borrar
-              </button>
-
-              <button
-                onClick={() => toggleDestacado(s)}
-                className={`px-3 py-1 rounded text-white ${
-                  s.destacado ? "bg-gray-600" : "bg-green-600"
-                }`}
-                disabled={s.sorteoPrincipal}
-              >
-                {s.destacado ? "⛔ Quitar destacado" : "⭐ Destacar"}
-              </button>
-
-              <button
-                onClick={() => togglePrincipal(s)}
-                className={`px-3 py-1 rounded text-white ${
-                  s.sorteoPrincipal ? "bg-red-600" : "bg-blue-600"
-                }`}
-              >
-                {s.sorteoPrincipal ? "❌ Quitar principal" : "🥇 Hacer principal"}
-              </button>
-            </div>
+          <div
+            key={s.id}
+            style={{
+              padding: 10,
+              borderBottom: "1px solid #ccc",
+              cursor: "pointer",
+              background: selected?.id === s.id ? "#eef" : "transparent",
+            }}
+            onClick={() => seleccionar(s)}
+          >
+            <b>{s.titulo}</b>
           </div>
         ))}
       </div>
+
+      {/* PANEL DE EDICIÓN */}
+      {selected && (
+        <div
+          style={{
+            padding: 20,
+            border: "1px solid #ccc",
+            borderRadius: 8,
+            background: "#fafafa",
+          }}
+        >
+          <h3>Editar: {selected.titulo}</h3>
+
+          {/* CONTADOR REGRESIVO MANUAL */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ fontWeight: "bold" }}>Mostrar contador manual:</label>
+            <br />
+
+            <input
+              type="checkbox"
+              checked={selected.mostrarCuentaRegresiva}
+              onChange={(e) =>
+                setSelected({
+                  ...selected,
+                  mostrarCuentaRegresiva: e.target.checked,
+                })
+              }
+            />
+            {"  "}
+            Activar manualmente
+          </div>
+
+          {/* TEXTO DEL CONTADOR */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ fontWeight: "bold" }}>Texto del contador:</label>
+            <input
+              type="text"
+              style={{
+                width: "100%",
+                padding: 8,
+                marginTop: 6,
+                borderRadius: 6,
+                border: "1px solid #aaa",
+              }}
+              value={selected.textoCuentaRegresiva}
+              onChange={(e) =>
+                setSelected({
+                  ...selected,
+                  textoCuentaRegresiva: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          {/* CONTADOR AUTOMÁTICO */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ fontWeight: "bold" }}>
+              Activar automáticamente cuando queden:
+            </label>
+            <br />
+
+            <input
+              type="number"
+              style={{
+                padding: 8,
+                marginTop: 6,
+                width: 150,
+                borderRadius: 6,
+                border: "1px solid #aaa",
+              }}
+              value={selected.activarAutoUltimas}
+              onChange={(e) =>
+                setSelected({
+                  ...selected,
+                  activarAutoUltimas: e.target.value,
+                })
+              }
+            />{" "}
+            chances
+          </div>
+
+          {/* GUARDAR */}
+          <button
+            onClick={guardarCambios}
+            style={{
+              padding: "10px 25px",
+              border: "none",
+              borderRadius: 6,
+              background: "#007bff",
+              color: "white",
+              fontWeight: "bold",
+              cursor: "pointer",
+            }}
+          >
+            Guardar Cambios
+          </button>
+        </div>
+      )}
     </div>
   );
 }
