@@ -15,7 +15,7 @@ export default function SorteoDetalle() {
     fetch(`${API_URL}/sorteos/${id}`)
       .then((res) => res.json())
       .then((data) => setSorteo(data))
-      .catch((err) => console.error("ERROR sorteo:", err));
+      .catch((err) => console.error("ERROR cargando sorteo:", err));
   }, [id]);
 
   if (!sorteo) {
@@ -32,16 +32,27 @@ export default function SorteoDetalle() {
     try {
       setLoadingCompra(true);
 
+      // Validar datos antes de enviar
+      const precioNum = Number(sorteo.precio);
+      const cantidadNum = 1;
+
+      if (isNaN(precioNum) || precioNum <= 0) {
+        alert("Precio inválido, revisa el sorteo.");
+        setLoadingCompra(false);
+        return;
+      }
+
       const body = {
         sorteoId: sorteo.id,
         titulo: sorteo.titulo,
-        precio: sorteo.precio,
+        precio: precioNum,
+        cantidad: cantidadNum,
         telefono,
-        cantidad: 1,
         mpCuenta: sorteo.mpCuenta || "default",
       };
 
-      // ❗ CORREGIDO: ruta correcta del backend
+      console.log("💡 Enviando al backend:", body);
+
       const res = await fetch(`${API_URL}/mercadopago/crear-preferencia`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -49,6 +60,7 @@ export default function SorteoDetalle() {
       });
 
       const data = await res.json();
+      console.log("💡 Response backend MP:", data);
 
       if (!res.ok) {
         alert(data.error || "No se pudo iniciar el pago");
@@ -56,17 +68,17 @@ export default function SorteoDetalle() {
         return;
       }
 
-      // Redirección a MercadoPago
+      // Redirección segura a MercadoPago
       if (data.init_point) {
         window.location.href = data.init_point;
       } else if (data.preferenceId) {
         window.location.href = `https://www.mercadopago.com.ar/checkout/v1/redirect?preference-id=${data.preferenceId}`;
       } else {
-        alert("Respuesta inválida del servidor (sin init_point)");
+        alert("Respuesta inválida del servidor (sin init_point o preferenceId)");
       }
     } catch (err) {
-      console.error("Error al crear preferencia:", err);
-      alert("Error al crear preferencia");
+      console.error("❌ Error al crear preferencia:", err);
+      alert("Error al crear preferencia, revisá la consola del servidor");
     } finally {
       setLoadingCompra(false);
     }
