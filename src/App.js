@@ -1,5 +1,4 @@
 // FILE: /Users/mustamusic/web/sorteos-lxm/src/App.js
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "./pages/Home";
@@ -13,8 +12,15 @@ import AdminSorteos from "./pages/AdminSorteos";
 import AdminNuevoSorteo from "./pages/AdminNuevoSorteo";
 import AdminEditarSorteo from "./pages/AdminEditarSorteo";
 
-// 🔐 Rutas protegidas
+import AdminCompras from "./pages/AdminCompras";
+import AdminChances from "./pages/AdminChances";
+
 import AdminRoute from "./components/AdminRoute";
+
+// ⭐ Páginas de estado de pago
+import Success from "./pages/Success";
+import Pending from "./pages/Pending";
+import Failure from "./pages/Failure";
 
 export default function App() {
   return (
@@ -23,6 +29,11 @@ export default function App() {
         {/* Público */}
         <Route path="/" element={<Home />} />
         <Route path="/sorteo/:id" element={<SorteoDetalle />} />
+
+        {/* Estados de pago */}
+        <Route path="/pago/exito" element={<Success />} />
+        <Route path="/pago/pendiente" element={<Pending />} />
+        <Route path="/pago/error" element={<Failure />} />
 
         {/* Login Admin */}
         <Route path="/admin/login" element={<AdminLogin />} />
@@ -33,6 +44,26 @@ export default function App() {
           element={
             <AdminRoute>
               <AdminDashboard />
+            </AdminRoute>
+          }
+        />
+
+        {/* Admin: Compras */}
+        <Route
+          path="/admin/compras"
+          element={
+            <AdminRoute>
+              <AdminCompras />
+            </AdminRoute>
+          }
+        />
+
+        {/* Admin: Chances */}
+        <Route
+          path="/admin/chances"
+          element={
+            <AdminRoute>
+              <AdminChances />
             </AdminRoute>
           }
         />

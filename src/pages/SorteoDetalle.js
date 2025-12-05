@@ -1,44 +1,80 @@
-// FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/SorteoDetalle.js
+// FILE: web/sorteos-lxm/src/pages/SorteoDetalle.js
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import API_URL from "../config/api";
 
 export default function SorteoDetalle() {
   const { id } = useParams();
-  const navigate = useNavigate();
-
   const [sorteo, setSorteo] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [telefono, setTelefono] = useState("");
+  const [loadingCompra, setLoadingCompra] = useState(false);
 
+  // Obtener sorteo
   useEffect(() => {
     fetch(`${API_URL}/sorteos/${id}`)
       .then((res) => res.json())
       .then((data) => setSorteo(data))
-      .catch((err) => console.error("Error cargando sorteo:", err));
+      .catch((err) => console.error("ERROR sorteo:", err));
   }, [id]);
 
-  if (!sorteo) return <p className="p-4 text-center">Cargando...</p>;
+  if (!sorteo) {
+    return <p className="p-4 text-center">Cargando...</p>;
+  }
 
   const abrirModal = () => setMostrarModal(true);
   const cerrarModal = () => setMostrarModal(false);
 
-  const enviarTelefono = () => {
+  const continuarAlPago = async () => {
     if (!telefono.trim()) return alert("Ingresá tu WhatsApp!");
+    if (telefono.length < 6) return alert("El número es muy corto!");
 
-    // Guardamos el número para usarlo en el pago
-    localStorage.setItem("telefonoComprador", telefono);
+    try {
+      setLoadingCompra(true);
 
-    cerrarModal();
+      const body = {
+        sorteoId: sorteo.id,
+        titulo: sorteo.titulo,
+        precio: sorteo.precio,
+        telefono,
+        cantidad: 1,
+        mpCuenta: sorteo.mpCuenta || "default",
+      };
 
-    // Ir al checkout del sorteo
-    navigate(`/pago/${id}`);
+      // ❗ CORREGIDO: ruta correcta del backend
+      const res = await fetch(`${API_URL}/mercadopago/crear-preferencia`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "No se pudo iniciar el pago");
+        setLoadingCompra(false);
+        return;
+      }
+
+      // Redirección a MercadoPago
+      if (data.init_point) {
+        window.location.href = data.init_point;
+      } else if (data.preferenceId) {
+        window.location.href = `https://www.mercadopago.com.ar/checkout/v1/redirect?preference-id=${data.preferenceId}`;
+      } else {
+        alert("Respuesta inválida del servidor (sin init_point)");
+      }
+    } catch (err) {
+      console.error("Error al crear preferencia:", err);
+      alert("Error al crear preferencia");
+    } finally {
+      setLoadingCompra(false);
+    }
   };
 
   return (
     <div className="max-w-3xl mx-auto p-4">
-
-      {/* Imagen principal */}
+      {/* IMAGEN */}
       <div className="w-full bg-black rounded-xl mb-4 flex items-center justify-center">
         <img
           src={sorteo.imagenUrl}
@@ -47,10 +83,10 @@ export default function SorteoDetalle() {
         />
       </div>
 
-      {/* Título */}
+      {/* TITULO */}
       <h1 className="text-3xl font-bold mb-2">{sorteo.titulo}</h1>
 
-      {/* Contador */}
+      {/* ULTIMAS CHANCES */}
       {sorteo.mostrarCuentaRegresiva && (
         <div className="mb-3">
           <div className="inline-block bg-red-600 text-white font-bold px-4 py-2 rounded">
@@ -59,34 +95,17 @@ export default function SorteoDetalle() {
         </div>
       )}
 
-      {/* Precio */}
+      {/* PRECIO */}
       <p className="text-2xl font-bold text-green-600 mb-4">
         💰 Precio por chance: ${sorteo.precio}
       </p>
 
-      {/* Descripción */}
+      {/* DESCRIPCION */}
       <p className="text-lg mb-4 whitespace-pre-line text-gray-800">
         {sorteo.descripcion}
       </p>
 
-      {/* Galería */}
-      {sorteo.galeria?.length > 0 && (
-        <div className="mt-4">
-          <h2 className="text-xl font-bold mb-2">Galería</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {sorteo.galeria.map((foto, index) => (
-              <img
-                key={index}
-                src={foto}
-                alt={`Foto ${index}`}
-                className="w-full h-32 object-cover rounded-lg"
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* BOTÓN ABAJO */}
+      {/* BOTÓN FIJO */}
       <div className="fixed bottom-0 left-0 w-full p-4 bg-white shadow-2xl">
         <button
           className="w-full bg-blue-600 text-white py-3 rounded-xl text-xl font-bold"
@@ -96,14 +115,13 @@ export default function SorteoDetalle() {
         </button>
       </div>
 
-      {/* MODAL WHATSAPP */}
+      {/* MODAL */}
       {mostrarModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md p-6 rounded-xl shadow-xl text-center">
-
             <h2 className="text-2xl font-bold mb-2">📱 Antes de continuar…</h2>
             <p className="text-gray-700 mb-4">
-              Ingresá tu WhatsApp para contactarte si ganás.
+              Pedimos tu WhatsApp para poder contactarte si ganás el sorteo.
             </p>
 
             <input
@@ -115,23 +133,19 @@ export default function SorteoDetalle() {
             />
 
             <button
-              onClick={enviarTelefono}
+              onClick={continuarAlPago}
+              disabled={loadingCompra}
               className="w-full bg-green-600 text-white py-3 rounded-lg font-bold mb-2"
             >
-              Continuar al pago
+              {loadingCompra ? "Procesando..." : "Continuar al pago"}
             </button>
 
-            <button
-              onClick={cerrarModal}
-              className="text-gray-700 underline"
-            >
+            <button onClick={cerrarModal} className="text-gray-700 underline">
               Cancelar
             </button>
-
           </div>
         </div>
       )}
-
     </div>
   );
 }

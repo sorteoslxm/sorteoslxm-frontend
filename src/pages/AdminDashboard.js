@@ -75,6 +75,13 @@ export default function AdminDashboard() {
         >
           🧾 Ver Compras
         </Link>
+
+        <Link
+          to="/admin/chances"
+          className="bg-green-600 text-white px-4 py-2 rounded"
+        >
+          🎟️ Control de Chances
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">

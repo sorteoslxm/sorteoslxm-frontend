@@ -1,4 +1,4 @@
-// FILE: web/sorteos-lxm/src/pages/AdminEditarSorteo.js
+// FILE: src/pages/AdminEditarSorteo.js
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import API_URL from "../config/api";
@@ -15,9 +15,19 @@ export default function AdminEditarSorteo() {
     mpCuenta: "",
     destacado: false,
     sorteoPrincipal: false,
+
+    // Contador manual
     mostrarCuentaRegresiva: false,
     textoCuentaRegresiva: "",
+
+    // Últimas chances automático
     activarAutoUltimas: 0,
+    ultimasChances: false,
+    porcentajeAutoUltimas: 0,
+    textoUltimas: "",
+
+    // Chances ocupadas
+    chancesOcupadas: 0,
   });
 
   const [loading, setLoading] = useState(true);
@@ -35,11 +45,19 @@ export default function AdminEditarSorteo() {
           numerosTotales: data.numerosTotales,
           imagenUrl: data.imagenUrl,
           mpCuenta: data.mpCuenta || "",
+
           destacado: data.destacado || false,
           sorteoPrincipal: data.sorteoPrincipal || false,
+
           mostrarCuentaRegresiva: data.mostrarCuentaRegresiva || false,
           textoCuentaRegresiva: data.textoCuentaRegresiva || "",
+
           activarAutoUltimas: data.activarAutoUltimas || 0,
+          ultimasChances: data.ultimasChances || false,
+          porcentajeAutoUltimas: data.porcentajeAutoUltimas || 0,
+          textoUltimas: data.textoUltimas || "",
+
+          chancesOcupadas: data.chancesOcupadas || 0,
         });
 
       } catch (err) {
@@ -51,6 +69,7 @@ export default function AdminEditarSorteo() {
 
     cargar();
   }, [id]);
+
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -64,6 +83,7 @@ export default function AdminEditarSorteo() {
       body: JSON.stringify({
         ...form,
         activarAutoUltimas: Number(form.activarAutoUltimas),
+        porcentajeAutoUltimas: Number(form.porcentajeAutoUltimas),
       }),
     });
 
@@ -84,7 +104,7 @@ export default function AdminEditarSorteo() {
 
         <input name="precio" type="number" value={form.precio} onChange={handleChange} className="border p-2 w-full rounded" placeholder="Precio" />
 
-        <input name="numerosTotales" type="number" value={form.numerosTotales} onChange={handleChange} className="border p-2 w-full rounded" placeholder="Números totales" />
+        <input name="numerosTotales" type="number" value={form.numerosTotales} onChange={handleChange} className="border p-2 w-full rounded" placeholder="Total de chances" />
 
         <input name="imagenUrl" value={form.imagenUrl} onChange={handleChange} className="border p-2 w-full rounded" placeholder="URL imagen" />
 
@@ -112,31 +132,44 @@ export default function AdminEditarSorteo() {
           <span>🔥 Marcar como principal</span>
         </label>
 
-        {/* Contador manual */}
+
+        {/* CHANCES OCUPADAS */}
+        <div>
+          <label className="font-bold">📌 Chances ocupadas (solo lectura)</label>
+          <input
+            disabled
+            value={form.chancesOcupadas}
+            className="border p-2 rounded w-full mt-1 bg-gray-100"
+          />
+        </div>
+
+
+        {/* Últimas chances manual */}
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
-            checked={form.mostrarCuentaRegresiva}
+            checked={form.ultimasChances}
             onChange={(e) =>
-              setForm({ ...form, mostrarCuentaRegresiva: e.target.checked })
+              setForm({ ...form, ultimasChances: e.target.checked })
             }
           />
-          <span>⏳ Activar contador manual</span>
+          <span>⏳ Activar últimas chances (manual)</span>
         </label>
 
-        {form.mostrarCuentaRegresiva && (
+        {form.ultimasChances && (
           <input
-            name="textoCuentaRegresiva"
-            value={form.textoCuentaRegresiva}
+            name="textoUltimas"
+            value={form.textoUltimas}
             onChange={handleChange}
             className="border p-2 rounded w-full"
-            placeholder="Ej: Últimas 50 chances!"
+            placeholder="Ej: Últimas 20 chances!"
           />
         )}
 
-        {/* Automático */}
+
+        {/* Últimas chances automáticas */}
         <div>
-          <label className="font-bold">⏳ Activar automático cuando queden:</label>
+          <label className="font-bold">⏳ Activar automático cuando queden X chances:</label>
           <input
             name="activarAutoUltimas"
             type="number"

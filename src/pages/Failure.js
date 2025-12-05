@@ -1,30 +1,13 @@
 import React from "react";
 
-const Failure = () => {
+export default function Failure() {
   return (
-    <div style={styles.container}>
-      <h1 style={{ color: "#d63031" }}>❌ Pago rechazado</h1>
-      <p>Tu pago no pudo ser procesado. Podés intentar nuevamente o elegir otro método de pago.</p>
-      <a href="/" style={styles.link}>Volver al inicio</a>
+    <div style={{ textAlign: "center", marginTop: "60px" }}>
+      <h1 style={{ color: "red" }}>❌ Pago rechazado</h1>
+      <p style={{ marginTop: "20px" }}>
+        Hubo un problema con el pago.  
+        Podés intentar nuevamente desde la página del sorteo.
+      </p>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    textAlign: "center",
-    padding: "80px 20px",
-    fontFamily: "Arial, sans-serif",
-  },
-  link: {
-    display: "inline-block",
-    marginTop: "30px",
-    padding: "10px 20px",
-    backgroundColor: "#d63031",
-    color: "#fff",
-    borderRadius: "8px",
-    textDecoration: "none",
-  },
-};
-
-export default Failure;
+}

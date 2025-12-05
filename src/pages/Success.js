@@ -1,12 +1,13 @@
-import { Link } from "react-router-dom";
+import React from "react";
 
-function Success() {
+export default function Success() {
   return (
-    <div style={{ padding: 20, textAlign: "center" }}>
-      <h1>Pago aprobado ✅</h1>
-      <Link to="/">Volver a sorteos</Link>
+    <div style={{ textAlign: "center", marginTop: "60px" }}>
+      <h1 style={{ color: "green" }}>🎉 ¡Pago aprobado!</h1>
+      <p style={{ marginTop: "20px" }}>
+        Ya estás participando del sorteo.  
+        Te vamos a contactar por WhatsApp si resultás ganador.
+      </p>
     </div>
   );
 }
-
-export default Success;
