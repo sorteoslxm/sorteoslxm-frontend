@@ -1,0 +1,35 @@
+.admin-chances-container {
+  padding: 20px;
+  color: white;
+}
+
+.sorteo-box {
+  background: #1e1e1e;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 0 10px #000;
+}
+
+.stats {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+table th, table td {
+  border-bottom: 1px solid #333;
+  padding: 8px;
+  text-align: left;
+}
+
+.sin-chances {
+  color: #ccc;
+  font-style: italic;
+}
