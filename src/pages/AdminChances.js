@@ -1,52 +1,79 @@
-// FILE: web/sorteos-lxm/src/pages/AdminChances.js
+// FILE: src/pages/AdminChances.js
 import React, { useEffect, useState } from "react";
 import API_URL from "../config/api";
 
 export default function AdminChances() {
   const [chances, setChances] = useState([]);
   const [sorteos, setSorteos] = useState({});
-  const [limit, setLimit] = useState(200);
+  const [limit, setLimit] = useState(300);
   const [loading, setLoading] = useState(true);
 
-  // Cargar todos los sorteos (para mostrar el título)
+  /* =====================================================
+      CARGAR TODOS LOS SORTEOS (PARA MOSTRAR TITULO)
+  ====================================================== */
   useEffect(() => {
     fetch(`${API_URL}/sorteos`)
       .then((res) => res.json())
       .then((data) => {
-        const dict = {};
-        data.forEach((s) => (dict[s.id] = s));
+        let dict = {};
+        if (Array.isArray(data)) {
+          data.forEach((s) => (dict[s.id] = s));
+        }
         setSorteos(dict);
       })
       .catch((err) => console.error("Error cargando sorteos", err));
   }, []);
 
-  // Cargar chances
+  /* =====================================================
+      CARGAR CHANCES DEL BACKEND
+  ====================================================== */
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
 
     setLoading(true);
+
     fetch(`${API_URL}/chances?limit=${limit}`, {
       headers: token ? { "x-admin-token": token } : {},
     })
       .then((res) => res.json())
       .then((data) => {
-        // 🔥 SIEMPRE validar array
-        if (!Array.isArray(data)) {
-          console.warn("⚠ Backend devolvió algo no-array:", data);
+        // 💣 VALIDACIÓN TOTAL
+        if (!data) {
           setChances([]);
-        } else {
-          setChances(data);
+          return;
         }
-        setLoading(false);
+
+        // Si viene como {chances: [...]}
+        if (Array.isArray(data.chances)) {
+          setChances(data.chances);
+          return;
+        }
+
+        // Si viene un objeto (Firebase muchas veces lo hace)
+        if (!Array.isArray(data) && typeof data === "object") {
+          setChances(Object.values(data));
+          return;
+        }
+
+        // Si es array normal
+        if (Array.isArray(data)) {
+          setChances(data);
+          return;
+        }
+
+        console.warn("⚠ Backend devolvió algo raro:", data);
+        setChances([]);
       })
       .catch((err) => {
-        console.error(err);
+        console.error("Error cargando chances", err);
         setChances([]);
-        setLoading(false);
-      });
+      })
+      .finally(() => setLoading(false));
   }, [limit]);
 
-  // Agrupar por sorteoId
+  /* =====================================================
+      AGRUPAR CHANCES POR SORTEO ID
+  ====================================================== */
   const sorteosAgrupados = chances.reduce((acc, chance) => {
     const id = chance.sorteoId || "SIN-ID";
     if (!acc[id]) acc[id] = [];
@@ -56,11 +83,12 @@ export default function AdminChances() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-4xl font-extrabold mb-6 text-blue-700 tracking-tight">
+        🎟️ Panel de Chances
+      </h1>
 
-      <h1 className="text-3xl font-bold mb-4">🎟️ Panel de Chances</h1>
-
-      <div className="bg-white border p-4 rounded-lg shadow">
-        <label className="text-sm font-semibold">Cantidad de chances a mostrar:</label>
+      <div className="bg-white border p-4 rounded-lg shadow-md">
+        <label className="text-sm font-semibold">Cantidad de registros a cargar:</label>
         <input
           type="number"
           value={limit}
@@ -75,46 +103,53 @@ export default function AdminChances() {
         <p className="mt-6 text-gray-600">No hay chances registradas.</p>
       )}
 
-      {!loading && Object.keys(sorteosAgrupados).map((sorteoId) => {
-        const lista = sorteosAgrupados[sorteoId];
-        const infoSorteo = sorteos[sorteoId];
+      {/* =====================================================
+            LISTA AGRUPADA POR SORTEO
+      ====================================================== */}
+      {!loading &&
+        Object.keys(sorteosAgrupados).map((sorteoId) => {
+          const lista = sorteosAgrupados[sorteoId].sort(
+            (a, b) => b.createdAt - a.createdAt
+          );
 
-        return (
-          <div key={sorteoId} className="mt-10">
+          const info = sorteos[sorteoId];
 
-            {/* HEADER del sorteo */}
-            <div className="bg-blue-600 text-white p-4 rounded-t-lg shadow text-lg font-semibold">
-              {infoSorteo ? infoSorteo.titulo : "Sorteo sin título"}  
-              <span className="text-sm ml-3 opacity-80">
-                ({lista.length} chances)
-              </span>
-            </div>
+          return (
+            <div key={sorteoId} className="mt-10 border rounded-lg shadow-lg overflow-hidden">
 
-            <div className="border border-gray-300 rounded-b-lg bg-white shadow">
-              {lista.map((c) => (
-                <div
-                  key={c.id}
-                  className="border-b p-4 hover:bg-gray-50 flex justify-between items-center"
-                >
-                  <div>
-                    <div className="font-bold text-blue-700">
-                      {c.telefono || "Sin teléfono"}
+              {/* HEADER */}
+              <div className="bg-blue-600 text-white p-4 text-xl font-bold">
+                {info ? info.titulo : "🟥 Sorteo eliminado / sin título"}
+                <span className="text-sm ml-3 opacity-80">
+                  ({lista.length} chances vendidas)
+                </span>
+              </div>
+
+              <div className="bg-white">
+                {lista.map((c) => (
+                  <div
+                    key={c.id}
+                    className="border-b p-4 flex justify-between hover:bg-gray-50"
+                  >
+                    <div>
+                      <div className="font-bold text-blue-700">
+                        {c.telefono || "Sin teléfono"}
+                      </div>
+
+                      <div className="text-sm text-gray-700">
+                        📌 Chance <strong>LXM-{String(c.numero).padStart(6, "0")}</strong>
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-600">
-                      Chance LXM-{String(c.numero).padStart(6, "0")}
+
+                    <div className="text-right text-xs text-gray-600">
+                      {new Date(c.createdAt).toLocaleString()}
                     </div>
                   </div>
-
-                  <div className="text-right text-xs text-gray-600">
-                    {new Date(c.createdAt).toLocaleString()}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-
-          </div>
-        );
-      })}
+          );
+        })}
     </div>
   );
 }
