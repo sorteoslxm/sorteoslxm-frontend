@@ -32,26 +32,16 @@ export default function SorteoDetalle() {
     try {
       setLoadingCompra(true);
 
-      // Validar datos antes de enviar
-      const precioNum = Number(sorteo.precio);
-      const cantidadNum = 1;
-
-      if (isNaN(precioNum) || precioNum <= 0) {
-        alert("Precio inválido, revisa el sorteo.");
-        setLoadingCompra(false);
-        return;
-      }
-
       const body = {
         sorteoId: sorteo.id,
         titulo: sorteo.titulo,
-        precio: precioNum,
-        cantidad: cantidadNum,
+        precio: Number(sorteo.precio),
+        cantidad: 1,
         telefono,
         mpCuenta: sorteo.mpCuenta || "default",
       };
 
-      console.log("💡 Enviando al backend:", body);
+      console.log("📤 Enviando al backend MP:", body);
 
       const res = await fetch(`${API_URL}/mercadopago/crear-preferencia`, {
         method: "POST",
@@ -60,7 +50,7 @@ export default function SorteoDetalle() {
       });
 
       const data = await res.json();
-      console.log("💡 Response backend MP:", data);
+      console.log("📥 Backend MP response:", data);
 
       if (!res.ok) {
         alert(data.error || "No se pudo iniciar el pago");
@@ -72,13 +62,14 @@ export default function SorteoDetalle() {
       if (data.init_point) {
         window.location.href = data.init_point;
       } else if (data.preferenceId) {
-        window.location.href = `https://www.mercadopago.com.ar/checkout/v1/redirect?preference-id=${data.preferenceId}`;
+        window.location.href =
+          `https://www.mercadopago.com.ar/checkout/v1/redirect?preference-id=${data.preferenceId}`;
       } else {
-        alert("Respuesta inválida del servidor (sin init_point o preferenceId)");
+        alert("Respuesta inválida del servidor");
       }
     } catch (err) {
       console.error("❌ Error al crear preferencia:", err);
-      alert("Error al crear preferencia, revisá la consola del servidor");
+      alert("Error al crear preferencia. Revisá consola del servidor.");
     } finally {
       setLoadingCompra(false);
     }
@@ -95,10 +86,8 @@ export default function SorteoDetalle() {
         />
       </div>
 
-      {/* TITULO */}
       <h1 className="text-3xl font-bold mb-2">{sorteo.titulo}</h1>
 
-      {/* ULTIMAS CHANCES */}
       {sorteo.mostrarCuentaRegresiva && (
         <div className="mb-3">
           <div className="inline-block bg-red-600 text-white font-bold px-4 py-2 rounded">
@@ -107,17 +96,15 @@ export default function SorteoDetalle() {
         </div>
       )}
 
-      {/* PRECIO */}
       <p className="text-2xl font-bold text-green-600 mb-4">
         💰 Precio por chance: ${sorteo.precio}
       </p>
 
-      {/* DESCRIPCION */}
       <p className="text-lg mb-4 whitespace-pre-line text-gray-800">
         {sorteo.descripcion}
       </p>
 
-      {/* BOTÓN FIJO */}
+      {/* BOTÓN PARTE INFERIOR */}
       <div className="fixed bottom-0 left-0 w-full p-4 bg-white shadow-2xl">
         <button
           className="w-full bg-blue-600 text-white py-3 rounded-xl text-xl font-bold"
