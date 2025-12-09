@@ -12,9 +12,11 @@ export default function AdminChances() {
         const resSorteos = await fetch("https://sorteoslxm-server-clean.onrender.com/sorteos");
         const listaSorteos = await resSorteos.json();
 
-        // 2) Traer chances REALES desde la nueva colección
+        // 2) Traer chances REALES guardadas por el webhook
         const resChances = await fetch("https://sorteoslxm-server-clean.onrender.com/chances?limit=5000");
         const listaChances = await resChances.json();
+
+        console.log("Chances recibidas:", listaChances);
 
         // 3) Agrupar chances por sorteoId
         const agrupados = listaSorteos.map(s => {
@@ -22,8 +24,14 @@ export default function AdminChances() {
 
           return {
             ...s,
-            vendidos: chancesDeEste.length,
-            restantes: s.numerosTotales ? (s.numerosTotales - chancesDeEste.length) : 0,
+            vendidos: chancesDeEste.filter(c => c.mpStatus === "approved").length,
+            pendientes: chancesDeEste.filter(c => c.mpStatus === "pending").length,
+            rechazados: chancesDeEste.filter(c => c.mpStatus === "rejected").length,
+
+            restantes: s.numerosTotales
+              ? (s.numerosTotales - chancesDeEste.filter(c => c.mpStatus === "approved").length)
+              : 0,
+
             chancesVendidas: chancesDeEste
           };
         });
@@ -40,16 +48,18 @@ export default function AdminChances() {
 
   return (
     <div className="admin-chances-container">
-      <h1>🎟️ Panel de Chances</h1>
+      <h1>🎟️ Panel de Chances (MP + Webhook)</h1>
 
       {sorteos.map(s => (
         <div key={s.id} className="sorteo-box">
           <h2>{s.titulo}</h2>
 
           <div className="stats">
-            <p><b>Vendidos:</b> {s.vendidos}</p>
+            <p><b>Aprobados:</b> {s.vendidos}</p>
+            <p><b>Pendientes:</b> {s.pendientes}</p>
+            <p><b>Rechazados:</b> {s.rechazados}</p>
             <p><b>Restantes:</b> {s.restantes}</p>
-            <p><b>Total inicial:</b> {s.vendidos + s.restantes}</p>
+            <p><b>Total inicial:</b> {s.numerosTotales}</p>
           </div>
 
           <h3>Listado de Chances</h3>
@@ -62,6 +72,8 @@ export default function AdminChances() {
                 <tr>
                   <th>Chance</th>
                   <th>Teléfono</th>
+                  <th>Estado</th>
+                  <th>MP ID</th>
                   <th>Fecha</th>
                 </tr>
               </thead>
@@ -70,6 +82,17 @@ export default function AdminChances() {
                   <tr key={c.id}>
                     <td>{c.numero}</td>
                     <td>{c.telefono || "—"}</td>
+                    <td className={
+  c.mpStatus === "approved"
+    ? "approved"
+    : c.mpStatus === "pending"
+    ? "pending"
+    : "rejected"
+}>
+  {c.mpStatus || "—"}
+</td>
+
+                    <td>{c.mpPaymentId || "—"}</td>
                     <td>{new Date(c.createdAt).toLocaleString()}</td>
                   </tr>
                 ))}

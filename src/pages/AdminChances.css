@@ -1,87 +1,104 @@
-/* ==========================
-   CONTENEDOR GENERAL
-========================== */
 .admin-chances-container {
-  background-color: #0F0F0F; /* Fondo oscuro */
-  min-height: 100vh;
+  max-width: 1100px;
+  margin: 20px auto;
   padding: 20px;
-  color: #FFFFFF;
-  font-family: Arial, sans-serif;
+  background: #0f1b35;
+  color: white;
+  border-radius: 16px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
-/* Título principal */
-.admin-chances-container h1 {
-  color: #4DA3FF; /* Azul brillante */
-  font-size: 32px;
-  margin-bottom: 20px;
+h1 {
   text-align: center;
-}
-
-/* ==========================
-   CARD DE CADA SORTEO
-========================== */
-.sorteo-box {
-  background-color: #1A1A1A; /* Card oscuro */
-  padding: 20px;
-  border-radius: 12px;
   margin-bottom: 25px;
-  box-shadow: 0px 4px 10px rgba(255,255,255,0.05);
+  font-size: 32px;
+  font-weight: 800;
+  color: #4da4ff;
 }
 
-/* Título del sorteo */
+.sorteo-box {
+  background: #152447;
+  padding: 20px;
+  margin-bottom: 25px;
+  border-radius: 14px;
+  border-left: 5px solid #4da4ff;
+}
+
 .sorteo-box h2 {
-  color: #4DA3FF; /* Azul */
-  font-size: 26px;
   margin-bottom: 10px;
+  font-size: 24px;
+  color: #8bc7ff;
 }
 
-/* Datos del sorteo */
-.sorteo-stats {
-  font-size: 18px;
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
   margin-bottom: 15px;
 }
 
-.sorteo-stats span {
-  display: block;
-  margin-bottom: 5px;
-}
-
-/* ==========================
-   LISTADO DE CHANCES
-========================== */
-.listado-titulo {
-  color: #FFD54A; /* Amarillo suave */
-  font-weight: bold;
-  font-size: 20px;
-  margin-top: 15px;
-  margin-bottom: 10px;
-}
-
-/* Mensaje "sin chances" */
-.sin-chances {
-  color: #AAAAAA; /* Gris claro: visible */
-  font-style: italic;
-}
-
-/* ==========================
-   ITEM DE CHANCE
-========================== */
-.chance-item {
-  background-color: #262626;
-  padding: 12px;
+.stats p {
+  background: #1d2f57;
+  padding: 10px 15px;
   border-radius: 8px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  font-weight: 500;
 }
 
-.chance-item-number {
-  color: #4DA3FF;
-  font-weight: bold;
+.sin-chances {
+  padding: 10px;
+  background: #1d2f57;
+  border-radius: 8px;
+  text-align: center;
+  color: #bcd3ff;
 }
 
-.chance-item-phone {
-  color: #FFFFFF;
-  opacity: 0.7;
+/* ------- TABLA ------- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background: #0e1a33;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+table thead {
+  background: #102040;
+}
+
+table th {
+  padding: 12px;
+  text-align: left;
+  color: #9fc6ff;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+table td {
+  padding: 12px;
+  border-bottom: 1px solid #1f335c;
+  color: #e4eeff;
+}
+
+/* Estado por color */
+td.approved {
+  color: #3aff7a !important;
+  font-weight: 700;
+}
+
+td.pending {
+  color: #ffd34d !important;
+  font-weight: 700;
+}
+
+td.rejected {
+  color: #ff6767 !important;
+  font-weight: 700;
+}
+
+/* Hover fila */
+table tbody tr:hover {
+  background: #18294f;
 }
