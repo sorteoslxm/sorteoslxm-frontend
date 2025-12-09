@@ -1,19 +1,87 @@
+/* ==========================
+   CONTENEDOR GENERAL
+========================== */
+.admin-chances-container {
+  background-color: #0F0F0F; /* Fondo oscuro */
+  min-height: 100vh;
+  padding: 20px;
+  color: #FFFFFF;
+  font-family: Arial, sans-serif;
+}
+
+/* Título principal */
 .admin-chances-container h1 {
-  color: black !important;
+  color: #4DA3FF; /* Azul brillante */
+  font-size: 32px;
+  margin-bottom: 20px;
+  text-align: center;
 }
 
+/* ==========================
+   CARD DE CADA SORTEO
+========================== */
+.sorteo-box {
+  background-color: #1A1A1A; /* Card oscuro */
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  box-shadow: 0px 4px 10px rgba(255,255,255,0.05);
+}
+
+/* Título del sorteo */
 .sorteo-box h2 {
-  color: yellow !important;
+  color: #4DA3FF; /* Azul */
+  font-size: 26px;
+  margin-bottom: 10px;
 }
 
-/* Texto "Listado de Chances" */
+/* Datos del sorteo */
+.sorteo-stats {
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+.sorteo-stats span {
+  display: block;
+  margin-bottom: 5px;
+}
+
+/* ==========================
+   LISTADO DE CHANCES
+========================== */
 .listado-titulo {
-  color: yellow;
+  color: #FFD54A; /* Amarillo suave */
+  font-weight: bold;
+  font-size: 20px;
+  margin-top: 15px;
+  margin-bottom: 10px;
+}
+
+/* Mensaje "sin chances" */
+.sin-chances {
+  color: #AAAAAA; /* Gris claro: visible */
+  font-style: italic;
+}
+
+/* ==========================
+   ITEM DE CHANCE
+========================== */
+.chance-item {
+  background-color: #262626;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chance-item-number {
+  color: #4DA3FF;
   font-weight: bold;
 }
 
-/* Texto "Sin chances vendidas" */
-.sin-chances {
-  color: white !important;
-  font-style: italic;
+.chance-item-phone {
+  color: #FFFFFF;
+  opacity: 0.7;
 }
