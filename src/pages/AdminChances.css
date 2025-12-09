@@ -1,34 +1,19 @@
 .admin-chances-container h1 {
-  color: black;
+  color: black !important;
 }
 
-.sorteo-box {
-  background: #1e1e1e;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 25px;
-  box-shadow: 0 0 10px #000;
+.sorteo-box h2 {
+  color: yellow !important;
 }
 
-.stats {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 15px;
+/* Texto "Listado de Chances" */
+.listado-titulo {
+  color: yellow;
+  font-weight: bold;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-table th, table td {
-  border-bottom: 1px solid #333;
-  padding: 8px;
-  text-align: left;
-}
-
+/* Texto "Sin chances vendidas" */
 .sin-chances {
-  color: #ccc;
+  color: white !important;
   font-style: italic;
 }
