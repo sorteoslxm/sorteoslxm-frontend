@@ -1,4 +1,4 @@
-// FILE: web/sorteos-lxm/src/pages/SorteoDetalle.js
+// FILE: src/pages/SorteoDetalle.js
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import API_URL from "../config/api";
@@ -10,65 +10,42 @@ export default function SorteoDetalle() {
   const [telefono, setTelefono] = useState("");
   const [loadingCompra, setLoadingCompra] = useState(false);
 
-  // Obtener sorteo desde Firebase
   useEffect(() => {
     fetch(`${API_URL}/sorteos/${id}`)
       .then((res) => res.json())
-      .then((data) => setSorteo(data))
-      .catch((err) => console.error("ERROR cargando sorteo:", err));
+      .then(setSorteo)
+      .catch((err) => console.error("ERROR sorteo:", err));
   }, [id]);
 
-  if (!sorteo) {
-    return <p className="p-4 text-center">Cargando...</p>;
-  }
-
-  const abrirModal = () => setMostrarModal(true);
-  const cerrarModal = () => setMostrarModal(false);
+  if (!sorteo) return <p className="p-4 text-center">Cargando...</p>;
 
   const continuarAlPago = async () => {
-    if (!telefono.trim()) return alert("Ingresá tu WhatsApp!");
-    if (telefono.length < 6) return alert("El número es muy corto!");
+    if (!telefono) return alert("Ingresá tu WhatsApp");
 
     try {
       setLoadingCompra(true);
 
-      const body = {
-        sorteoId: sorteo.id,
-        titulo: sorteo.titulo,
-        precio: Number(sorteo.precio),
-        cantidad: 1,
-        telefono,
-        mpCuenta: sorteo.mpCuenta || "default",
-      };
-
-      console.log("📤 Enviando al backend MP:", body);
-
       const res = await fetch(`${API_URL}/mercadopago/crear-preferencia`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          sorteoId: sorteo.id,
+          titulo: sorteo.titulo,
+          precio: sorteo.precio,
+          cantidad: 1,
+          telefono,
+          mpCuenta: sorteo.mpCuenta || "default",
+        }),
       });
 
       const data = await res.json();
-      console.log("📥 Backend MP response:", data);
+      console.log("➡️ MP RESPONSE:", data);
 
-      if (!res.ok) {
-        alert(data.error || "No se pudo iniciar el pago");
-        return;
-      }
+      if (!res.ok) return alert(data.error || "Error creando pago");
 
-      // Redirección a MercadoPago
-      if (data.init_point) {
-        window.location.href = data.init_point;
-      } else if (data.preferenceId) {
-        window.location.href =
-          `https://www.mercadopago.com.ar/checkout/v1/redirect?preference-id=${data.preferenceId}`;
-      } else {
-        alert("Respuesta inválida del servidor");
-      }
-    } catch (err) {
-      console.error("❌ Error al crear preferencia:", err);
-      alert("Error al crear preferencia. Revisá consola del servidor.");
+      window.location.href = data.init_point;
+    } catch {
+      alert("Error conectando con MercadoPago");
     } finally {
       setLoadingCompra(false);
     }
@@ -76,72 +53,42 @@ export default function SorteoDetalle() {
 
   return (
     <div className="max-w-3xl mx-auto p-4">
-      {/* IMAGEN */}
-      <div className="w-full bg-black rounded-xl mb-4 flex items-center justify-center">
-        <img
-          src={sorteo.imagenUrl}
-          alt={sorteo.titulo}
-          className="w-full max-h-[420px] object-contain rounded-xl"
-        />
-      </div>
+      <img src={sorteo.imagenUrl} alt={sorteo.titulo} className="rounded-xl" />
 
-      <h1 className="text-3xl font-bold mb-2">{sorteo.titulo}</h1>
-
-      {/* Opcional: últimas chances */}
-      {sorteo.mostrarCuentaRegresiva && (
-        <div className="mb-3">
-          <div className="inline-block bg-red-600 text-white font-bold px-4 py-2 rounded">
-            ⏳ {sorteo.textoCuentaRegresiva || "Últimas chances!"}
-          </div>
-        </div>
-      )}
-
-      {/* PRECIO */}
-      <p className="text-2xl font-bold text-green-600 mb-4">
-        💰 Precio por chance: ${sorteo.precio}
+      <h1 className="text-3xl font-bold mt-3">{sorteo.titulo}</h1>
+      <p className="text-2xl text-green-600 font-bold my-4">
+        ${sorteo.precio}
       </p>
 
-      {/* DESCRIPCIÓN */}
-      <p className="text-lg mb-4 whitespace-pre-line text-gray-800">
-        {sorteo.descripcion}
-      </p>
+      <button
+        className="w-full bg-blue-600 text-white py-3 rounded-xl"
+        onClick={() => setMostrarModal(true)}
+      >
+        Participar
+      </button>
 
-      {/* BOTÓN INFERIOR */}
-      <div className="fixed bottom-0 left-0 w-full p-4 bg-white shadow-2xl">
-        <button
-          className="w-full bg-blue-600 text-white py-3 rounded-xl text-xl font-bold"
-          onClick={abrirModal}
-        >
-          Participar
-        </button>
-      </div>
-
-      {/* MODAL */}
       {mostrarModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md p-6 rounded-xl shadow-xl text-center">
-            <h2 className="text-2xl font-bold mb-2">📱 Antes de continuar…</h2>
-            <p className="text-gray-700 mb-4">
-              Pedimos tu WhatsApp para poder contactarte si ganás.
-            </p>
-
+          <div className="bg-white p-6 rounded-xl w-full max-w-md">
+            <h2 className="font-bold mb-2 text-xl">Tu WhatsApp</h2>
             <input
-              type="tel"
+              className="border p-3 w-full mb-4 rounded"
               value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
-              placeholder="Ej: 11 6543-2190"
-              className="border p-3 rounded w-full mb-4 text-lg"
             />
 
             <button
+              className="w-full bg-green-600 text-white py-3 rounded-xl mb-2"
               onClick={continuarAlPago}
               disabled={loadingCompra}
-              className="w-full bg-green-600 text-white py-3 rounded-lg font-bold mb-2"
             >
-              {loadingCompra ? "Procesando..." : "Continuar al pago"}
+              {loadingCompra ? "Procesando..." : "Pagar"}
             </button>
 
-            <button onClick={cerrarModal} className="text-gray-700 underline">
+            <button
+              onClick={() => setMostrarModal(false)}
+              className="underline text-gray-600"
+            >
               Cancelar
             </button>
           </div>
