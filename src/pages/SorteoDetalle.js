@@ -32,13 +32,12 @@ export default function SorteoDetalle() {
     try {
       setLoadingCompra(true);
 
+      // 🔵 FORMATO CORRECTO PARA EL BACKEND NUEVO
       const body = {
         sorteoId: sorteo.id,
         titulo: sorteo.titulo,
         precio: Number(sorteo.precio),
-        cantidad: 1,
-        telefono,
-        mpCuenta: sorteo.mpCuenta || "default",
+        emailComprador: telefono, // usamos WhatsApp como contacto
       };
 
       console.log("📤 Enviando al backend MP:", body);
