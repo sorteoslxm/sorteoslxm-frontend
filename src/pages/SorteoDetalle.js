@@ -10,7 +10,7 @@ export default function SorteoDetalle() {
   const [telefono, setTelefono] = useState("");
   const [loadingCompra, setLoadingCompra] = useState(false);
 
-  // Obtener sorteo
+  // Obtener sorteo desde Firebase
   useEffect(() => {
     fetch(`${API_URL}/sorteos/${id}`)
       .then((res) => res.json())
@@ -32,12 +32,13 @@ export default function SorteoDetalle() {
     try {
       setLoadingCompra(true);
 
-      // 🔵 FORMATO CORRECTO PARA EL BACKEND NUEVO
       const body = {
         sorteoId: sorteo.id,
         titulo: sorteo.titulo,
         precio: Number(sorteo.precio),
-        emailComprador: telefono, // usamos WhatsApp como contacto
+        cantidad: 1,
+        telefono,
+        mpCuenta: sorteo.mpCuenta || "default",
       };
 
       console.log("📤 Enviando al backend MP:", body);
@@ -53,11 +54,10 @@ export default function SorteoDetalle() {
 
       if (!res.ok) {
         alert(data.error || "No se pudo iniciar el pago");
-        setLoadingCompra(false);
         return;
       }
 
-      // Redirección segura a MercadoPago
+      // Redirección a MercadoPago
       if (data.init_point) {
         window.location.href = data.init_point;
       } else if (data.preferenceId) {
@@ -87,6 +87,7 @@ export default function SorteoDetalle() {
 
       <h1 className="text-3xl font-bold mb-2">{sorteo.titulo}</h1>
 
+      {/* Opcional: últimas chances */}
       {sorteo.mostrarCuentaRegresiva && (
         <div className="mb-3">
           <div className="inline-block bg-red-600 text-white font-bold px-4 py-2 rounded">
@@ -95,15 +96,17 @@ export default function SorteoDetalle() {
         </div>
       )}
 
+      {/* PRECIO */}
       <p className="text-2xl font-bold text-green-600 mb-4">
         💰 Precio por chance: ${sorteo.precio}
       </p>
 
+      {/* DESCRIPCIÓN */}
       <p className="text-lg mb-4 whitespace-pre-line text-gray-800">
         {sorteo.descripcion}
       </p>
 
-      {/* BOTÓN PARTE INFERIOR */}
+      {/* BOTÓN INFERIOR */}
       <div className="fixed bottom-0 left-0 w-full p-4 bg-white shadow-2xl">
         <button
           className="w-full bg-blue-600 text-white py-3 rounded-xl text-xl font-bold"
@@ -119,7 +122,7 @@ export default function SorteoDetalle() {
           <div className="bg-white w-full max-w-md p-6 rounded-xl shadow-xl text-center">
             <h2 className="text-2xl font-bold mb-2">📱 Antes de continuar…</h2>
             <p className="text-gray-700 mb-4">
-              Pedimos tu WhatsApp para poder contactarte si ganás el sorteo.
+              Pedimos tu WhatsApp para poder contactarte si ganás.
             </p>
 
             <input
