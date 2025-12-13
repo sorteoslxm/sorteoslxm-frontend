@@ -1,10 +1,11 @@
 // FILE: src/pages/AdminEditarSorteo.js
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import API_URL from "../config/api";
 
 export default function AdminEditarSorteo() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     titulo: "",
@@ -16,21 +17,19 @@ export default function AdminEditarSorteo() {
     destacado: false,
     sorteoPrincipal: false,
 
-    // Contador manual
     mostrarCuentaRegresiva: false,
     textoCuentaRegresiva: "",
 
-    // Últimas chances automático
     activarAutoUltimas: 0,
     ultimasChances: false,
     porcentajeAutoUltimas: 0,
     textoUltimas: "",
 
-    // Chances ocupadas
     chancesOcupadas: 0,
   });
 
   const [loading, setLoading] = useState(true);
+  const [eliminando, setEliminando] = useState(false);
 
   useEffect(() => {
     const cargar = async () => {
@@ -59,7 +58,6 @@ export default function AdminEditarSorteo() {
 
           chancesOcupadas: data.chancesOcupadas || 0,
         });
-
       } catch (err) {
         console.error("Error cargando sorteo:", err);
       }
@@ -69,7 +67,6 @@ export default function AdminEditarSorteo() {
 
     cargar();
   }, [id]);
-
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -87,7 +84,34 @@ export default function AdminEditarSorteo() {
       }),
     });
 
-    alert("Cambios guardados correctamente");
+    alert("✅ Cambios guardados correctamente");
+  };
+
+  /* 🟥 ELIMINAR SORTEO */
+  const handleEliminar = async () => {
+    const confirmar = window.confirm(
+      "⚠️ ¿Seguro que querés eliminar este sorteo?\n\nNo se borra definitivamente, pero dejará de mostrarse."
+    );
+
+    if (!confirmar) return;
+
+    try {
+      setEliminando(true);
+
+      const res = await fetch(`${API_URL}/sorteos/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Error eliminando sorteo");
+
+      alert("🗑️ Sorteo eliminado correctamente");
+      navigate("/admin"); // ajustá si tu ruta admin es otra
+    } catch (err) {
+      console.error(err);
+      alert("❌ Error al eliminar sorteo");
+    } finally {
+      setEliminando(false);
+    }
   };
 
   if (loading) return <p>Cargando...</p>;
@@ -97,16 +121,47 @@ export default function AdminEditarSorteo() {
       <h1 className="text-3xl font-bold mb-4">✏️ Editar Sorteo</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          name="titulo"
+          value={form.titulo}
+          onChange={handleChange}
+          className="border p-2 w-full rounded"
+          placeholder="Título"
+        />
 
-        <input name="titulo" value={form.titulo} onChange={handleChange} className="border p-2 w-full rounded" placeholder="Título" />
+        <textarea
+          name="descripcion"
+          value={form.descripcion}
+          onChange={handleChange}
+          className="border p-2 w-full rounded"
+          placeholder="Descripción"
+        />
 
-        <textarea name="descripcion" value={form.descripcion} onChange={handleChange} className="border p-2 w-full rounded" placeholder="Descripción" />
+        <input
+          name="precio"
+          type="number"
+          value={form.precio}
+          onChange={handleChange}
+          className="border p-2 w-full rounded"
+          placeholder="Precio"
+        />
 
-        <input name="precio" type="number" value={form.precio} onChange={handleChange} className="border p-2 w-full rounded" placeholder="Precio" />
+        <input
+          name="numerosTotales"
+          type="number"
+          value={form.numerosTotales}
+          onChange={handleChange}
+          className="border p-2 w-full rounded"
+          placeholder="Total de chances"
+        />
 
-        <input name="numerosTotales" type="number" value={form.numerosTotales} onChange={handleChange} className="border p-2 w-full rounded" placeholder="Total de chances" />
-
-        <input name="imagenUrl" value={form.imagenUrl} onChange={handleChange} className="border p-2 w-full rounded" placeholder="URL imagen" />
+        <input
+          name="imagenUrl"
+          value={form.imagenUrl}
+          onChange={handleChange}
+          className="border p-2 w-full rounded"
+          placeholder="URL imagen"
+        />
 
         {/* CUENTA MP */}
         <select
@@ -122,20 +177,31 @@ export default function AdminEditarSorteo() {
 
         {/* Destacado */}
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked={form.destacado} onChange={(e) => setForm({ ...form, destacado: e.target.checked })} />
+          <input
+            type="checkbox"
+            checked={form.destacado}
+            onChange={(e) =>
+              setForm({ ...form, destacado: e.target.checked })
+            }
+          />
           <span>⭐ Mostrar como destacado</span>
         </label>
 
         {/* Principal */}
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked={form.sorteoPrincipal} onChange={(e) => setForm({ ...form, sorteoPrincipal: e.target.checked })} />
+          <input
+            type="checkbox"
+            checked={form.sorteoPrincipal}
+            onChange={(e) =>
+              setForm({ ...form, sorteoPrincipal: e.target.checked })
+            }
+          />
           <span>🔥 Marcar como principal</span>
         </label>
 
-
-        {/* CHANCES OCUPADAS */}
+        {/* Chances ocupadas */}
         <div>
-          <label className="font-bold">📌 Chances ocupadas (solo lectura)</label>
+          <label className="font-bold">📌 Chances ocupadas</label>
           <input
             disabled
             value={form.chancesOcupadas}
@@ -143,47 +209,19 @@ export default function AdminEditarSorteo() {
           />
         </div>
 
-
-        {/* Últimas chances manual */}
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={form.ultimasChances}
-            onChange={(e) =>
-              setForm({ ...form, ultimasChances: e.target.checked })
-            }
-          />
-          <span>⏳ Activar últimas chances (manual)</span>
-        </label>
-
-        {form.ultimasChances && (
-          <input
-            name="textoUltimas"
-            value={form.textoUltimas}
-            onChange={handleChange}
-            className="border p-2 rounded w-full"
-            placeholder="Ej: Últimas 20 chances!"
-          />
-        )}
-
-
-        {/* Últimas chances automáticas */}
-        <div>
-          <label className="font-bold">⏳ Activar automático cuando queden X chances:</label>
-          <input
-            name="activarAutoUltimas"
-            type="number"
-            value={form.activarAutoUltimas}
-            onChange={handleChange}
-            className="border p-2 rounded w-full mt-1"
-            placeholder="Ej: 50"
-          />
-        </div>
-
         <button className="bg-green-600 py-2 text-white rounded w-full">
           Guardar cambios
         </button>
       </form>
+
+      {/* 🟥 BOTÓN ELIMINAR */}
+      <button
+        onClick={handleEliminar}
+        disabled={eliminando}
+        className="mt-6 bg-red-600 py-2 text-white rounded w-full"
+      >
+        {eliminando ? "Eliminando..." : "🗑️ Eliminar sorteo"}
+      </button>
     </div>
   );
 }
