@@ -17,12 +17,23 @@ export default function SorteoDetalle() {
       .catch((err) => console.error("ERROR sorteo:", err));
   }, [id]);
 
-  if (!sorteo) return <p className="p-4 text-center">Cargando...</p>;
+  if (!sorteo) {
+    return <p className="p-4 text-center">Cargando...</p>;
+  }
+
+  const sorteoCerrado =
+    sorteo.cerrado === true || sorteo.chancesDisponibles <= 0;
 
   const continuarAlPago = async () => {
-    if (!telefono) return alert("Ingresá tu WhatsApp");
+    if (sorteoCerrado) {
+      return alert("Este sorteo ya está cerrado");
+    }
 
-    // validación simple (solo números, 10 a 13 dígitos)
+    if (!telefono) {
+      return alert("Ingresá tu WhatsApp");
+    }
+
+    // validación simple
     if (!/^\d{10,13}$/.test(telefono)) {
       return alert("Ingresá un WhatsApp válido (solo números)");
     }
@@ -46,7 +57,9 @@ export default function SorteoDetalle() {
       const data = await res.json();
       console.log("➡️ MP RESPONSE:", data);
 
-      if (!res.ok) return alert(data.error || "Error creando pago");
+      if (!res.ok) {
+        return alert(data.error || "Error creando pago");
+      }
 
       window.location.href = data.init_point;
     } catch {
@@ -61,12 +74,12 @@ export default function SorteoDetalle() {
       <img
         src={sorteo.imagenUrl}
         alt={sorteo.titulo}
-        className="rounded-xl"
+        className="rounded-xl w-full"
       />
 
       <h1 className="text-3xl font-bold mt-3">{sorteo.titulo}</h1>
 
-      {/* DESCRIPCIÓN DEL SORTEO */}
+      {/* DESCRIPCIÓN */}
       {sorteo.descripcion && (
         <p className="text-gray-700 mt-2 whitespace-pre-line">
           {sorteo.descripcion}
@@ -77,24 +90,35 @@ export default function SorteoDetalle() {
         ${sorteo.precio}
       </p>
 
-      {/* FUTURO: ÚLTIMAS CHANCES */}
-      {/*
+      {/* 🔥 ÚLTIMAS CHANCES */}
       {sorteo.chancesDisponibles !== undefined &&
+        sorteo.chancesDisponibles > 0 &&
         sorteo.chancesDisponibles <= 10 && (
           <div className="bg-red-600 text-white text-center py-2 rounded-xl font-bold animate-pulse mb-4">
             🔥 Últimas {sorteo.chancesDisponibles} chances disponibles
           </div>
         )}
-      */}
+
+      {/* 🚫 SORTEO CERRADO */}
+      {sorteoCerrado && (
+        <div className="bg-gray-300 text-gray-800 text-center py-3 rounded-xl font-bold mb-4">
+          ⛔ Sorteo cerrado — no hay más chances disponibles
+        </div>
+      )}
 
       <button
-        className="w-full bg-blue-600 text-white py-3 rounded-xl"
-        onClick={() => setMostrarModal(true)}
+        className={`w-full py-3 rounded-xl text-white ${
+          sorteoCerrado
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-blue-600"
+        }`}
+        onClick={() => !sorteoCerrado && setMostrarModal(true)}
+        disabled={sorteoCerrado}
       >
-        Participar
+        {sorteoCerrado ? "Sorteo cerrado" : "Participar"}
       </button>
 
-      {mostrarModal && (
+      {mostrarModal && !sorteoCerrado && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4">
           <div className="bg-white p-6 rounded-xl w-full max-w-md">
             <h2 className="font-bold mb-2 text-xl">Tu WhatsApp</h2>
