@@ -70,9 +70,15 @@ export default function SorteoDetalle() {
       {mostrarModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4">
           <div className="bg-white p-6 rounded-xl w-full max-w-md">
+
             <h2 className="font-bold mb-2 text-xl">Tu WhatsApp</h2>
+            <p className="text-gray-600 mb-3">
+              Necesitamos tu WhatsApp para poder contactarte si resultás ganador 🎉
+            </p>
+
             <input
               className="border p-3 w-full mb-4 rounded"
+              placeholder="Ejemplo: 1122334455"
               value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
             />
