@@ -22,6 +22,11 @@ export default function SorteoDetalle() {
   const continuarAlPago = async () => {
     if (!telefono) return alert("Ingresá tu WhatsApp");
 
+    // validación simple (solo números, 10 a 13 dígitos)
+    if (!/^\d{10,13}$/.test(telefono)) {
+      return alert("Ingresá un WhatsApp válido (solo números)");
+    }
+
     try {
       setLoadingCompra(true);
 
@@ -53,12 +58,34 @@ export default function SorteoDetalle() {
 
   return (
     <div className="max-w-3xl mx-auto p-4">
-      <img src={sorteo.imagenUrl} alt={sorteo.titulo} className="rounded-xl" />
+      <img
+        src={sorteo.imagenUrl}
+        alt={sorteo.titulo}
+        className="rounded-xl"
+      />
 
       <h1 className="text-3xl font-bold mt-3">{sorteo.titulo}</h1>
+
+      {/* DESCRIPCIÓN DEL SORTEO */}
+      {sorteo.descripcion && (
+        <p className="text-gray-700 mt-2 whitespace-pre-line">
+          {sorteo.descripcion}
+        </p>
+      )}
+
       <p className="text-2xl text-green-600 font-bold my-4">
         ${sorteo.precio}
       </p>
+
+      {/* FUTURO: ÚLTIMAS CHANCES */}
+      {/*
+      {sorteo.chancesDisponibles !== undefined &&
+        sorteo.chancesDisponibles <= 10 && (
+          <div className="bg-red-600 text-white text-center py-2 rounded-xl font-bold animate-pulse mb-4">
+            🔥 Últimas {sorteo.chancesDisponibles} chances disponibles
+          </div>
+        )}
+      */}
 
       <button
         className="w-full bg-blue-600 text-white py-3 rounded-xl"
@@ -70,8 +97,8 @@ export default function SorteoDetalle() {
       {mostrarModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4">
           <div className="bg-white p-6 rounded-xl w-full max-w-md">
-
             <h2 className="font-bold mb-2 text-xl">Tu WhatsApp</h2>
+
             <p className="text-gray-600 mb-3">
               Necesitamos tu WhatsApp para poder contactarte si resultás ganador 🎉
             </p>
