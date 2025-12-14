@@ -1,11 +1,11 @@
-// FILE: /Users/mustamusic/web/sorteos-lxm/src/components/AdminRoute.js
+// FILE: src/components/AdminRoute.js
 
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 
 export default function AdminRoute({ children }) {
-  const [valid, setValid] = useState(null); // null = cargando
-  const token = localStorage.getItem("admin_token");
+  const [valid, setValid] = useState(null);
+  const token = localStorage.getItem("adminToken");
 
   useEffect(() => {
     const validar = async () => {
@@ -27,7 +27,7 @@ export default function AdminRoute({ children }) {
         if (res.ok) {
           setValid(true);
         } else {
-          localStorage.removeItem("admin_token");
+          localStorage.removeItem("adminToken");
           setValid(false);
         }
       } catch (err) {
@@ -39,7 +39,6 @@ export default function AdminRoute({ children }) {
     validar();
   }, [token]);
 
-  // ⏳ Cargando
   if (valid === null) {
     return (
       <div style={{ padding: 40, textAlign: "center" }}>
@@ -48,11 +47,9 @@ export default function AdminRoute({ children }) {
     );
   }
 
-  // 🚫 No autorizado
   if (!valid) {
     return <Navigate to="/admin/login" replace />;
   }
 
-  // ✅ Autorizado
   return children;
 }
