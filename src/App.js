@@ -14,6 +14,7 @@ import AdminEditarSorteo from "./pages/AdminEditarSorteo";
 
 import AdminCompras from "./pages/AdminCompras";
 import AdminChances from "./pages/AdminChances";
+import AdminDashboardVentas from "./pages/AdminDashboardVentas";
 
 import AdminRoute from "./components/AdminRoute";
 
@@ -64,6 +65,16 @@ export default function App() {
           element={
             <AdminRoute>
               <AdminChances />
+            </AdminRoute>
+          }
+        />
+
+        {/* Admin: Dashboard Ventas */}
+        <Route
+          path="/admin/dashboard/ventas"
+          element={
+            <AdminRoute>
+              <AdminDashboardVentas />
             </AdminRoute>
           }
         />
