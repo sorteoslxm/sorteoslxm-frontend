@@ -14,16 +14,16 @@ export default function AdminEditarSorteo() {
     numerosTotales: "",
     imagenUrl: "",
     mpCuenta: "",
+
     destacado: false,
     sorteoPrincipal: false,
 
     mostrarCuentaRegresiva: false,
     textoCuentaRegresiva: "",
 
-    activarAutoUltimas: 0,
     ultimasChances: false,
-    porcentajeAutoUltimas: 0,
     textoUltimas: "",
+    porcentajeAutoUltimas: 0,
 
     chancesOcupadas: 0,
   });
@@ -38,11 +38,11 @@ export default function AdminEditarSorteo() {
         const data = await res.json();
 
         setForm({
-          titulo: data.titulo,
-          descripcion: data.descripcion,
-          precio: data.precio,
-          numerosTotales: data.numerosTotales,
-          imagenUrl: data.imagenUrl,
+          titulo: data.titulo || "",
+          descripcion: data.descripcion || "",
+          precio: data.precio || "",
+          numerosTotales: data.numerosTotales || "",
+          imagenUrl: data.imagenUrl || "",
           mpCuenta: data.mpCuenta || "",
 
           destacado: data.destacado || false,
@@ -51,17 +51,15 @@ export default function AdminEditarSorteo() {
           mostrarCuentaRegresiva: data.mostrarCuentaRegresiva || false,
           textoCuentaRegresiva: data.textoCuentaRegresiva || "",
 
-          activarAutoUltimas: data.activarAutoUltimas || 0,
           ultimasChances: data.ultimasChances || false,
-          porcentajeAutoUltimas: data.porcentajeAutoUltimas || 0,
           textoUltimas: data.textoUltimas || "",
+          porcentajeAutoUltimas: data.porcentajeAutoUltimas || 0,
 
           chancesOcupadas: data.chancesOcupadas || 0,
         });
       } catch (err) {
         console.error("Error cargando sorteo:", err);
       }
-
       setLoading(false);
     };
 
@@ -79,7 +77,6 @@ export default function AdminEditarSorteo() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...form,
-        activarAutoUltimas: Number(form.activarAutoUltimas),
         porcentajeAutoUltimas: Number(form.porcentajeAutoUltimas),
       }),
     });
@@ -105,7 +102,7 @@ export default function AdminEditarSorteo() {
       if (!res.ok) throw new Error("Error eliminando sorteo");
 
       alert("🗑️ Sorteo eliminado correctamente");
-      navigate("/admin"); // ajustá si tu ruta admin es otra
+      navigate("/admin");
     } catch (err) {
       console.error(err);
       alert("❌ Error al eliminar sorteo");
@@ -198,6 +195,67 @@ export default function AdminEditarSorteo() {
           />
           <span>🔥 Marcar como principal</span>
         </label>
+
+        {/* ⏱️ CUENTA REGRESIVA */}
+        <div className="border rounded p-3">
+          <label className="flex items-center gap-2 mb-2">
+            <input
+              type="checkbox"
+              checked={form.mostrarCuentaRegresiva}
+              onChange={(e) =>
+                setForm({ ...form, mostrarCuentaRegresiva: e.target.checked })
+              }
+            />
+            <span>⏱️ Mostrar cuenta regresiva</span>
+          </label>
+
+          {form.mostrarCuentaRegresiva && (
+            <input
+              name="textoCuentaRegresiva"
+              value={form.textoCuentaRegresiva}
+              onChange={handleChange}
+              className="border p-2 w-full rounded"
+              placeholder="Ej: Sorteo termina pronto"
+            />
+          )}
+        </div>
+
+        {/* 🔥 ÚLTIMAS CHANCES */}
+        <div className="border rounded p-3 bg-yellow-50">
+          <h3 className="font-bold mb-2">🔥 Últimas chances</h3>
+
+          <label className="flex items-center gap-2 mb-2">
+            <input
+              type="checkbox"
+              checked={form.ultimasChances}
+              onChange={(e) =>
+                setForm({ ...form, ultimasChances: e.target.checked })
+              }
+            />
+            <span>Activar mensaje de últimas chances</span>
+          </label>
+
+          <input
+            name="textoUltimas"
+            value={form.textoUltimas}
+            onChange={handleChange}
+            className="border p-2 w-full rounded mb-2"
+            placeholder="Ej: ¡Últimas chances disponibles!"
+          />
+
+          <label className="text-sm text-gray-600">
+            Activar automáticamente cuando queden menos de (% restante)
+          </label>
+
+          <input
+            name="porcentajeAutoUltimas"
+            type="number"
+            value={form.porcentajeAutoUltimas}
+            onChange={handleChange}
+            className="border p-2 w-full rounded mt-1"
+            placeholder="Ej: 10"
+          />
+        </div>
 
         {/* Chances ocupadas */}
         <div>
