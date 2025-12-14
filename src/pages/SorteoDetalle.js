@@ -25,21 +25,19 @@ export default function SorteoDetalle() {
     sorteo.cerrado === true || sorteo.chancesDisponibles <= 0;
 
   const continuarAlPago = async () => {
-    if (sorteoCerrado) {
-      return alert("Este sorteo ya está cerrado");
-    }
+    if (sorteoCerrado || loadingCompra) return;
 
     if (!telefono) {
       return alert("Ingresá tu WhatsApp");
     }
 
-    // validación simple
     if (!/^\d{10,13}$/.test(telefono)) {
       return alert("Ingresá un WhatsApp válido (solo números)");
     }
 
     try {
       setLoadingCompra(true);
+      setMostrarModal(false);
 
       const res = await fetch(`${API_URL}/mercadopago/crear-preferencia`, {
         method: "POST",
@@ -55,16 +53,19 @@ export default function SorteoDetalle() {
       });
 
       const data = await res.json();
-      console.log("➡️ MP RESPONSE:", data);
 
-      if (!res.ok) {
-        return alert(data.error || "Error creando pago");
+      if (!res.ok || !data.init_point) {
+        console.error("Error MP:", data);
+        alert("❌ No se pudo iniciar el pago. Intentá nuevamente.");
+        setLoadingCompra(false);
+        return;
       }
 
+      // 🔁 Redirección a MercadoPago
       window.location.href = data.init_point;
-    } catch {
-      alert("Error conectando con MercadoPago");
-    } finally {
+    } catch (err) {
+      console.error(err);
+      alert("❌ Error conectando con MercadoPago");
       setLoadingCompra(false);
     }
   };
@@ -79,7 +80,6 @@ export default function SorteoDetalle() {
 
       <h1 className="text-3xl font-bold mt-3">{sorteo.titulo}</h1>
 
-      {/* DESCRIPCIÓN */}
       {sorteo.descripcion && (
         <p className="text-gray-700 mt-2 whitespace-pre-line">
           {sorteo.descripcion}
@@ -91,8 +91,7 @@ export default function SorteoDetalle() {
       </p>
 
       {/* 🔥 ÚLTIMAS CHANCES */}
-      {sorteo.chancesDisponibles !== undefined &&
-        sorteo.chancesDisponibles > 0 &&
+      {sorteo.chancesDisponibles > 0 &&
         sorteo.chancesDisponibles <= 10 && (
           <div className="bg-red-600 text-white text-center py-2 rounded-xl font-bold animate-pulse mb-4">
             🔥 Últimas {sorteo.chancesDisponibles} chances disponibles
@@ -108,17 +107,21 @@ export default function SorteoDetalle() {
 
       <button
         className={`w-full py-3 rounded-xl text-white ${
-          sorteoCerrado
+          sorteoCerrado || loadingCompra
             ? "bg-gray-400 cursor-not-allowed"
             : "bg-blue-600"
         }`}
-        onClick={() => !sorteoCerrado && setMostrarModal(true)}
-        disabled={sorteoCerrado}
+        onClick={() => setMostrarModal(true)}
+        disabled={sorteoCerrado || loadingCompra}
       >
-        {sorteoCerrado ? "Sorteo cerrado" : "Participar"}
+        {loadingCompra
+          ? "Redirigiendo a MercadoPago..."
+          : sorteoCerrado
+          ? "Sorteo cerrado"
+          : "Participar"}
       </button>
 
-      {mostrarModal && !sorteoCerrado && (
+      {mostrarModal && !sorteoCerrado && !loadingCompra && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4">
           <div className="bg-white p-6 rounded-xl w-full max-w-md">
             <h2 className="font-bold mb-2 text-xl">Tu WhatsApp</h2>
@@ -137,9 +140,8 @@ export default function SorteoDetalle() {
             <button
               className="w-full bg-green-600 text-white py-3 rounded-xl mb-2"
               onClick={continuarAlPago}
-              disabled={loadingCompra}
             >
-              {loadingCompra ? "Procesando..." : "Pagar"}
+              Ir a pagar
             </button>
 
             <button
