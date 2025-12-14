@@ -18,7 +18,7 @@ import AdminDashboardVentas from "./pages/AdminDashboardVentas";
 
 import AdminRoute from "./components/AdminRoute";
 
-// ⭐ Páginas de estado de pago
+// ⭐ Estados de pago
 import Success from "./pages/Success";
 import Pending from "./pages/Pending";
 import Failure from "./pages/Failure";
@@ -27,19 +27,23 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Público */}
+        {/* 🌍 Público */}
         <Route path="/" element={<Home />} />
         <Route path="/sorteo/:id" element={<SorteoDetalle />} />
 
-        {/* Estados de pago */}
+        {/* 💳 Post-pago MercadoPago */}
+        {/* MercadoPago suele volver a /success */}
+        <Route path="/success" element={<Success />} />
+
+        {/* Rutas internas por si las usás manualmente */}
         <Route path="/pago/exito" element={<Success />} />
         <Route path="/pago/pendiente" element={<Pending />} />
         <Route path="/pago/error" element={<Failure />} />
 
-        {/* Login Admin */}
+        {/* 🔐 Login Admin */}
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* Admin: Panel */}
+        {/* 🛠️ Admin */}
         <Route
           path="/admin"
           element={
@@ -49,7 +53,6 @@ export default function App() {
           }
         />
 
-        {/* Admin: Compras */}
         <Route
           path="/admin/compras"
           element={
@@ -59,7 +62,6 @@ export default function App() {
           }
         />
 
-        {/* Admin: Chances */}
         <Route
           path="/admin/chances"
           element={
@@ -69,7 +71,6 @@ export default function App() {
           }
         />
 
-        {/* Admin: Dashboard Ventas */}
         <Route
           path="/admin/dashboard/ventas"
           element={
@@ -79,7 +80,6 @@ export default function App() {
           }
         />
 
-        {/* Admin: Banners */}
         <Route
           path="/admin/banners"
           element={
@@ -89,7 +89,6 @@ export default function App() {
           }
         />
 
-        {/* Admin: Sorteos */}
         <Route
           path="/admin/sorteos"
           element={
