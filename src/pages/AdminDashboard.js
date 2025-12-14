@@ -1,4 +1,4 @@
-// FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/AdminDashboard.js
+// FILE: src/pages/AdminDashboard.js
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API_URL from "../config/api";
@@ -21,7 +21,7 @@ export default function AdminDashboard() {
 
       const res = await fetch(`${API_URL}/sorteos`, {
         headers: {
-          "x-admin-token": token
+          "x-admin-token": token,
         },
       });
 
@@ -43,7 +43,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-6">
-
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Panel de Administración</h1>
         <button
@@ -54,7 +53,8 @@ export default function AdminDashboard() {
         </button>
       </div>
 
-      <div className="flex gap-4 mb-6">
+      {/* BOTONERA ADMIN */}
+      <div className="flex flex-wrap gap-4 mb-6">
         <Link
           to="/admin/sorteos/nuevo"
           className="bg-blue-600 text-white px-4 py-2 rounded"
@@ -82,8 +82,17 @@ export default function AdminDashboard() {
         >
           🎟️ Control de Chances
         </Link>
+
+        {/* 🔥 NUEVO */}
+        <Link
+          to="/admin/dashboard/ventas"
+          className="bg-black text-white px-4 py-2 rounded"
+        >
+          📊 Dashboard de Ventas
+        </Link>
       </div>
 
+      {/* LISTADO DE SORTEOS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         {sorteos.map((s) => (
           <div key={s.id} className="bg-white shadow rounded p-3">
