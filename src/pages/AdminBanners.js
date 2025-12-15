@@ -7,6 +7,7 @@ export default function AdminBanners() {
   const [banners, setBanners] = useState([]);
   const [file, setFile] = useState(null);
   const [link, setLink] = useState(""); // <--- AGREGADO
+  const [orden, setOrden] = useState(""); // Orden del banner
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,6 +29,7 @@ export default function AdminBanners() {
     const formData = new FormData();
     formData.append("banner", file);
     formData.append("link", link);  // <--- guardamos link también
+    formData.append("orden", orden); // Enviamos el orden también
 
     const res = await fetch(`${API_URL}/banners/upload`, {
       method: "POST",
@@ -37,6 +39,7 @@ export default function AdminBanners() {
 
     setFile(null);
     setLink("");
+    setOrden(""); // Limpiamos el campo de orden
     fetchBanners();
   };
 
@@ -77,6 +80,21 @@ export default function AdminBanners() {
     fetchBanners();
   };
 
+  const updateOrden = async (id, newOrden) => {
+    const token = localStorage.getItem("adminToken");
+
+    await fetch(`${API_URL}/banners/${id}/orden`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-token": token,
+      },
+      body: JSON.stringify({ orden: newOrden }),
+    });
+
+    fetchBanners();
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-4">Banners</h1>
@@ -90,6 +108,14 @@ export default function AdminBanners() {
           placeholder="Link (opcional)"
           value={link}
           onChange={(e) => setLink(e.target.value)}
+          className="border p-2 rounded w-full"
+        />
+
+        <input
+          type="number"
+          placeholder="Orden (opcional)"
+          value={orden}
+          onChange={(e) => setOrden(e.target.value)}
           className="border p-2 rounded w-full"
         />
 
@@ -115,6 +141,15 @@ export default function AdminBanners() {
               value={b.link || ""}
               placeholder="Agregar/editar link"
               onChange={(e) => updateLink(b.id, e.target.value)}
+            />
+
+            {/* ORDEN */}
+            <input
+              type="number"
+              className="border p-2 rounded w-full mt-3"
+              value={b.orden || ""}
+              placeholder="Orden"
+              onChange={(e) => updateOrden(b.id, e.target.value)}
             />
 
             {/* PRINCIPAL */}
