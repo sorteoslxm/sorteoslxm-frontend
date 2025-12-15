@@ -1,4 +1,4 @@
-// FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/Home.js
+// FILE: src/pages/Home.js
 import React, { useEffect, useState, useRef } from "react";
 import API_URL from "../config/api";
 import { Link } from "react-router-dom";
@@ -19,7 +19,6 @@ export default function Home() {
         const principal = lista.find((s) => s.sorteoPrincipal) || null;
         setSorteoPrincipal(principal);
 
-        // Destacados ordenados por ordenDestacado asc
         const destacados = lista
           .filter((s) => s.destacado && !s.sorteoPrincipal)
           .sort((a, b) => (a.ordenDestacado || 0) - (b.ordenDestacado || 0));
@@ -43,7 +42,7 @@ export default function Home() {
     load();
   }, []);
 
-  // Bloques
+  // Agrupar sorteos de a 2 con banners intermedios
   const bloques = [];
   for (let i = 0; i < resto.length; i += 2) {
     bloques.push({
@@ -52,25 +51,29 @@ export default function Home() {
     });
   }
 
-  // 💰 Animación de monedas doradas
+  // 💰 Monedas doradas sutiles
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    resize();
 
     const coins = [];
-    const coinCount = 80;
+    const coinCount = 35;
 
     for (let i = 0; i < coinCount; i++) {
       coins.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        radius: Math.random() * 4 + 2,
-        vy: Math.random() * 1 + 0.5,
-        bounce: Math.random() * 0.6 + 0.3,
-        alpha: Math.random() * 0.8 + 0.2,
+        radius: Math.random() * 2 + 1.5,
+        vy: Math.random() * 0.6 + 0.3,
+        alpha: Math.random() * 0.6 + 0.2,
       });
     }
 
@@ -83,11 +86,12 @@ export default function Home() {
           c.y = 0;
           c.x = Math.random() * canvas.width;
         }
+
         ctx.beginPath();
         ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255,215,0,${c.alpha})`;
-        ctx.shadowColor = "rgba(255,215,0,0.7)";
-        ctx.shadowBlur = 4;
+        ctx.shadowColor = "rgba(255,215,0,0.4)";
+        ctx.shadowBlur = 2;
         ctx.fill();
       });
 
@@ -95,21 +99,19 @@ export default function Home() {
     }
 
     animate();
-
-    window.addEventListener("resize", () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    });
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
   }, []);
 
   return (
     <div
       className="w-full min-h-screen px-4 py-6 relative overflow-hidden"
       style={{
-        background: "linear-gradient(180deg, #0b0b0b, #1f1f1f 50%, #3b2e00)",
+        background:
+          "linear-gradient(180deg, #0b5ed7 0%, #eaf2ff 60%, #ffffff 100%)",
       }}
     >
-      {/* 💰 Canvas de partículas */}
+      {/* Canvas monedas */}
       <canvas
         ref={canvasRef}
         className="pointer-events-none absolute inset-0 z-0"
@@ -122,7 +124,7 @@ export default function Home() {
             <img
               src={bannerPrincipal.url}
               alt="Banner principal"
-              className="w-full max-h-72 object-contain rounded-3xl shadow-2xl transition-transform hover:scale-105"
+              className="w-full max-h-72 object-contain rounded-3xl shadow-xl transition-transform hover:scale-105"
             />
           </a>
         </div>
@@ -132,20 +134,20 @@ export default function Home() {
       {sorteoPrincipal && (
         <Link
           to={`/sorteo/${sorteoPrincipal.id}`}
-          className="block relative rounded-3xl overflow-hidden shadow-2xl mb-14 transform hover:scale-105 transition z-10"
+          className="block relative rounded-3xl overflow-hidden shadow-2xl mb-16 transform hover:scale-105 transition z-10"
         >
           <img
             src={sorteoPrincipal.imagenUrl || sorteoPrincipal.imagen}
             alt={sorteoPrincipal.titulo}
-            className="w-full h-96 object-cover brightness-125 saturate-150"
+            className="w-full h-96 object-cover brightness-110 saturate-110"
           />
 
-          <div className="absolute inset-0 flex flex-col justify-end p-6 text-white bg-gradient-to-t from-black/20 via-black/0 to-transparent">
-            <span className="text-sm bg-red-500 px-4 py-1 rounded-full w-fit mb-3 shadow-lg animate-pulse">
+          <div className="absolute inset-0 flex flex-col justify-end p-6 bg-gradient-to-t from-black/30 via-black/0 to-transparent">
+            <span className="text-sm bg-red-500 px-4 py-1 rounded-full w-fit mb-3 shadow-lg animate-pulse text-white">
               🥇 SORTEO PRINCIPAL
             </span>
 
-            <h2 className="text-4xl font-extrabold drop-shadow-2xl">
+            <h2 className="text-4xl font-extrabold drop-shadow-2xl text-white">
               {sorteoPrincipal.titulo}
             </h2>
           </div>
@@ -154,8 +156,8 @@ export default function Home() {
 
       {/* BLOQUES */}
       {bloques.map((bloque, index) => (
-        <section key={index} className="mb-16 relative z-10">
-          {/* Banner */}
+        <section key={index} className="mb-20 relative z-10">
+          {/* Banner intermedio */}
           {bloque.banner && (
             <div className="mb-8">
               <a
@@ -166,46 +168,46 @@ export default function Home() {
                 <img
                   src={bloque.banner.url}
                   alt="Banner"
-                  className="w-full rounded-3xl shadow-xl object-contain max-h-52 transition-transform hover:scale-105"
+                  className="w-full rounded-3xl shadow-lg object-contain max-h-52 transition-transform hover:scale-105"
                 />
               </a>
             </div>
           )}
 
-          {/* Miniaturas de sorteos */}
+          {/* Miniaturas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {bloque.sorteos.map((s) => (
               <Link
                 key={s.id}
                 to={`/sorteo/${s.id}`}
-                className="relative bg-gradient-to-br from-[#1f1f1f] to-[#0b0b0b] rounded-2xl overflow-hidden shadow-lg hover:scale-[1.03] transition transform"
+                className="relative bg-white rounded-2xl overflow-hidden shadow-lg hover:scale-[1.03] transition transform"
               >
-                <div className="w-full h-52 bg-gradient-to-tr from-black/30 to-transparent flex items-center justify-center overflow-hidden">
+                <div className="w-full h-52 bg-[#f4f7ff] flex items-center justify-center overflow-hidden">
                   <img
                     src={s.imagenUrl || s.imagen}
                     alt={s.titulo}
-                    className="w-full h-full object-contain transition-transform hover:scale-105"
+                    className="max-w-full max-h-full object-contain transition-transform hover:scale-105"
                   />
                 </div>
 
-                <div className="p-4 text-white">
-                  <h4 className="font-bold text-lg drop-shadow-md">{s.titulo}</h4>
+                <div className="p-4 text-gray-900">
+                  <h4 className="font-bold text-lg">{s.titulo}</h4>
                 </div>
               </Link>
             ))}
           </div>
         </section>
       ))}
-            {/* 📘 COMO FUNCIONA */}
+
+      {/* COMO FUNCIONA */}
       <div className="relative z-10 mt-20 flex justify-center">
         <Link
           to="/como-funciona"
-          className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-2xl text-lg font-bold hover:bg-white/20 transition shadow-xl"
+          className="bg-blue-600 text-white px-8 py-4 rounded-2xl text-lg font-bold hover:bg-blue-700 transition shadow-xl"
         >
           📘 ¿Cómo funciona Sorteos LXM?
         </Link>
       </div>
-
     </div>
   );
 }
