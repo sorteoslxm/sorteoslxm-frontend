@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "./pages/Home";
 import SorteoDetalle from "./pages/SorteoDetalle";
+import ComoFunciona from "./pages/ComoFunciona";
 
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -30,12 +31,10 @@ export default function App() {
         {/* 🌍 Público */}
         <Route path="/" element={<Home />} />
         <Route path="/sorteo/:id" element={<SorteoDetalle />} />
+        <Route path="/como-funciona" element={<ComoFunciona />} />
 
         {/* 💳 Post-pago MercadoPago */}
-        {/* MercadoPago suele volver a /success */}
         <Route path="/success" element={<Success />} />
-
-        {/* Rutas internas por si las usás manualmente */}
         <Route path="/pago/exito" element={<Success />} />
         <Route path="/pago/pendiente" element={<Pending />} />
         <Route path="/pago/error" element={<Failure />} />
@@ -43,7 +42,7 @@ export default function App() {
         {/* 🔐 Login Admin */}
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* 🛠️ Admin */}
+        {/* 🛠️ Admin protegido */}
         <Route
           path="/admin"
           element={

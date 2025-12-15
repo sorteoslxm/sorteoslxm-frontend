@@ -196,6 +196,16 @@ export default function Home() {
           </div>
         </section>
       ))}
+            {/* 📘 COMO FUNCIONA */}
+      <div className="relative z-10 mt-20 flex justify-center">
+        <Link
+          to="/como-funciona"
+          className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-2xl text-lg font-bold hover:bg-white/20 transition shadow-xl"
+        >
+          📘 ¿Cómo funciona Sorteos LXM?
+        </Link>
+      </div>
+
     </div>
   );
 }
