@@ -1,4 +1,4 @@
-// FILE: src/pages/Home.js
+// FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/Home.js
 import React, { useEffect, useState, useRef } from "react";
 import API_URL from "../config/api";
 import { Link } from "react-router-dom";
@@ -12,37 +12,32 @@ export default function Home() {
 
   useEffect(() => {
     const load = async () => {
-      try {
-        const res = await fetch(`${API_URL}/sorteos`);
-        const lista = await res.json();
+      const res = await fetch(`${API_URL}/sorteos`);
+      const lista = await res.json();
 
-        const principal = lista.find((s) => s.sorteoPrincipal) || null;
-        setSorteoPrincipal(principal);
+      setSorteoPrincipal(lista.find(s => s.sorteoPrincipal) || null);
 
-        const destacados = lista
-          .filter((s) => s.destacado && !s.sorteoPrincipal)
-          .sort((a, b) => (a.ordenDestacado || 0) - (b.ordenDestacado || 0));
+      const destacados = lista
+        .filter(s => s.destacado && !s.sorteoPrincipal)
+        .sort((a, b) => (a.ordenDestacado || 0) - (b.ordenDestacado || 0));
 
-        const otros = lista.filter(
-          (s) => !s.destacado && !s.sorteoPrincipal
-        );
+      const otros = lista.filter(
+        s => !s.destacado && !s.sorteoPrincipal
+      );
 
-        setResto([...destacados, ...otros]);
+      setResto([...destacados, ...otros]);
 
-        const resBanners = await fetch(`${API_URL}/banners`);
-        const banners = await resBanners.json();
+      const resBanners = await fetch(`${API_URL}/banners`);
+      const banners = await resBanners.json();
 
-        setBannerPrincipal(banners.find((b) => b.destacado) || null);
-        setBannersSecundarios(banners.filter((b) => !b.destacado));
-      } catch (err) {
-        console.error("Error cargando home:", err);
-      }
+      setBannerPrincipal(banners.find(b => b.destacado) || null);
+      setBannersSecundarios(banners.filter(b => !b.destacado));
     };
 
     load();
   }, []);
 
-  // Agrupar sorteos de a 2 con banners intermedios
+  // bloques 2 sorteos + banner
   const bloques = [];
   for (let i = 0; i < resto.length; i += 2) {
     bloques.push({
@@ -51,103 +46,86 @@ export default function Home() {
     });
   }
 
-  // 💰 Monedas doradas sutiles
+  // 💰 Monedas más chicas y sutiles
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    resize();
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
     const coins = [];
-    const coinCount = 35;
-
-    for (let i = 0; i < coinCount; i++) {
+    for (let i = 0; i < 50; i++) {
       coins.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        radius: Math.random() * 2 + 1.5,
-        vy: Math.random() * 0.6 + 0.3,
-        alpha: Math.random() * 0.6 + 0.2,
+        r: Math.random() * 2 + 1,
+        v: Math.random() * 0.5 + 0.2,
+        a: Math.random() * 0.3 + 0.1,
       });
     }
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      coins.forEach((c) => {
-        c.y += c.vy;
+      coins.forEach(c => {
+        c.y += c.v;
         if (c.y > canvas.height) {
           c.y = 0;
           c.x = Math.random() * canvas.width;
         }
-
         ctx.beginPath();
-        ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,215,0,${c.alpha})`;
-        ctx.shadowColor = "rgba(255,215,0,0.4)";
-        ctx.shadowBlur = 2;
+        ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,215,0,${c.a})`;
         ctx.fill();
       });
-
       requestAnimationFrame(animate);
     }
 
     animate();
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
   }, []);
 
   return (
     <div
       className="w-full min-h-screen px-4 py-6 relative overflow-hidden"
       style={{
-        background:
-          "linear-gradient(180deg, #0b5ed7 0%, #eaf2ff 60%, #ffffff 100%)",
+        background: "linear-gradient(180deg, #2563eb 0%, #ffffff 60%)",
       }}
     >
-      {/* Canvas monedas */}
       <canvas
         ref={canvasRef}
         className="pointer-events-none absolute inset-0 z-0"
       />
 
-      {/* BANNER PRINCIPAL */}
+      {/* 🔥 BANNER HERO */}
       {bannerPrincipal && (
-        <div className="mb-12 relative z-10">
+        <div className="mb-14 relative z-10">
           <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
             <img
               src={bannerPrincipal.url}
               alt="Banner principal"
-              className="w-full max-h-72 object-contain rounded-3xl shadow-xl transition-transform hover:scale-105"
+              className="w-full h-72 md:h-80 object-cover rounded-3xl shadow-2xl hover:scale-[1.02] transition"
             />
           </a>
         </div>
       )}
 
-      {/* SORTEO PRINCIPAL */}
+      {/* 🥇 SORTEO PRINCIPAL */}
       {sorteoPrincipal && (
         <Link
           to={`/sorteo/${sorteoPrincipal.id}`}
-          className="block relative rounded-3xl overflow-hidden shadow-2xl mb-16 transform hover:scale-105 transition z-10"
+          className="block relative rounded-3xl overflow-hidden shadow-2xl mb-16 hover:scale-[1.02] transition z-10"
         >
           <img
             src={sorteoPrincipal.imagenUrl || sorteoPrincipal.imagen}
             alt={sorteoPrincipal.titulo}
-            className="w-full h-96 object-cover brightness-110 saturate-110"
+            className="w-full h-96 object-cover"
           />
 
-          <div className="absolute inset-0 flex flex-col justify-end p-6 bg-gradient-to-t from-black/30 via-black/0 to-transparent">
-            <span className="text-sm bg-red-500 px-4 py-1 rounded-full w-fit mb-3 shadow-lg animate-pulse text-white">
+          <div className="absolute inset-0 flex flex-col justify-end p-6 text-white bg-gradient-to-t from-black/40 to-transparent">
+            <span className="bg-red-500 px-4 py-1 rounded-full w-fit mb-3 animate-pulse">
               🥇 SORTEO PRINCIPAL
             </span>
-
-            <h2 className="text-4xl font-extrabold drop-shadow-2xl text-white">
+            <h2 className="text-4xl font-extrabold drop-shadow-xl">
               {sorteoPrincipal.titulo}
             </h2>
           </div>
@@ -156,42 +134,37 @@ export default function Home() {
 
       {/* BLOQUES */}
       {bloques.map((bloque, index) => (
-        <section key={index} className="mb-20 relative z-10">
-          {/* Banner intermedio */}
+        <section key={index} className="mb-16 relative z-10">
           {bloque.banner && (
             <div className="mb-8">
-              <a
-                href={bloque.banner.link || "#"}
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a href={bloque.banner.link || "#"} target="_blank" rel="noreferrer">
                 <img
                   src={bloque.banner.url}
                   alt="Banner"
-                  className="w-full rounded-3xl shadow-lg object-contain max-h-52 transition-transform hover:scale-105"
+                  className="w-full h-52 object-cover rounded-3xl shadow-xl hover:scale-[1.02] transition"
                 />
               </a>
             </div>
           )}
 
-          {/* Miniaturas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {bloque.sorteos.map((s) => (
+            {bloque.sorteos.map(s => (
               <Link
                 key={s.id}
                 to={`/sorteo/${s.id}`}
-                className="relative bg-white rounded-2xl overflow-hidden shadow-lg hover:scale-[1.03] transition transform"
+                className="bg-white rounded-2xl overflow-hidden shadow-lg hover:scale-[1.03] transition"
               >
-                <div className="w-full h-52 bg-[#f4f7ff] flex items-center justify-center overflow-hidden">
+                <div className="h-52 bg-gray-100">
                   <img
                     src={s.imagenUrl || s.imagen}
                     alt={s.titulo}
-                    className="max-w-full max-h-full object-contain transition-transform hover:scale-105"
+                    className="w-full h-full object-contain"
                   />
                 </div>
-
-                <div className="p-4 text-gray-900">
-                  <h4 className="font-bold text-lg">{s.titulo}</h4>
+                <div className="p-4">
+                  <h4 className="font-bold text-lg text-gray-800">
+                    {s.titulo}
+                  </h4>
                 </div>
               </Link>
             ))}
@@ -199,8 +172,8 @@ export default function Home() {
         </section>
       ))}
 
-      {/* COMO FUNCIONA */}
-      <div className="relative z-10 mt-20 flex justify-center">
+      {/* 📘 COMO FUNCIONA */}
+      <div className="mt-20 flex justify-center relative z-10">
         <Link
           to="/como-funciona"
           className="bg-blue-600 text-white px-8 py-4 rounded-2xl text-lg font-bold hover:bg-blue-700 transition shadow-xl"
