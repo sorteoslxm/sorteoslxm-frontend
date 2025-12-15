@@ -1,176 +1,107 @@
 // FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/AdminBanners.js
-import React, { useEffect, useState } from "react";
-import API_URL from "../config/api";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 export default function AdminBanners() {
   const [banners, setBanners] = useState([]);
-  const [file, setFile] = useState(null);
-  const [link, setLink] = useState(""); // <--- AGREGADO
-  const [orden, setOrden] = useState(""); // Orden del banner
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const token = localStorage.getItem("adminToken");
-    if (!token) navigate("/admin/login");
-  }, [navigate]);
+  const token = localStorage.getItem("adminToken");
 
   const fetchBanners = async () => {
-    const res = await fetch(`${API_URL}/banners`);
-    setBanners(await res.json());
-  };
-
-  useEffect(fetchBanners, []);
-
-  const uploadBanner = async () => {
-    if (!file) return alert("Seleccioná una imagen");
-
-    const token = localStorage.getItem("adminToken");
-    const formData = new FormData();
-    formData.append("banner", file);
-    formData.append("link", link);  // <--- guardamos link también
-    formData.append("orden", orden); // Enviamos el orden también
-
-    const res = await fetch(`${API_URL}/banners/upload`, {
-      method: "POST",
-      headers: { "x-admin-token": token },
-      body: formData,
-    });
-
-    setFile(null);
-    setLink("");
-    setOrden(""); // Limpiamos el campo de orden
-    fetchBanners();
-  };
-
-  const deleteBanner = async (id) => {
-    const token = localStorage.getItem("adminToken");
-
-    await fetch(`${API_URL}/banners/${id}`, {
-      method: "DELETE",
+    const res = await fetch(`${API_URL}/banners`, {
       headers: { "x-admin-token": token },
     });
-
-    fetchBanners();
+    const data = await res.json();
+    setBanners(data);
   };
 
-  const togglePrincipal = async (id) => {
-    const token = localStorage.getItem("adminToken");
+  useEffect(() => {
+    fetchBanners();
+  }, []);
 
+  const setPrincipal = async (id) => {
     await fetch(`${API_URL}/banners/${id}/principal`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", "x-admin-token": token },
-    });
-
-    fetchBanners();
-  };
-
-  const updateLink = async (id, newLink) => {
-    const token = localStorage.getItem("adminToken");
-
-    await fetch(`${API_URL}/banners/${id}/link`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         "x-admin-token": token,
       },
-      body: JSON.stringify({ link: newLink }),
     });
 
     fetchBanners();
   };
 
-  const updateOrden = async (id, newOrden) => {
-    const token = localStorage.getItem("adminToken");
-
+  const updateOrden = async (id, orden) => {
     await fetch(`${API_URL}/banners/${id}/orden`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         "x-admin-token": token,
       },
-      body: JSON.stringify({ orden: newOrden }),
+      body: JSON.stringify({ orden }),
     });
 
     fetchBanners();
   };
 
+  const bannerPrincipal = banners.find((b) => b.destacado);
+  const bannersSecundarios = banners
+    .filter((b) => !b.destacado)
+    .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
+
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">Banners</h1>
+      <h1 className="text-2xl font-bold mb-6">Administrar Banners</h1>
 
-      {/* SUBIR */}
-      <div className="mb-6 space-y-2">
-        <input type="file" onChange={e => setFile(e.target.files[0])} />
+      {bannerPrincipal && (
+        <div className="mb-10">
+          <h2 className="text-xl font-semibold mb-3">🥇 Banner principal</h2>
+          <img
+            src={bannerPrincipal.imagen}
+            alt="Banner principal"
+            className="w-full max-w-4xl rounded shadow"
+          />
+        </div>
+      )}
 
-        <input
-          type="text"
-          placeholder="Link (opcional)"
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
-          className="border p-2 rounded w-full"
-        />
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Banners secundarios</h2>
 
-        <input
-          type="number"
-          placeholder="Orden (opcional)"
-          value={orden}
-          onChange={(e) => setOrden(e.target.value)}
-          className="border p-2 rounded w-full"
-        />
-
-        <button
-          onClick={uploadBanner}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Subir banner
-        </button>
-      </div>
-
-      {/* LISTA */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {banners.map((b) => (
-          <div key={b.id} className="bg-white shadow rounded p-3">
-
-            <img src={b.url} className="w-full h-32 object-cover rounded" alt="banner" />
-
-            {/* EDITAR LINK */}
-            <input
-              type="text"
-              className="border p-2 rounded w-full mt-3"
-              value={b.link || ""}
-              placeholder="Agregar/editar link"
-              onChange={(e) => updateLink(b.id, e.target.value)}
-            />
-
-            {/* ORDEN */}
-            <input
-              type="number"
-              className="border p-2 rounded w-full mt-3"
-              value={b.orden || ""}
-              placeholder="Orden"
-              onChange={(e) => updateOrden(b.id, e.target.value)}
-            />
-
-            {/* PRINCIPAL */}
-            <button
-              onClick={() => togglePrincipal(b.id)}
-              className={`px-3 py-1 rounded mt-3 w-full text-white ${
-                b.bannerPrincipal ? "bg-red-600" : "bg-blue-600"
-              }`}
+        <div className="grid md:grid-cols-2 gap-6">
+          {bannersSecundarios.map((b) => (
+            <div
+              key={b.id}
+              className="border rounded-lg p-4 shadow-sm bg-white"
             >
-              {b.bannerPrincipal ? "❌ Quitar principal" : "🥇 Banner principal"}
-            </button>
+              <img
+                src={b.imagen}
+                alt="banner"
+                className="w-full rounded mb-3"
+              />
 
-            {/* 🗑 Eliminar */}
-            <button
-              onClick={() => deleteBanner(b.id)}
-              className="bg-red-600 text-white px-3 py-1 rounded mt-2 w-full"
-            >
-              🗑 Eliminar
-            </button>
-          </div>
-        ))}
+              <div className="flex items-center justify-between mb-2">
+                <button
+                  onClick={() => setPrincipal(b.id)}
+                  className="px-3 py-1 bg-blue-600 text-white rounded"
+                >
+                  Hacer principal
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">Orden</span>
+                  <input
+                    type="number"
+                    value={b.orden ?? 0}
+                    onChange={(e) =>
+                      updateOrden(b.id, Number(e.target.value))
+                    }
+                    className="border rounded px-2 py-1 w-20"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
