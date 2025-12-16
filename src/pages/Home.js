@@ -46,7 +46,7 @@ export default function Home() {
     });
   }
 
-  // 💰 Monedas más chicas y sutiles
+  // 💰 Monedas animadas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -96,26 +96,25 @@ export default function Home() {
         className="pointer-events-none absolute inset-0 z-0"
       />
 
-      {/* 🔥 BANNER HERO */}
+      {/* 🔥 BANNER HERO (FIXED MOBILE) */}
       {bannerPrincipal && (
         <div className="mb-14 relative z-10">
           <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
             <img
-  src={bannerPrincipal.url}
-  alt="Banner principal"
-  className="
-    w-full
-    h-[40vh] md:h-80
-    min-h-[200px]
-    max-h-[420px]
-    object-cover
-    rounded-3xl
-    shadow-2xl
-    hover:scale-[1.02]
-    transition
-  "
-/>
-
+              src={bannerPrincipal.url}
+              alt="Banner principal"
+              className="
+                w-full
+                h-[40vh] md:h-80
+                min-h-[200px]
+                max-h-[420px]
+                object-contain
+                bg-black
+                rounded-3xl
+                shadow-2xl
+                transition
+              "
+            />
           </a>
         </div>
       )}
