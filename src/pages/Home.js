@@ -1,4 +1,3 @@
-// FILE: /Users/mustamusic/web/sorteos-lxm/src/pages/Home.js
 import React, { useEffect, useState, useRef } from "react";
 import API_URL from "../config/api";
 import { Link } from "react-router-dom";
@@ -96,7 +95,7 @@ export default function Home() {
         className="pointer-events-none absolute inset-0 z-0"
       />
 
-      {/* 🔥 BANNER HERO (FINAL FIX 16:5) */}
+      {/* 🔥 BANNER HERO */}
       {bannerPrincipal && (
         <div className="mb-14 relative z-10">
           <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
@@ -140,11 +139,13 @@ export default function Home() {
           {bloque.banner && (
             <div className="mb-8">
               <a href={bloque.banner.link || "#"} target="_blank" rel="noreferrer">
-                <img
-                  src={bloque.banner.url}
-                  alt="Banner"
-                  className="w-full h-52 object-cover rounded-3xl shadow-xl hover:scale-[1.02] transition"
-                />
+                <div className="w-full aspect-[16/5] rounded-3xl overflow-hidden shadow-xl hover:scale-[1.02] transition">
+                  <img
+                    src={bloque.banner.url}
+                    alt="Banner"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </a>
             </div>
           )}
