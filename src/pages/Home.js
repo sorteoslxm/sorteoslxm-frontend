@@ -95,11 +95,11 @@ export default function Home() {
         className="pointer-events-none absolute inset-0 z-0"
       />
 
-      {/* 🔥 BANNER HERO (más fino) */}
+      {/* 🔥 BANNER HERO (más fino, con límite de altura) */}
       {bannerPrincipal && (
         <div className="mb-14 relative z-10">
           <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
-            <div className="w-full aspect-[16/7] rounded-3xl overflow-hidden shadow-2xl">
+            <div className="w-full aspect-[16/7] max-h-[420px] rounded-3xl overflow-hidden shadow-2xl mx-auto">
               <img
                 src={bannerPrincipal.url}
                 alt="Banner principal"
@@ -139,7 +139,17 @@ export default function Home() {
           {bloque.banner && (
             <div className="mb-8">
               <a href={bloque.banner.link || "#"} target="_blank" rel="noreferrer">
-                <div className="w-full aspect-[16/7] rounded-3xl overflow-hidden shadow-xl hover:scale-[1.02] transition">
+                <div className="
+                  w-full
+                  aspect-[16/7]
+                  max-h-[300px]
+                  rounded-3xl
+                  overflow-hidden
+                  shadow-xl
+                  hover:scale-[1.02]
+                  transition
+                  mx-auto
+                ">
                   <img
                     src={bloque.banner.url}
                     alt="Banner"
