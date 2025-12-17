@@ -36,7 +36,6 @@ export default function Home() {
     load();
   }, []);
 
-  // bloques 2 sorteos + banner
   const bloques = [];
   for (let i = 0; i < resto.length; i += 2) {
     bloques.push({
@@ -53,16 +52,13 @@ export default function Home() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const coins = [];
-    for (let i = 0; i < 50; i++) {
-      coins.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 2 + 1,
-        v: Math.random() * 0.5 + 0.2,
-        a: Math.random() * 0.3 + 0.1,
-      });
-    }
+    const coins = Array.from({ length: 50 }).map(() => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 2 + 1,
+      v: Math.random() * 0.5 + 0.2,
+      a: Math.random() * 0.3 + 0.1,
+    }));
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -95,11 +91,11 @@ export default function Home() {
         className="pointer-events-none absolute inset-0 z-0"
       />
 
-      {/* 🔥 BANNER HERO (más fino, con límite de altura) */}
+      {/* 🔥 BANNER HERO (más fino real) */}
       {bannerPrincipal && (
         <div className="mb-14 relative z-10">
           <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
-            <div className="w-full aspect-[16/7] max-h-[420px] rounded-3xl overflow-hidden shadow-2xl mx-auto">
+            <div className="w-full aspect-[16/9] max-h-[300px] rounded-3xl overflow-hidden shadow-2xl mx-auto">
               <img
                 src={bannerPrincipal.url}
                 alt="Banner principal"
@@ -110,7 +106,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* 🥇 SORTEO PRINCIPAL (más alto – NO se toca) */}
+      {/* 🥇 SORTEO PRINCIPAL (NO se toca) */}
       {sorteoPrincipal && (
         <Link
           to={`/sorteo/${sorteoPrincipal.id}`}
@@ -139,17 +135,7 @@ export default function Home() {
           {bloque.banner && (
             <div className="mb-8">
               <a href={bloque.banner.link || "#"} target="_blank" rel="noreferrer">
-                <div className="
-                  w-full
-                  aspect-[16/7]
-                  max-h-[300px]
-                  rounded-3xl
-                  overflow-hidden
-                  shadow-xl
-                  hover:scale-[1.02]
-                  transition
-                  mx-auto
-                ">
+                <div className="w-full aspect-[16/10] max-h-[220px] rounded-3xl overflow-hidden shadow-xl hover:scale-[1.02] transition mx-auto">
                   <img
                     src={bloque.banner.url}
                     alt="Banner"
