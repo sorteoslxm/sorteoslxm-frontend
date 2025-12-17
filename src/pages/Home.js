@@ -95,11 +95,11 @@ export default function Home() {
         className="pointer-events-none absolute inset-0 z-0"
       />
 
-      {/* 🔥 BANNER HERO */}
+      {/* 🔥 BANNER HERO (más fino) */}
       {bannerPrincipal && (
         <div className="mb-14 relative z-10">
           <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
-            <div className="w-full aspect-[16/5] rounded-3xl overflow-hidden shadow-2xl">
+            <div className="w-full aspect-[16/7] rounded-3xl overflow-hidden shadow-2xl">
               <img
                 src={bannerPrincipal.url}
                 alt="Banner principal"
@@ -110,7 +110,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* 🥇 SORTEO PRINCIPAL */}
+      {/* 🥇 SORTEO PRINCIPAL (más alto – NO se toca) */}
       {sorteoPrincipal && (
         <Link
           to={`/sorteo/${sorteoPrincipal.id}`}
@@ -139,7 +139,7 @@ export default function Home() {
           {bloque.banner && (
             <div className="mb-8">
               <a href={bloque.banner.link || "#"} target="_blank" rel="noreferrer">
-                <div className="w-full aspect-[16/5] rounded-3xl overflow-hidden shadow-xl hover:scale-[1.02] transition">
+                <div className="w-full aspect-[16/7] rounded-3xl overflow-hidden shadow-xl hover:scale-[1.02] transition">
                   <img
                     src={bloque.banner.url}
                     alt="Banner"
