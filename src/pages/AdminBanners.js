@@ -16,7 +16,11 @@ export default function AdminBanners() {
   const fetchBanners = async () => {
     const res = await fetch(`${API_URL}/banners`);
     const data = await res.json();
-    setBanners(data);
+
+    // 👉 ordenamos por orden (los secundarios)
+    setBanners(
+      data.sort((a, b) => (a.orden || 0) - (b.orden || 0))
+    );
   };
 
   useEffect(() => {
@@ -84,16 +88,29 @@ export default function AdminBanners() {
     });
   };
 
+  // ⬆⬇ ORDEN
+  const updateOrden = async (id, newOrden) => {
+    const token = localStorage.getItem("adminToken");
+
+    await fetch(`${API_URL}/banners/${id}/orden`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-token": token,
+      },
+      body: JSON.stringify({ orden: newOrden }),
+    });
+
+    fetchBanners();
+  };
+
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">Banners</h1>
+      <h1 className="text-3xl font-bold mb-6">Banners</h1>
 
       {/* SUBIR */}
-      <div className="mb-6 space-y-2">
-        <input
-          type="file"
-          onChange={(e) => setFile(e.target.files[0])}
-        />
+      <div className="mb-8 space-y-2">
+        <input type="file" onChange={(e) => setFile(e.target.files[0])} />
 
         <input
           type="text"
@@ -113,7 +130,7 @@ export default function AdminBanners() {
 
       {/* LISTA */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {banners.map((b) => (
+        {banners.map((b, index) => (
           <div key={b.id} className="bg-white shadow rounded p-3">
             <img
               src={b.url}
@@ -121,7 +138,28 @@ export default function AdminBanners() {
               className="w-full h-32 object-cover rounded"
             />
 
-            {/* EDITAR LINK */}
+            <div className="flex items-center justify-between mt-2 text-sm">
+              <span className="font-bold">Orden: {b.orden ?? index}</span>
+
+              {!b.bannerPrincipal && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => updateOrden(b.id, (b.orden ?? index) - 1)}
+                    className="px-2 py-1 bg-gray-200 rounded"
+                  >
+                    ⬆
+                  </button>
+                  <button
+                    onClick={() => updateOrden(b.id, (b.orden ?? index) + 1)}
+                    className="px-2 py-1 bg-gray-200 rounded"
+                  >
+                    ⬇
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* LINK */}
             <input
               type="text"
               className="border p-2 rounded w-full mt-3"
