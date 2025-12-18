@@ -3,6 +3,7 @@ import API_URL from "../config/api";
 import { Link } from "react-router-dom";
 
 export default function Home() {
+  const [loading, setLoading] = useState(true);
   const [sorteoPrincipal, setSorteoPrincipal] = useState(null);
   const [resto, setResto] = useState([]);
   const [bannerPrincipal, setBannerPrincipal] = useState(null);
@@ -11,26 +12,34 @@ export default function Home() {
 
   useEffect(() => {
     const load = async () => {
-      const res = await fetch(`${API_URL}/sorteos`);
-      const lista = await res.json();
+      try {
+        setLoading(true);
 
-      setSorteoPrincipal(lista.find(s => s.sorteoPrincipal) || null);
+        const res = await fetch(`${API_URL}/sorteos`);
+        const lista = await res.json();
 
-      const destacados = lista
-        .filter(s => s.destacado && !s.sorteoPrincipal)
-        .sort((a, b) => (a.ordenDestacado || 0) - (b.ordenDestacado || 0));
+        setSorteoPrincipal(lista.find(s => s.sorteoPrincipal) || null);
 
-      const otros = lista.filter(
-        s => !s.destacado && !s.sorteoPrincipal
-      );
+        const destacados = lista
+          .filter(s => s.destacado && !s.sorteoPrincipal)
+          .sort((a, b) => (a.ordenDestacado || 0) - (b.ordenDestacado || 0));
 
-      setResto([...destacados, ...otros]);
+        const otros = lista.filter(
+          s => !s.destacado && !s.sorteoPrincipal
+        );
 
-      const resBanners = await fetch(`${API_URL}/banners`);
-      const banners = await resBanners.json();
+        setResto([...destacados, ...otros]);
 
-      setBannerPrincipal(banners.find(b => b.destacado) || null);
-      setBannersSecundarios(banners.filter(b => !b.destacado));
+        const resBanners = await fetch(`${API_URL}/banners`);
+        const banners = await resBanners.json();
+
+        setBannerPrincipal(banners.find(b => b.destacado) || null);
+        setBannersSecundarios(banners.filter(b => !b.destacado));
+      } catch (err) {
+        console.error("Error cargando home:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     load();
@@ -44,7 +53,7 @@ export default function Home() {
     });
   }
 
-  // 💰 Monedas animadas
+  // 💰 Monedas animadas (más chicas)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -79,6 +88,18 @@ export default function Home() {
     animate();
   }, []);
 
+  // ⏳ LOADING
+  if (loading) {
+    return (
+      <div className="w-full h-screen flex flex-col items-center justify-center bg-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4"></div>
+        <h2 className="text-xl font-bold text-gray-700">
+          Cargando sorteos...
+        </h2>
+      </div>
+    );
+  }
+
   return (
     <div
       className="w-full min-h-screen px-4 py-6 relative overflow-hidden"
@@ -91,7 +112,7 @@ export default function Home() {
         className="pointer-events-none absolute inset-0 z-0"
       />
 
-      {/* 🔥 BANNER HERO (más fino real) */}
+      {/* 🔥 BANNER HERO */}
       {bannerPrincipal && (
         <div className="mb-14 relative z-10">
           <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
@@ -106,7 +127,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* 🥇 SORTEO PRINCIPAL (NO se toca) */}
+      {/* 🥇 SORTEO PRINCIPAL */}
       {sorteoPrincipal && (
         <Link
           to={`/sorteo/${sorteoPrincipal.id}`}
