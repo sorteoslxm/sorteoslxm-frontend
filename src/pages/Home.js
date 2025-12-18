@@ -88,7 +88,6 @@ export default function Home() {
     animate();
   }, []);
 
-  // ⏳ LOADING
   if (loading) {
     return (
       <div className="w-full h-screen flex flex-col items-center justify-center bg-white">
@@ -112,7 +111,7 @@ export default function Home() {
         className="pointer-events-none absolute inset-0 z-0"
       />
 
-      {/* 🔥 BANNER HERO (OK en mobile) */}
+      {/* 🔥 BANNER HERO */}
       {bannerPrincipal && (
         <div className="mb-14 relative z-10">
           <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
@@ -159,10 +158,10 @@ export default function Home() {
                 <div
                   className="
                     w-full
-                    aspect-[16/9]
-                    md:aspect-[16/12]
-                    max-h-[200px]
-                    md:max-h-[260px]
+                    h-[100px]
+                    sm:h-[120px]
+                    md:h-[160px]
+                    lg:h-[200px]
                     rounded-3xl
                     overflow-hidden
                     shadow-xl
