@@ -53,7 +53,7 @@ export default function Home() {
     });
   }
 
-  // 💰 Monedas animadas (más chicas)
+  // 💰 Monedas animadas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -112,7 +112,7 @@ export default function Home() {
         className="pointer-events-none absolute inset-0 z-0"
       />
 
-      {/* 🔥 BANNER HERO */}
+      {/* 🔥 BANNER HERO (OK en mobile) */}
       {bannerPrincipal && (
         <div className="mb-14 relative z-10">
           <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
@@ -127,7 +127,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* 🥇 SORTEO PRINCIPAL */}
+      {/* 🥇 SORTEO PRINCIPAL (NO TOCAR) */}
       {sorteoPrincipal && (
         <Link
           to={`/sorteo/${sorteoPrincipal.id}`}
@@ -156,7 +156,21 @@ export default function Home() {
           {bloque.banner && (
             <div className="mb-8">
               <a href={bloque.banner.link || "#"} target="_blank" rel="noreferrer">
-                <div className="w-full aspect-[16/10] max-h-[220px] rounded-3xl overflow-hidden shadow-xl hover:scale-[1.02] transition mx-auto">
+                <div
+                  className="
+                    w-full
+                    aspect-[16/9]
+                    md:aspect-[16/12]
+                    max-h-[200px]
+                    md:max-h-[260px]
+                    rounded-3xl
+                    overflow-hidden
+                    shadow-xl
+                    hover:scale-[1.02]
+                    transition
+                    mx-auto
+                  "
+                >
                   <img
                     src={bloque.banner.url}
                     alt="Banner"
