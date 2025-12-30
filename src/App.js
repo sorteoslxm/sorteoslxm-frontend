@@ -5,6 +5,10 @@ import Home from "./pages/Home";
 import SorteoDetalle from "./pages/SorteoDetalle";
 import ComoFunciona from "./pages/ComoFunciona";
 
+/* 🧱 CAJAS */
+import CajasHome from "./pages/CajasHome";
+import Caja100k from "./pages/Caja100k";
+
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminBanners from "./pages/AdminBanners";
@@ -32,6 +36,10 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/sorteo/:id" element={<SorteoDetalle />} />
         <Route path="/como-funciona" element={<ComoFunciona />} />
+
+        {/* 🧱 CAJAS */}
+        <Route path="/cajas" element={<CajasHome />} />
+        <Route path="/cajas/100k" element={<Caja100k />} />
 
         {/* 💳 Post-pago MercadoPago */}
         <Route path="/success" element={<Success />} />
