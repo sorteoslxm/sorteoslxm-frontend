@@ -9,9 +9,11 @@ import ComoFunciona from "./pages/ComoFunciona";
 import CajasHome from "./pages/CajasHome";
 import Caja100k from "./pages/Caja100k";
 
+/* 🔐 ADMIN */
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminBanners from "./pages/AdminBanners";
+import AdminCajas from "./pages/AdminCajas";
 
 import AdminSorteos from "./pages/AdminSorteos";
 import AdminNuevoSorteo from "./pages/AdminNuevoSorteo";
@@ -56,6 +58,15 @@ export default function App() {
           element={
             <AdminRoute>
               <AdminDashboard />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/cajas"
+          element={
+            <AdminRoute>
+              <AdminCajas />
             </AdminRoute>
           }
         />
