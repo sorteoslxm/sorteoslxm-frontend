@@ -5,10 +5,16 @@ import API_URL from "../config/api";
 
 export default function AdminDashboard() {
   const [sorteos, setSorteos] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Verificar token
+  const esDashboardHome = location.pathname === "/admin";
+
+  /* =============================
+     AUTH CHECK
+  ============================== */
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
     if (!token) {
@@ -16,33 +22,44 @@ export default function AdminDashboard() {
     }
   }, [navigate]);
 
-  const fetchSorteos = async () => {
-    try {
-      const token = localStorage.getItem("adminToken");
-
-      const res = await fetch(`${API_URL}/sorteos`, {
-        headers: {
-          "x-admin-token": token,
-        },
-      });
-
-      const data = await res.json();
-      setSorteos(data);
-    } catch (error) {
-      console.error("Error cargando sorteos:", error);
-    }
-  };
-
+  /* =============================
+     LOAD SORTEOS (solo en /admin)
+  ============================== */
   useEffect(() => {
-    fetchSorteos();
-  }, []);
+    if (!esDashboardHome) return;
 
+    const fetchSorteos = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("adminToken");
+
+        const res = await fetch(`${API_URL}/sorteos`, {
+          headers: {
+            "x-admin-token": token,
+          },
+        });
+
+        if (!res.ok) throw new Error("Error cargando sorteos");
+
+        const data = await res.json();
+        setSorteos(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error cargando sorteos:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSorteos();
+  }, [esDashboardHome]);
+
+  /* =============================
+     LOGOUT
+  ============================== */
   const logout = () => {
     localStorage.removeItem("adminToken");
     navigate("/admin/login");
   };
-
-  const esDashboardHome = location.pathname === "/admin";
 
   return (
     <div className="min-h-screen bg-zinc-900 text-white p-6">
@@ -109,32 +126,47 @@ export default function AdminDashboard() {
         </Link>
       </div>
 
-      {/* 👉 SI ESTAMOS EN /admin MOSTRAMOS EL DASHBOARD */}
+      {/* DASHBOARD HOME */}
       {esDashboardHome && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {sorteos.map((s) => (
-            <div key={s.id} className="bg-white text-black shadow rounded p-3">
-              <img
-                src={s.imagenUrl}
-                className="w-full h-40 object-cover rounded"
-                alt="imagen sorteo"
-              />
+        <>
+          {loading ? (
+            <p className="text-gray-300">Cargando sorteos…</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {sorteos.map((s) => (
+                <div
+                  key={s.id}
+                  className="bg-white text-black shadow rounded p-3"
+                >
+                  <img
+                    src={s.imagenUrl}
+                    className="w-full h-40 object-cover rounded"
+                    alt={s.titulo}
+                  />
 
-              <h2 className="text-xl font-bold mt-2">{s.titulo}</h2>
-              <p className="text-gray-700 text-sm">{s.descripcion}</p>
+                  <h2 className="text-xl font-bold mt-2">{s.titulo}</h2>
+                  <p className="text-gray-700 text-sm">{s.descripcion}</p>
 
-              <Link
-                to={`/admin/sorteos/editar/${s.id}`}
-                className="bg-yellow-500 text-white px-3 py-1 rounded inline-block mt-3 font-bold"
-              >
-                ✏️ Editar
-              </Link>
+                  <Link
+                    to={`/admin/sorteos/editar/${s.id}`}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded inline-block mt-3 font-bold"
+                  >
+                    ✏️ Editar
+                  </Link>
+                </div>
+              ))}
+
+              {!loading && sorteos.length === 0 && (
+                <p className="text-gray-400">
+                  No hay sorteos cargados todavía.
+                </p>
+              )}
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
-      {/* 👉 ACÁ SE RENDERIZAN /admin/cajas, /admin/compras, etc */}
+      {/* SUBRUTAS */}
       <Outlet />
     </div>
   );
