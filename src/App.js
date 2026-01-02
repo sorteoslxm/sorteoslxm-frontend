@@ -7,7 +7,8 @@ import ComoFunciona from "./pages/ComoFunciona";
 
 /* 🧱 CAJAS */
 import CajasHome from "./pages/CajasHome";
-import Caja100k from "./pages/Caja100k";
+import CajaDetalle from "./pages/CajaDetalle";
+// import Caja100k from "./pages/Caja100k"; // ⚠️ DEPRECADO (hardcodeado)
 
 /* 🔐 ADMIN */
 import AdminLogin from "./pages/AdminLogin";
@@ -39,7 +40,8 @@ export default function App() {
 
         {/* 🧱 CAJAS */}
         <Route path="/cajas" element={<CajasHome />} />
-        <Route path="/cajas/100k" element={<Caja100k />} />
+        <Route path="/cajas/:slug" element={<CajaDetalle />} />
+        {/* <Route path="/cajas/100k" element={<Caja100k />} /> */}
 
         {/* 💳 Post-pago MercadoPago */}
         <Route path="/success" element={<Success />} />
@@ -50,7 +52,7 @@ export default function App() {
         {/* 🔐 Login Admin */}
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* 🛠️ ADMIN PROTEGIDO (LAYOUT) */}
+        {/* 🛠️ ADMIN PROTEGIDO */}
         <Route
           path="/admin"
           element={
