@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import API_URL from "../../config/api";
+import API_URL from "../config/api"; // ✅ IMPORT CORRECTO
 
 const PREMIO_BASE = () => ({
   nombre: "",
@@ -35,7 +35,7 @@ export default function AdminCajas() {
     try {
       const res = await fetch(`${API_URL}/cajas`);
       const data = await res.json();
-      setCajas(data);
+      setCajas(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -123,121 +123,6 @@ export default function AdminCajas() {
     <div className="p-8 text-white">
       <h1 className="text-3xl font-extrabold mb-8">📦 Admin · Cajas</h1>
 
-      {/* =============================
-         CREAR CAJA
-      ============================== */}
-      <div className="bg-black/40 p-6 rounded-2xl mb-12">
-        <h2 className="text-xl font-bold mb-6">➕ Nueva caja</h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <input
-            name="titulo"
-            placeholder="Título"
-            value={form.titulo}
-            onChange={handleChange}
-            className="p-3 rounded text-black"
-          />
-          <input
-            name="slug"
-            placeholder="Slug (100k)"
-            value={form.slug}
-            onChange={handleChange}
-            className="p-3 rounded text-black"
-          />
-          <input
-            name="precioCaja"
-            placeholder="Precio caja"
-            value={form.precioCaja}
-            onChange={handleChange}
-            className="p-3 rounded text-black"
-          />
-          <input
-            name="totalCajas"
-            placeholder="Total cajas"
-            value={form.totalCajas}
-            onChange={handleChange}
-            className="p-3 rounded text-black"
-          />
-        </div>
-
-        {/* PREMIOS */}
-        <h3 className="font-bold mb-4">🎁 Premios</h3>
-
-        <div className="space-y-4">
-          {form.premios.map((p, i) => (
-            <div
-              key={i}
-              className="bg-black/30 p-4 rounded-xl grid grid-cols-1 md:grid-cols-6 gap-3"
-            >
-              <input
-                placeholder="Nombre"
-                value={p.nombre}
-                onChange={e =>
-                  handlePremioChange(i, "nombre", e.target.value)
-                }
-                className="p-2 rounded text-black"
-              />
-              <input
-                placeholder="Monto"
-                value={p.monto}
-                onChange={e =>
-                  handlePremioChange(i, "monto", e.target.value)
-                }
-                className="p-2 rounded text-black"
-              />
-              <input
-                placeholder="Cantidad"
-                value={p.cantidadTotal}
-                onChange={e =>
-                  handlePremioChange(i, "cantidadTotal", e.target.value)
-                }
-                className="p-2 rounded text-black"
-              />
-              <input
-                placeholder="Desbloquear en ventas"
-                value={p.desbloqueoPorVentas || ""}
-                onChange={e =>
-                  handlePremioChange(i, "desbloqueoPorVentas", e.target.value)
-                }
-                className="p-2 rounded text-black"
-              />
-
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={p.desbloqueado}
-                  onChange={e =>
-                    handlePremioChange(i, "desbloqueado", e.target.checked)
-                  }
-                />
-                Desbloqueado
-              </label>
-
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={p.visible}
-                  onChange={e =>
-                    handlePremioChange(i, "visible", e.target.checked)
-                  }
-                />
-                Visible
-              </label>
-            </div>
-          ))}
-        </div>
-
-        <button
-          onClick={crearCaja}
-          className="mt-6 bg-yellow-400 text-black px-8 py-3 rounded-xl font-extrabold"
-        >
-          Crear caja
-        </button>
-      </div>
-
-      {/* =============================
-         LISTADO
-      ============================== */}
       {loading ? (
         <p>Cargando…</p>
       ) : (
@@ -254,26 +139,15 @@ export default function AdminCajas() {
                 </div>
               </div>
 
-              <div className="flex gap-4 items-center">
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-bold ${
-                    c.estado === "activa"
-                      ? "bg-green-500"
-                      : "bg-red-500"
-                  }`}
-                >
-                  {c.estado.toUpperCase()}
-                </span>
-
-                {c.estado === "activa" && (
-                  <button
-                    onClick={() => cerrarCaja(c.id)}
-                    className="bg-red-500 px-4 py-2 rounded-lg font-bold"
-                  >
-                    Cerrar
-                  </button>
-                )}
-              </div>
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-bold ${
+                  c.estado === "activa"
+                    ? "bg-green-500"
+                    : "bg-red-500"
+                }`}
+              >
+                {c.estado.toUpperCase()}
+              </span>
             </div>
           ))}
         </div>
