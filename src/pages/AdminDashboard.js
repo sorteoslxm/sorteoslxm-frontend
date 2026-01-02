@@ -166,7 +166,7 @@ export default function AdminDashboard() {
         </>
       )}
 
-      {/* SUBRUTAS */}
+      {/* SUBRUTAS (/admin/cajas, /admin/compras, etc) */}
       <Outlet />
     </div>
   );
