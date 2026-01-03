@@ -37,7 +37,14 @@ export default function CajaDetalle() {
   }
 
   const progreso =
-    (caja.cajasVendidas / caja.totalCajas) * 100;
+    caja.totalCajas > 0
+      ? Math.round((caja.cajasVendidas / caja.totalCajas) * 100)
+      : 0;
+
+  // 👉 ORDEN: premio mayor primero
+  const premiosOrdenados = [...(caja.premios || [])]
+    .filter((p) => p.visible)
+    .reverse();
 
   return (
     <div className="min-h-screen px-4 py-10 text-white bg-black">
@@ -54,7 +61,7 @@ export default function CajaDetalle() {
           </div>
           <div className="h-3 bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-yellow-500"
+              className="h-full bg-yellow-500 transition-all"
               style={{ width: `${progreso}%` }}
             />
           </div>
@@ -69,29 +76,38 @@ export default function CajaDetalle() {
         <div className="space-y-4">
           <h2 className="text-2xl font-bold">🎁 Premios</h2>
 
-          {caja.premios
-            .filter(p => p.visible)
-            .map((p, i) => (
-              <div
-                key={i}
-                className={`p-4 rounded-xl border ${
-                  p.desbloqueado
-                    ? "border-green-500 bg-green-500/10"
-                    : "border-white/10 bg-white/5"
-                }`}
-              >
-                <div className="font-bold">{p.nombre}</div>
-                <div className="text-sm text-gray-300">
-                  Cantidad: {p.cantidadTotal}
-                </div>
+          {premiosOrdenados.map((p, i) => (
+            <div
+              key={i}
+              className={`p-4 rounded-xl border flex justify-between items-center ${
+                p.desbloqueado
+                  ? "border-green-500 bg-green-500/10"
+                  : "border-white/10 bg-white/5"
+              }`}
+            >
+              <div>
+                <div className="font-bold text-lg">{p.nombre}</div>
 
-                {!p.desbloqueado && p.desbloqueoPorVentas && (
+                {!p.desbloqueado && (
                   <div className="text-xs text-yellow-400 mt-1">
-                    Se desbloquea en la venta #{p.desbloqueoPorVentas}
+                    🔒 Premio bloqueado
+                  </div>
+                )}
+
+                {p.desbloqueado && (
+                  <div className="text-xs text-green-400 mt-1">
+                    ✅ Premio activo
                   </div>
                 )}
               </div>
-            ))}
+
+              {p.nombre.toLowerCase().includes("mayor") && (
+                <span className="px-3 py-1 rounded-full bg-yellow-500 text-black text-xs font-extrabold">
+                  PREMIO MAYOR
+                </span>
+              )}
+            </div>
+          ))}
         </div>
 
         {/* CTA */}
