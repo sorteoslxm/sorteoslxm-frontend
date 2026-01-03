@@ -21,7 +21,7 @@ import AdminEditarSorteo from "./pages/AdminEditarSorteo";
 import AdminCompras from "./pages/AdminCompras";
 import AdminChances from "./pages/AdminChances";
 import AdminDashboardVentas from "./pages/AdminDashboardVentas";
-
+import AdminEditarCaja from "./pages/AdminEditarCaja";
 import AdminRoute from "./components/AdminRoute";
 
 // ⭐ Estados de pago
@@ -63,6 +63,7 @@ export default function App() {
         >
           <Route index element={<AdminDashboard />} />
           <Route path="cajas" element={<AdminCajas />} />
+          <Route path="cajas/editar/:id" element={<AdminEditarCaja />} />
           <Route path="compras" element={<AdminCompras />} />
           <Route path="chances" element={<AdminChances />} />
           <Route path="dashboard/ventas" element={<AdminDashboardVentas />} />

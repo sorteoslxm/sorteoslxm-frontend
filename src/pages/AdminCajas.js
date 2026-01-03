@@ -1,5 +1,6 @@
 // FILE: web/sorteos-lxm/src/pages/AdminCajas.js
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API_URL from "../config/api";
 
 /* =============================
@@ -15,6 +16,8 @@ const PREMIO_BASE = () => ({
 });
 
 export default function AdminCajas() {
+  const navigate = useNavigate();
+
   const [cajas, setCajas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -33,12 +36,14 @@ export default function AdminCajas() {
   });
 
   /* =============================
-     LOAD CAJAS (ADMIN)
+     LOAD CAJAS
   ============================== */
   const loadCajas = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/admin/cajas`);
+      const res = await fetch(`${API_URL}/admin/cajas`, {
+        credentials: "include",
+      });
       const data = await res.json();
       setCajas(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -55,7 +60,7 @@ export default function AdminCajas() {
   /* =============================
      HANDLERS
   ============================== */
-  const handleChange = e => {
+  const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -81,7 +86,7 @@ export default function AdminCajas() {
       slug: form.slug,
       precioCaja: Number(form.precioCaja),
       totalCajas: Number(form.totalCajas),
-      premios: form.premios.map(p => ({
+      premios: form.premios.map((p) => ({
         ...p,
         monto: Number(p.monto || 0),
         cantidadTotal: Number(p.cantidadTotal || 1),
@@ -94,6 +99,7 @@ export default function AdminCajas() {
       const res = await fetch(`${API_URL}/admin/cajas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -124,20 +130,27 @@ export default function AdminCajas() {
   };
 
   /* =============================
-     CERRAR CAJA
+     CAMBIAR ESTADO
   ============================== */
-  const cerrarCaja = async id => {
-    if (!window.confirm("¿Cerrar esta caja?")) return;
+  const cambiarEstado = async (id, estado) => {
+    if (
+      estado === "cerrada" &&
+      !window.confirm("¿Cerrar esta caja definitivamente?")
+    )
+      return;
 
-    await fetch(`${API_URL}/admin/cajas/${id}/cerrar`, {
+    await fetch(`${API_URL}/admin/cajas/${id}/estado`, {
       method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ estado }),
     });
 
     loadCajas();
   };
 
   return (
-    <div className="p-8 text-white space-y-12">
+    <div className="p-8 text-white space-y-14">
       <h1 className="text-3xl font-extrabold">📦 Admin · Cajas</h1>
 
       {/* =============================
@@ -192,40 +205,40 @@ export default function AdminCajas() {
             >
               <input
                 value={p.nombre}
-                onChange={e =>
+                onChange={(e) =>
                   handlePremioChange(i, "nombre", e.target.value)
                 }
-                placeholder="Nombre"
                 className="bg-black p-2 rounded"
               />
 
               <input
                 type="number"
                 value={p.monto}
-                onChange={e =>
+                onChange={(e) =>
                   handlePremioChange(i, "monto", e.target.value)
                 }
-                placeholder="Monto"
                 className="bg-black p-2 rounded"
               />
 
               <input
                 type="number"
                 value={p.cantidadTotal}
-                onChange={e =>
+                onChange={(e) =>
                   handlePremioChange(i, "cantidadTotal", e.target.value)
                 }
-                placeholder="Cantidad"
                 className="bg-black p-2 rounded"
               />
 
               <input
                 type="number"
                 value={p.desbloqueoPorVentas || ""}
-                onChange={e =>
-                  handlePremioChange(i, "desbloqueoPorVentas", e.target.value)
+                onChange={(e) =>
+                  handlePremioChange(
+                    i,
+                    "desbloqueoPorVentas",
+                    e.target.value
+                  )
                 }
-                placeholder="Se desbloquea en venta #"
                 className="bg-black p-2 rounded"
               />
 
@@ -233,7 +246,7 @@ export default function AdminCajas() {
                 <input
                   type="checkbox"
                   checked={p.visible}
-                  onChange={e =>
+                  onChange={(e) =>
                     handlePremioChange(i, "visible", e.target.checked)
                   }
                 />
@@ -264,7 +277,7 @@ export default function AdminCajas() {
           <p className="text-gray-400">Todavía no hay cajas creadas.</p>
         ) : (
           <div className="space-y-4">
-            {cajas.map(c => (
+            {cajas.map((c) => (
               <div
                 key={c.id}
                 className="bg-black/60 p-5 rounded-2xl flex justify-between items-center"
@@ -281,16 +294,45 @@ export default function AdminCajas() {
                     className={`px-3 py-1 rounded-full text-sm font-bold ${
                       c.estado === "activa"
                         ? "bg-green-500"
-                        : "bg-red-500"
+                        : c.estado === "pausada"
+                        ? "bg-yellow-500 text-black"
+                        : "bg-red-600"
                     }`}
                   >
                     {c.estado.toUpperCase()}
                   </span>
 
+                  <button
+                    onClick={() =>
+                      navigate(`/admin/cajas/editar/${c.id}`)
+                    }
+                    className="bg-blue-600 px-3 py-1 rounded font-bold"
+                  >
+                    Editar
+                  </button>
+
+                  {c.estado !== "activa" && (
+                    <button
+                      onClick={() => cambiarEstado(c.id, "activa")}
+                      className="bg-green-600 px-3 py-1 rounded font-bold"
+                    >
+                      Activar
+                    </button>
+                  )}
+
                   {c.estado === "activa" && (
                     <button
-                      onClick={() => cerrarCaja(c.id)}
-                      className="bg-red-600 px-3 py-1 rounded font-bold"
+                      onClick={() => cambiarEstado(c.id, "pausada")}
+                      className="bg-yellow-600 text-black px-3 py-1 rounded font-bold"
+                    >
+                      Pausar
+                    </button>
+                  )}
+
+                  {c.estado !== "cerrada" && (
+                    <button
+                      onClick={() => cambiarEstado(c.id, "cerrada")}
+                      className="bg-red-700 px-3 py-1 rounded font-bold"
                     >
                       Cerrar
                     </button>
