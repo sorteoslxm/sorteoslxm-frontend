@@ -1,3 +1,4 @@
+// FILE: web/sorteos-lxm/src/pages/CajasHome.js
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API_URL from "../config/api";
@@ -7,11 +8,16 @@ export default function CajasHome() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
+    const loadCajas = async () => {
       try {
         const res = await fetch(`${API_URL}/cajas`);
         const data = await res.json();
-        setCajas(Array.isArray(data) ? data : []);
+
+        const activas = Array.isArray(data)
+          ? data.filter(c => c.estado === "activa")
+          : [];
+
+        setCajas(activas);
       } catch (err) {
         console.error("Error cargando cajas:", err);
       } finally {
@@ -19,7 +25,7 @@ export default function CajasHome() {
       }
     };
 
-    load();
+    loadCajas();
   }, []);
 
   return (
@@ -32,12 +38,11 @@ export default function CajasHome() {
     >
       {/* HERO */}
       <section className="max-w-6xl mx-auto text-center mb-20">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-6 drop-shadow-xl">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
           🎁 Cajas con premios ocultos
         </h1>
         <p className="text-gray-300 text-lg max-w-2xl mx-auto">
           Elegí tus chances, abrí cajas y descubrí si te llevás un premio.
-          Algunas están vacías. Otras pagan fuerte.
         </p>
       </section>
 
@@ -48,60 +53,75 @@ export default function CajasHome() {
         ) : cajas.length === 0 ? (
           <p className="text-gray-400">No hay cajas activas.</p>
         ) : (
-          cajas.map(caja => (
-            <Link
-              key={caja.id}
-              to={`/cajas/${caja.slug}`}
-              className="
-                relative
-                rounded-3xl
-                p-6
-                border
-                border-yellow-500/40
-                bg-gradient-to-b from-yellow-400/20 to-yellow-900/40
-                shadow-2xl
-                hover:scale-[1.04]
-                transition
-              "
-            >
-              <span className="absolute top-4 right-4 bg-yellow-500 text-black px-3 py-1 rounded-full font-bold text-sm shadow">
-                ACTIVA
-              </span>
+          cajas.map(caja => {
+            const porcentaje =
+              caja.totalCajas > 0
+                ? Math.round(
+                    (caja.cajasVendidas / caja.totalCajas) * 100
+                  )
+                : 0;
 
-              <div className="mb-6">
+            return (
+              <Link
+                key={caja.id}
+                to={`/cajas/${caja.slug}`}
+                className="
+                  relative rounded-3xl p-6
+                  border border-yellow-500/40
+                  bg-gradient-to-b from-yellow-400/20 to-yellow-900/40
+                  shadow-2xl
+                  hover:shadow-yellow-500/40
+                  hover:shadow-2xl
+                  hover:scale-[1.04]
+                  transition
+                "
+              >
+                {/* BADGE */}
+                <span className="absolute top-4 right-4 bg-green-500 text-black px-3 py-1 rounded-full font-bold text-sm">
+                  ACTIVA
+                </span>
+
+                {/* TITULO */}
                 <h2 className="text-2xl font-extrabold text-yellow-300 mb-2">
-                  💰 {caja.titulo}
+                  {caja.titulo}
                 </h2>
-                <p className="text-gray-200">
-                  {caja.totalCajas} cajas •{" "}
-                  {caja.cajasVendidas ?? 0} vendidas
-                </p>
-              </div>
 
-              <div className="flex items-center justify-between mb-8">
-                <div className="text-white">
+                {/* INFO */}
+                <p className="text-gray-200 mb-4">
+                  {caja.totalCajas} cajas ·{" "}
+                  {caja.premios?.length || 0} premios
+                </p>
+
+                {/* PRECIO */}
+                <div className="mb-4">
                   <span className="text-sm text-gray-300">Desde</span>
-                  <div className="text-2xl font-extrabold">
-                    ${caja.precioCaja?.toLocaleString("es-AR")}
+                  <div className="text-2xl font-extrabold text-white">
+                    ${caja.precioCaja.toLocaleString()}
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-yellow-500 text-black text-center py-3 rounded-xl font-extrabold tracking-wide">
-                VER CAJA
-              </div>
-            </Link>
-          ))
+                {/* PROGRESO */}
+                <div className="mb-6">
+                  <div className="flex justify-between text-xs text-gray-300 mb-1">
+                    <span>Vendidas</span>
+                    <span>{porcentaje}%</span>
+                  </div>
+                  <div className="w-full bg-black/40 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-yellow-400 h-full transition-all duration-500"
+                      style={{ width: `${porcentaje}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* CTA */}
+                <div className="bg-yellow-500 text-black text-center py-3 rounded-xl font-extrabold">
+                  VER CAJA
+                </div>
+              </Link>
+            );
+          })
         )}
-      </section>
-
-      {/* CONFIANZA */}
-      <section className="max-w-4xl mx-auto mt-24 text-center">
-        <p className="text-gray-400 text-sm">
-          ✔ Pagos con MercadoPago &nbsp;•&nbsp;
-          ✔ Premios reales &nbsp;•&nbsp;
-          ✔ Resultados inmediatos
-        </p>
       </section>
     </div>
   );
