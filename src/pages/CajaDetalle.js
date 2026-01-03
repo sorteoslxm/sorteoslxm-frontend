@@ -41,10 +41,10 @@ export default function CajaDetalle() {
       ? Math.round((caja.cajasVendidas / caja.totalCajas) * 100)
       : 0;
 
-  // 👉 ORDEN: premio mayor primero
+  // 👉 Premio mayor primero + solo visibles
   const premiosOrdenados = [...(caja.premios || [])]
     .filter((p) => p.visible)
-    .reverse();
+    .sort((a, b) => b.monto - a.monto);
 
   return (
     <div className="min-h-screen px-4 py-10 text-white bg-black">
@@ -69,7 +69,7 @@ export default function CajaDetalle() {
 
         {/* PRECIO */}
         <div className="text-2xl font-bold">
-          Precio por caja: ${caja.precioCaja.toLocaleString()}
+          Precio por caja: ${caja.precioCaja.toLocaleString("es-AR")}
         </div>
 
         {/* PREMIOS */}
@@ -79,26 +79,13 @@ export default function CajaDetalle() {
           {premiosOrdenados.map((p, i) => (
             <div
               key={i}
-              className={`p-4 rounded-xl border flex justify-between items-center ${
-                p.desbloqueado
-                  ? "border-green-500 bg-green-500/10"
-                  : "border-white/10 bg-white/5"
-              }`}
+              className="p-4 rounded-xl border border-yellow-500/30 bg-zinc-900 flex justify-between items-center"
             >
               <div>
                 <div className="font-bold text-lg">{p.nombre}</div>
-
-                {!p.desbloqueado && (
-                  <div className="text-xs text-yellow-400 mt-1">
-                    🔒 Premio bloqueado
-                  </div>
-                )}
-
-                {p.desbloqueado && (
-                  <div className="text-xs text-green-400 mt-1">
-                    ✅ Premio activo
-                  </div>
-                )}
+                <div className="text-sm text-gray-300">
+                  ${p.monto.toLocaleString("es-AR")}
+                </div>
               </div>
 
               {p.nombre.toLowerCase().includes("mayor") && (
