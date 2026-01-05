@@ -5,26 +5,27 @@ import Home from "./pages/Home";
 import SorteoDetalle from "./pages/SorteoDetalle";
 import ComoFunciona from "./pages/ComoFunciona";
 
-/* 🧱 CAJAS */
+/* 🧱 CAJAS (PÚBLICO) */
 import CajasHome from "./pages/CajasHome";
 import CajaDetalle from "./pages/CajaDetalle";
-// import Caja100k from "./pages/Caja100k"; // ⚠️ DEPRECADO (hardcodeado)
 
 /* 🔐 ADMIN */
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminBanners from "./pages/AdminBanners";
 import AdminCajas from "./pages/AdminCajas";
+import AdminEditarCaja from "./pages/AdminEditarCaja";
 import AdminSorteos from "./pages/AdminSorteos";
 import AdminNuevoSorteo from "./pages/AdminNuevoSorteo";
 import AdminEditarSorteo from "./pages/AdminEditarSorteo";
 import AdminCompras from "./pages/AdminCompras";
 import AdminChances from "./pages/AdminChances";
 import AdminDashboardVentas from "./pages/AdminDashboardVentas";
-import AdminEditarCaja from "./pages/AdminEditarCaja";
+import AdminPacks from "./components/AdminPacks"; // 👈 packs por caja
+
 import AdminRoute from "./components/AdminRoute";
 
-// ⭐ Estados de pago
+/* ⭐ Estados de pago */
 import Success from "./pages/Success";
 import Pending from "./pages/Pending";
 import Failure from "./pages/Failure";
@@ -33,26 +34,25 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* 🌍 Público */}
+        {/* 🌍 PÚBLICO */}
         <Route path="/" element={<Home />} />
         <Route path="/sorteo/:id" element={<SorteoDetalle />} />
         <Route path="/como-funciona" element={<ComoFunciona />} />
 
-        {/* 🧱 CAJAS */}
+        {/* 🧱 CAJAS (WEB) */}
         <Route path="/cajas" element={<CajasHome />} />
         <Route path="/cajas/:slug" element={<CajaDetalle />} />
-        {/* <Route path="/cajas/100k" element={<Caja100k />} /> */}
 
-        {/* 💳 Post-pago MercadoPago */}
+        {/* 💳 POST PAGO */}
         <Route path="/success" element={<Success />} />
         <Route path="/pago/exito" element={<Success />} />
         <Route path="/pago/pendiente" element={<Pending />} />
         <Route path="/pago/error" element={<Failure />} />
 
-        {/* 🔐 Login Admin */}
+        {/* 🔐 LOGIN ADMIN */}
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* 🛠️ ADMIN PROTEGIDO */}
+        {/* 🛠️ ADMIN (PROTEGIDO) */}
         <Route
           path="/admin"
           element={
@@ -62,15 +62,22 @@ export default function App() {
           }
         >
           <Route index element={<AdminDashboard />} />
+
+          {/* 📦 CAJAS ADMIN */}
           <Route path="cajas" element={<AdminCajas />} />
           <Route path="cajas/editar/:id" element={<AdminEditarCaja />} />
+          <Route path="cajas/:cajaId/packs" element={<AdminPacks />} />
+
+          {/* 🎟️ SORTEOS */}
+          <Route path="sorteos" element={<AdminSorteos />} />
+          <Route path="sorteos/nuevo" element={<AdminNuevoSorteo />} />
+          <Route path="sorteos/editar/:id" element={<AdminEditarSorteo />} />
+
+          {/* 💰 OTROS */}
           <Route path="compras" element={<AdminCompras />} />
           <Route path="chances" element={<AdminChances />} />
           <Route path="dashboard/ventas" element={<AdminDashboardVentas />} />
           <Route path="banners" element={<AdminBanners />} />
-          <Route path="sorteos" element={<AdminSorteos />} />
-          <Route path="sorteos/nuevo" element={<AdminNuevoSorteo />} />
-          <Route path="sorteos/editar/:id" element={<AdminEditarSorteo />} />
         </Route>
       </Routes>
     </BrowserRouter>

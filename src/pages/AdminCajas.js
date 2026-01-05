@@ -1,278 +1,98 @@
-// FILE: web/sorteos-lxm/src/pages/AdminCajas.js
-import React, { useState } from "react";
+// FILE: src/pages/AdminCajas.js
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API_URL from "../config/api";
-import AdminPacks from "../components/AdminPacks";
 
-export default function AdminCajas({ cajaId }) {
+export default function AdminCajas() {
+  const [cajas, setCajas] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     nombre: "",
-    totalCajas: "", // ✅ STOCK TOTAL DE CAJAS
+    totalCajas: "",
     premios: [
-      {
-        nombre: "Premio Mayor",
-        monto: "",
-        cantidadTotal: "",
-        desbloqueoPorVentas: "",
-        visible: true,
-        esMayor: true,
-      },
-      {
-        nombre: "Premios $20.000",
-        monto: "",
-        cantidadTotal: "",
-        desbloqueoPorVentas: "",
-        visible: true,
-        esMayor: false,
-      },
-      {
-        nombre: "Premios $10.000",
-        monto: "",
-        cantidadTotal: "",
-        desbloqueoPorVentas: "",
-        visible: true,
-        esMayor: false,
-      },
-      {
-        nombre: "Créditos",
-        monto: "",
-        cantidadTotal: "",
-        desbloqueoPorVentas: "",
-        visible: true,
-        esMayor: false,
-      },
+      { nombre: "Premio Mayor", monto: "", cantidadTotal: "", desbloqueoPorVentas: "", visible: true, esMayor: true },
+      { nombre: "Premios $20.000", monto: "", cantidadTotal: "", desbloqueoPorVentas: "", visible: true, esMayor: false },
+      { nombre: "Premios $10.000", monto: "", cantidadTotal: "", desbloqueoPorVentas: "", visible: true, esMayor: false },
+      { nombre: "Créditos", monto: "", cantidadTotal: "", desbloqueoPorVentas: "", visible: true, esMayor: false },
     ],
   });
 
-  /* =========================
-     PREMIOS
-  ========================= */
+  const navigate = useNavigate();
+
+  const loadCajas = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/cajas`);
+      const data = await res.json();
+      setCajas(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadCajas(); }, []);
+
   const handlePremioChange = (index, field, value) => {
     setForm((prev) => {
       const premios = [...prev.premios];
-      premios[index] = {
-        ...premios[index],
-        [field]: value,
-      };
+      premios[index] = { ...premios[index], [field]: value };
       return { ...prev, premios };
     });
   };
 
-  /* =========================
-     CREAR CAJA
-  ========================= */
   const handleCrearCaja = async () => {
-    if (!form.nombre) {
-      alert("Tenés que poner un nombre a la caja");
-      return;
-    }
-
-    if (!form.totalCajas || Number(form.totalCajas) <= 0) {
-      alert("Tenés que definir el stock total de cajas");
-      return;
-    }
+    if (!form.nombre || !form.totalCajas) return alert("Nombre y stock son obligatorios");
 
     try {
-      const payload = {
-        ...form,
-        totalCajas: Number(form.totalCajas), // 🔒 aseguramos número
-      };
-
       const res = await fetch(`${API_URL}/admin/cajas`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, totalCajas: Number(form.totalCajas) }),
       });
+      if (!res.ok) throw new Error("Error creando caja");
+      setForm({ ...form, nombre: "", totalCajas: "" }); // reset
+      loadCajas();
+    } catch (err) { console.error(err); alert(err.message); }
+  };
 
-      if (!res.ok) {
-        throw new Error("Error al crear la caja");
-      }
-
-      alert("Caja creada correctamente ✅");
-      window.location.reload(); // simple por ahora
-    } catch (err) {
-      console.error(err);
-      alert("Error creando la caja");
-    }
+  const handleCerrarCaja = async (id) => {
+    if (!confirm("Cerrar caja? No se podrá volver a activar")) return;
+    try {
+      await fetch(`${API_URL}/admin/cajas/${id}/cerrar`, { method: "PUT" });
+      loadCajas();
+    } catch (err) { console.error(err); }
   };
 
   return (
-    <div className="space-y-10">
-      <h2 className="text-xl font-bold text-white">
-        Crear / Editar Caja
-      </h2>
+    <div className="p-8 text-white max-w-6xl mx-auto space-y-10">
+      <h1 className="text-3xl font-extrabold">Cajas</h1>
 
-      {/* ================= DATOS CAJA ================= */}
+      {/* LISTA CAJAS */}
       <div className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm text-gray-400">
-            Nombre de la caja
-          </label>
-          <input
-            value={form.nombre}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                nombre: e.target.value,
-              }))
-            }
-            placeholder="Ej: Caja Enero 2026"
-            className="bg-black p-3 rounded w-full border border-zinc-700"
-          />
-        </div>
-
-        {/* ✅ STOCK TOTAL */}
-        <div className="space-y-2">
-          <label className="text-sm text-gray-400">
-            Stock total de cajas (control interno)
-          </label>
-          <input
-            type="number"
-            min="1"
-            value={form.totalCajas}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                totalCajas: e.target.value,
-              }))
-            }
-            placeholder="Ej: 500"
-            className="bg-black p-3 rounded w-full border border-zinc-700"
-          />
-        </div>
-      </div>
-
-      {/* ================= PREMIOS ================= */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold text-yellow-400">
-          🎁 Premios
-        </h3>
-
-        {[...form.premios]
-          .sort(
-            (a, b) =>
-              (b.esMayor === true) - (a.esMayor === true)
-          )
-          .map((p, i) => (
-            <div
-              key={i}
-              className="bg-zinc-800 p-4 rounded-xl space-y-3 border border-zinc-700"
-            >
-              <h4 className="font-bold text-yellow-400">
-                {p.esMayor ? "🏆 Premio Mayor" : "Premio"}
-              </h4>
-
-              <div className="grid md:grid-cols-4 gap-3">
-                <div>
-                  <label className="text-xs text-gray-400">
-                    Nombre
-                  </label>
-                  <input
-                    value={p.nombre || ""}
-                    onChange={(e) =>
-                      handlePremioChange(
-                        i,
-                        "nombre",
-                        e.target.value
-                      )
-                    }
-                    className="bg-black p-2 rounded w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs text-gray-400">
-                    Monto
-                  </label>
-                  <input
-                    type="number"
-                    value={p.monto || ""}
-                    onChange={(e) =>
-                      handlePremioChange(
-                        i,
-                        "monto",
-                        e.target.value
-                      )
-                    }
-                    className="bg-black p-2 rounded w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs text-gray-400">
-                    Cantidad total (interno)
-                  </label>
-                  <input
-                    type="number"
-                    value={p.cantidadTotal || ""}
-                    onChange={(e) =>
-                      handlePremioChange(
-                        i,
-                        "cantidadTotal",
-                        e.target.value
-                      )
-                    }
-                    className="bg-black p-2 rounded w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs text-gray-400">
-                    Desbloqueo venta #
-                  </label>
-                  <input
-                    type="number"
-                    value={p.desbloqueoPorVentas || ""}
-                    onChange={(e) =>
-                      handlePremioChange(
-                        i,
-                        "desbloqueoPorVentas",
-                        e.target.value
-                      )
-                    }
-                    className="bg-black p-2 rounded w-full"
-                  />
-                </div>
-              </div>
-
-              <label className="flex items-center gap-2 text-sm mt-2 text-gray-300">
-                <input
-                  type="checkbox"
-                  checked={p.visible}
-                  onChange={(e) =>
-                    handlePremioChange(
-                      i,
-                      "visible",
-                      e.target.checked
-                    )
-                  }
-                />
-                Visible en la web
-              </label>
+        {loading ? <p>Cargando cajas…</p> : cajas.map(c => (
+          <div key={c.id} className="bg-zinc-800 p-4 rounded-xl flex justify-between items-center border border-zinc-700">
+            <div>
+              <p className="font-bold text-white">{c.nombre}</p>
+              <p className="text-sm text-gray-400">Stock: {c.totalCajas} — Estado: {c.estado}</p>
             </div>
-          ))}
+            <div className="flex gap-2">
+              <button onClick={() => navigate(`/admin/cajas/editar/${c.id}`)} className="px-3 py-1 rounded bg-yellow-500 text-black">Editar</button>
+              {c.estado !== "cerrada" && (
+                <button onClick={() => handleCerrarCaja(c.id)} className="px-3 py-1 rounded bg-red-600 text-white">Cerrar</button>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* ================= PACKS ================= */}
-      {cajaId && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-bold text-yellow-400">
-            💰 Packs de compra
-          </h3>
-
-          <AdminPacks cajaId={cajaId} />
-        </div>
-      )}
-
-      {/* ================= BOTÓN CREAR ================= */}
-      <div className="flex justify-end">
-        <button
-          onClick={handleCrearCaja}
-          className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-3 rounded-xl"
-        >
-          Crear caja
-        </button>
+      {/* CREAR CAJA */}
+      <div className="mt-10 bg-zinc-900 p-6 rounded-xl border border-zinc-700 space-y-4">
+        <h2 className="text-xl font-bold text-yellow-400">➕ Crear nueva caja</h2>
+        <input className="w-full p-3 rounded bg-black/40 border border-white/10" placeholder="Nombre" value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
+        <input type="number" className="w-full p-3 rounded bg-black/40 border border-white/10" placeholder="Total de cajas" value={form.totalCajas} onChange={e => setForm({ ...form, totalCajas: e.target.value })} />
+        <button onClick={handleCrearCaja} className="bg-yellow-400 hover:bg-yellow-300 text-black px-6 py-2 rounded-xl font-bold">Crear caja</button>
       </div>
     </div>
   );

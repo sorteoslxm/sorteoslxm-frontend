@@ -1,7 +1,8 @@
-// FILE: web/sorteos-lxm/src/pages/AdminEditarCaja.js
+// FILE: src/pages/AdminEditarCaja.js
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API_URL from "../config/api";
+import AdminPacks from "../components/AdminPacks";
 
 export default function AdminEditarCaja() {
   const { id } = useParams();
@@ -18,10 +19,10 @@ export default function AdminEditarCaja() {
         const res = await fetch(`${API_URL}/admin/cajas/${id}`, {
           credentials: "include",
         });
-
         const data = await res.json();
         if (!res.ok) throw new Error("Error cargando caja");
-
+        // Aseguramos que premios exista
+        if (!data.premios) data.premios = [];
         setCaja(data);
       } catch (err) {
         setError(err.message);
@@ -52,19 +53,14 @@ export default function AdminEditarCaja() {
       const premios = [...prev.premios];
       premios[index] = {
         ...premios[index],
-        [field]:
-          field === "visible"
-            ? value
-            : Number.isNaN(Number(value))
-            ? value
-            : Number(value),
+        [field]: field === "visible" ? value : Number(value),
       };
       return { ...prev, premios };
     });
   };
 
   /* ================================
-     GUARDAR
+     GUARDAR CAJA
   ================================= */
   const handleSave = async () => {
     setSaving(true);
@@ -94,29 +90,18 @@ export default function AdminEditarCaja() {
   if (error) return <div className="p-10 text-red-500">{error}</div>;
 
   return (
-    <div className="max-w-5xl mx-auto p-8 text-white">
+    <div className="max-w-5xl mx-auto p-8 text-white space-y-10">
       <h1 className="text-3xl font-extrabold mb-8">Editar Caja</h1>
 
-      {/* ================================
-          DATOS GENERALES
-      ================================= */}
-      <div className="space-y-6 bg-white/5 p-6 rounded-2xl border border-white/10 mb-10">
+      {/* DATOS GENERALES */}
+      <div className="space-y-6 bg-white/5 p-6 rounded-2xl border border-white/10">
         <div>
           <label className="block text-sm mb-1">Título</label>
           <input
-            name="titulo"
-            value={caja.titulo || ""}
+            name="nombre"
+            value={caja.nombre || ""}
             onChange={handleChange}
             className="w-full p-3 rounded bg-black/40 border border-white/10"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm mb-1">Slug</label>
-          <input
-            value={caja.slug || ""}
-            disabled
-            className="w-full p-3 rounded bg-black/20 border border-white/10 opacity-50"
           />
         </div>
 
@@ -159,9 +144,7 @@ export default function AdminEditarCaja() {
         </div>
       </div>
 
-      {/* ================================
-          PREMIOS DE LA CAJA
-      ================================= */}
+      {/* PREMIOS */}
       <h2 className="text-2xl font-extrabold mb-4">Premios</h2>
 
       <div className="space-y-6">
@@ -232,9 +215,13 @@ export default function AdminEditarCaja() {
         ))}
       </div>
 
-      {/* ================================
-          ACCIONES
-      ================================= */}
+      {/* PACKS */}
+      <div className="mt-10">
+        <h2 className="text-2xl font-extrabold mb-4">Packs de compra</h2>
+        <AdminPacks cajaId={id} />
+      </div>
+
+      {/* BOTONES ACCIONES */}
       <div className="flex gap-4 mt-10">
         <button
           onClick={handleSave}
