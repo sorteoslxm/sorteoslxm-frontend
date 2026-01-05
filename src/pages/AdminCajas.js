@@ -1,5 +1,6 @@
 // FILE: web/sorteos-lxm/src/pages/AdminCajas.js
 import React, { useState } from "react";
+import API_URL from "../config/api";
 import AdminPacks from "../components/AdminPacks";
 
 export default function AdminCajas({ cajaId }) {
@@ -55,11 +56,59 @@ export default function AdminCajas({ cajaId }) {
     });
   };
 
+  /* =========================
+     CREAR CAJA
+  ========================= */
+  const handleCrearCaja = async () => {
+    if (!form.nombre) {
+      alert("Tenés que poner un nombre a la caja");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/admin/cajas`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      if (!res.ok) {
+        throw new Error("Error al crear la caja");
+      }
+
+      alert("Caja creada correctamente ✅");
+      window.location.reload(); // simple por ahora
+    } catch (err) {
+      console.error(err);
+      alert("Error creando la caja");
+    }
+  };
+
   return (
     <div className="space-y-10">
       <h2 className="text-xl font-bold text-white">
         Crear / Editar Caja
       </h2>
+
+      {/* ================= DATOS CAJA ================= */}
+      <div className="space-y-2">
+        <label className="text-sm text-gray-400">
+          Nombre de la caja
+        </label>
+        <input
+          value={form.nombre}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              nombre: e.target.value,
+            }))
+          }
+          placeholder="Ej: Caja Enero 2026"
+          className="bg-black p-3 rounded w-full border border-zinc-700"
+        />
+      </div>
 
       {/* ================= PREMIOS ================= */}
       <div className="space-y-4">
@@ -78,9 +127,7 @@ export default function AdminCajas({ cajaId }) {
               className="bg-zinc-800 p-4 rounded-xl space-y-3 border border-zinc-700"
             >
               <h4 className="font-bold text-yellow-400">
-                {p.esMayor
-                  ? "🏆 Premio Mayor"
-                  : "Premio"}
+                {p.esMayor ? "🏆 Premio Mayor" : "Premio"}
               </h4>
 
               <div className="grid md:grid-cols-4 gap-3">
@@ -184,6 +231,16 @@ export default function AdminCajas({ cajaId }) {
           <AdminPacks cajaId={cajaId} />
         </div>
       )}
+
+      {/* ================= BOTÓN CREAR ================= */}
+      <div className="flex justify-end">
+        <button
+          onClick={handleCrearCaja}
+          className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-3 rounded-xl"
+        >
+          Crear caja
+        </button>
+      </div>
     </div>
   );
 }
