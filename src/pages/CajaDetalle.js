@@ -1,9 +1,38 @@
 // FILE: web/sorteos-lxm/src/pages/CajaDetalle.js
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import API_URL from "../config/api";
 import { getFakeProgress } from "../utils/fakeProgress";
 import PacksPublicos from "../components/PacksPublicos";
 
-export default function CajaDetalle({ caja }) {
-  if (!caja) return null;
+export default function CajaDetalle() {
+  const { id } = useParams();
+  const [caja, setCaja] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCaja = async () => {
+      try {
+        const res = await fetch(`${API_URL}/cajas/${id}`);
+        const data = await res.json();
+        setCaja(data);
+      } catch (err) {
+        console.error("Error cargando caja:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCaja();
+  }, [id]);
+
+  if (loading) {
+    return <p className="text-gray-400">Cargando caja…</p>;
+  }
+
+  if (!caja) {
+    return <p className="text-gray-400">Caja no encontrada</p>;
+  }
 
   const premioMayor = caja.premios?.find((p) => p.esMayor);
   const progress = getFakeProgress();
