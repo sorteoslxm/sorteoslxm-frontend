@@ -1,7 +1,8 @@
 // FILE: web/sorteos-lxm/src/pages/AdminCajas.js
 import React, { useState } from "react";
+import AdminPacks from "../components/AdminPacks";
 
-export default function AdminCajas() {
+export default function AdminCajas({ cajaId }) {
   const [form, setForm] = useState({
     nombre: "",
     premios: [
@@ -40,6 +41,9 @@ export default function AdminCajas() {
     ],
   });
 
+  /* =========================
+     PREMIOS
+  ========================= */
   const handlePremioChange = (index, field, value) => {
     setForm((prev) => {
       const premios = [...prev.premios];
@@ -52,13 +56,17 @@ export default function AdminCajas() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <h2 className="text-xl font-bold text-white">
         Crear / Editar Caja
       </h2>
 
-      {/* PREMIOS */}
+      {/* ================= PREMIOS ================= */}
       <div className="space-y-4">
+        <h3 className="text-lg font-bold text-yellow-400">
+          🎁 Premios
+        </h3>
+
         {[...form.premios]
           .sort(
             (a, b) =>
@@ -76,14 +84,12 @@ export default function AdminCajas() {
               </h4>
 
               <div className="grid md:grid-cols-4 gap-3">
-                {/* NOMBRE */}
                 <div>
                   <label className="text-xs text-gray-400">
-                    Nombre del premio
+                    Nombre
                   </label>
                   <input
                     value={p.nombre || ""}
-                    placeholder="Ej: Premios $10.000"
                     onChange={(e) =>
                       handlePremioChange(
                         i,
@@ -95,7 +101,6 @@ export default function AdminCajas() {
                   />
                 </div>
 
-                {/* MONTO */}
                 <div>
                   <label className="text-xs text-gray-400">
                     Monto
@@ -103,7 +108,6 @@ export default function AdminCajas() {
                   <input
                     type="number"
                     value={p.monto || ""}
-                    placeholder="Ej: 10000"
                     onChange={(e) =>
                       handlePremioChange(
                         i,
@@ -115,7 +119,6 @@ export default function AdminCajas() {
                   />
                 </div>
 
-                {/* CANTIDAD TOTAL (INTERNO) */}
                 <div>
                   <label className="text-xs text-gray-400">
                     Cantidad total (interno)
@@ -123,7 +126,6 @@ export default function AdminCajas() {
                   <input
                     type="number"
                     value={p.cantidadTotal || ""}
-                    placeholder="Ej: 6"
                     onChange={(e) =>
                       handlePremioChange(
                         i,
@@ -135,15 +137,13 @@ export default function AdminCajas() {
                   />
                 </div>
 
-                {/* DESBLOQUEO (INTERNO) */}
                 <div>
                   <label className="text-xs text-gray-400">
-                    Se desbloquea en la venta #
+                    Desbloqueo venta #
                   </label>
                   <input
                     type="number"
                     value={p.desbloqueoPorVentas || ""}
-                    placeholder="Ej: 30"
                     onChange={(e) =>
                       handlePremioChange(
                         i,
@@ -156,7 +156,6 @@ export default function AdminCajas() {
                 </div>
               </div>
 
-              {/* VISIBILIDAD */}
               <label className="flex items-center gap-2 text-sm mt-2 text-gray-300">
                 <input
                   type="checkbox"
@@ -171,14 +170,20 @@ export default function AdminCajas() {
                 />
                 Visible en la web
               </label>
-
-              <p className="text-xs text-gray-500">
-                ⚠️ Cantidad y desbloqueo son solo
-                para control interno
-              </p>
             </div>
           ))}
       </div>
+
+      {/* ================= PACKS ================= */}
+      {cajaId && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold text-yellow-400">
+            💰 Packs de compra
+          </h3>
+
+          <AdminPacks cajaId={cajaId} />
+        </div>
+      )}
     </div>
   );
 }
