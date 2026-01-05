@@ -6,6 +6,7 @@ import AdminPacks from "../components/AdminPacks";
 export default function AdminCajas({ cajaId }) {
   const [form, setForm] = useState({
     nombre: "",
+    totalCajas: "", // ✅ STOCK TOTAL DE CAJAS
     premios: [
       {
         nombre: "Premio Mayor",
@@ -65,13 +66,23 @@ export default function AdminCajas({ cajaId }) {
       return;
     }
 
+    if (!form.totalCajas || Number(form.totalCajas) <= 0) {
+      alert("Tenés que definir el stock total de cajas");
+      return;
+    }
+
     try {
+      const payload = {
+        ...form,
+        totalCajas: Number(form.totalCajas), // 🔒 aseguramos número
+      };
+
       const res = await fetch(`${API_URL}/admin/cajas`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -93,21 +104,43 @@ export default function AdminCajas({ cajaId }) {
       </h2>
 
       {/* ================= DATOS CAJA ================= */}
-      <div className="space-y-2">
-        <label className="text-sm text-gray-400">
-          Nombre de la caja
-        </label>
-        <input
-          value={form.nombre}
-          onChange={(e) =>
-            setForm((prev) => ({
-              ...prev,
-              nombre: e.target.value,
-            }))
-          }
-          placeholder="Ej: Caja Enero 2026"
-          className="bg-black p-3 rounded w-full border border-zinc-700"
-        />
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-sm text-gray-400">
+            Nombre de la caja
+          </label>
+          <input
+            value={form.nombre}
+            onChange={(e) =>
+              setForm((prev) => ({
+                ...prev,
+                nombre: e.target.value,
+              }))
+            }
+            placeholder="Ej: Caja Enero 2026"
+            className="bg-black p-3 rounded w-full border border-zinc-700"
+          />
+        </div>
+
+        {/* ✅ STOCK TOTAL */}
+        <div className="space-y-2">
+          <label className="text-sm text-gray-400">
+            Stock total de cajas (control interno)
+          </label>
+          <input
+            type="number"
+            min="1"
+            value={form.totalCajas}
+            onChange={(e) =>
+              setForm((prev) => ({
+                ...prev,
+                totalCajas: e.target.value,
+              }))
+            }
+            placeholder="Ej: 500"
+            className="bg-black p-3 rounded w-full border border-zinc-700"
+          />
+        </div>
       </div>
 
       {/* ================= PREMIOS ================= */}
