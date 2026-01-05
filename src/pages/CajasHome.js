@@ -12,12 +12,7 @@ export default function CajasHome() {
       try {
         const res = await fetch(`${API_URL}/cajas`);
         const data = await res.json();
-
-        const activas = Array.isArray(data)
-          ? data.filter(c => c.estado === "activa")
-          : [];
-
-        setCajas(activas);
+        setCajas(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Error cargando cajas:", err);
       } finally {
@@ -53,18 +48,19 @@ export default function CajasHome() {
         ) : cajas.length === 0 ? (
           <p className="text-gray-400">No hay cajas activas.</p>
         ) : (
-          cajas.map(caja => {
+          cajas.map((caja) => {
+            const totalCajas = Number(caja.totalCajas || 0);
+            const vendidas = Number(caja.cajasVendidas || 0);
+
             const porcentaje =
-              caja.totalCajas > 0
-                ? Math.round(
-                    (caja.cajasVendidas / caja.totalCajas) * 100
-                  )
+              totalCajas > 0
+                ? Math.round((vendidas / totalCajas) * 100)
                 : 0;
 
             return (
               <Link
                 key={caja.id}
-                to={`/cajas/${caja.slug}`}
+                to={`/cajas/${caja.id}`}
                 className="
                   relative rounded-3xl p-6
                   border border-yellow-500/40
@@ -83,36 +79,29 @@ export default function CajasHome() {
 
                 {/* TITULO */}
                 <h2 className="text-2xl font-extrabold text-yellow-300 mb-2">
-                  {caja.titulo}
+                  {caja.nombre}
                 </h2>
 
                 {/* INFO */}
                 <p className="text-gray-200 mb-4">
-                  {caja.totalCajas} cajas ·{" "}
-                  {caja.premios?.length || 0} premios
+                  {caja.premios?.length || 0} premios disponibles
                 </p>
 
-                {/* PRECIO */}
-                <div className="mb-4">
-                  <span className="text-sm text-gray-300">Desde</span>
-                  <div className="text-2xl font-extrabold text-white">
-                    ${caja.precioCaja.toLocaleString()}
+                {/* PROGRESO (solo si hay stock) */}
+                {totalCajas > 0 && (
+                  <div className="mb-6">
+                    <div className="flex justify-between text-xs text-gray-300 mb-1">
+                      <span>Vendidas</span>
+                      <span>{porcentaje}%</span>
+                    </div>
+                    <div className="w-full bg-black/40 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-yellow-400 h-full transition-all duration-500"
+                        style={{ width: `${porcentaje}%` }}
+                      />
+                    </div>
                   </div>
-                </div>
-
-                {/* PROGRESO */}
-                <div className="mb-6">
-                  <div className="flex justify-between text-xs text-gray-300 mb-1">
-                    <span>Vendidas</span>
-                    <span>{porcentaje}%</span>
-                  </div>
-                  <div className="w-full bg-black/40 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="bg-yellow-400 h-full transition-all duration-500"
-                      style={{ width: `${porcentaje}%` }}
-                    />
-                  </div>
-                </div>
+                )}
 
                 {/* CTA */}
                 <div className="bg-yellow-500 text-black text-center py-3 rounded-xl font-extrabold">
