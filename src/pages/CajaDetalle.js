@@ -6,39 +6,54 @@ import { getFakeProgress } from "../utils/fakeProgress";
 import PacksPublicos from "../components/PacksPublicos";
 
 export default function CajaDetalle() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const [caja, setCaja] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const loadCaja = async () => {
       try {
-        const res = await fetch(`${API_URL}/cajas/${id}`);
+        const res = await fetch(`${API_URL}/cajas/${slug}`);
+
+        if (!res.ok) {
+          throw new Error("Caja no encontrada");
+        }
+
         const data = await res.json();
         setCaja(data);
       } catch (err) {
-        console.error("Error cargando caja:", err);
+        console.error(err);
+        setError("Caja no encontrada");
       } finally {
         setLoading(false);
       }
     };
 
-    loadCaja();
-  }, [id]);
+    if (slug) loadCaja();
+  }, [slug]);
 
   if (loading) {
-    return <p className="text-gray-400">Cargando caja…</p>;
+    return (
+      <div className="text-center text-gray-400 py-20">
+        Cargando caja…
+      </div>
+    );
   }
 
-  if (!caja) {
-    return <p className="text-gray-400">Caja no encontrada</p>;
+  if (error || !caja) {
+    return (
+      <div className="text-center text-red-400 py-20">
+        {error || "Error cargando la caja"}
+      </div>
+    );
   }
 
   const premioMayor = caja.premios?.find((p) => p.esMayor);
   const progress = getFakeProgress();
 
   return (
-    <div className="space-y-10">
+    <div className="max-w-5xl mx-auto px-4 py-10 space-y-10">
       {/* ===== PREMIO MAYOR ===== */}
       {premioMayor && (
         <div className="bg-gradient-to-r from-yellow-500/20 to-black p-6 rounded-xl border border-yellow-400">
