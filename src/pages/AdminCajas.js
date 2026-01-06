@@ -1,6 +1,7 @@
 // FILE: web/sorteos-lxm/src/pages/AdminCajas.js
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import API_URL from "../config/api";
+import AdminPacks from "../components/AdminPacks"; // tu componente para manejar packs de compra
 
 export default function AdminCajas() {
   const [form, setForm] = useState({
@@ -9,43 +10,31 @@ export default function AdminCajas() {
     precioCaja: "",
     estado: "activa",
     premios: [
-      {
-        nombre: "Premio Mayor",
-        monto: "",
-        cantidadTotal: "",
-        desbloqueoPorVentas: "",
-        visible: true,
-        esMayor: true,
-      },
-      {
-        nombre: "Premio $20.000",
-        monto: "",
-        cantidadTotal: "",
-        desbloqueoPorVentas: "",
-        visible: true,
-        esMayor: false,
-      },
-      {
-        nombre: "Premio $10.000",
-        monto: "",
-        cantidadTotal: "",
-        desbloqueoPorVentas: "",
-        visible: true,
-        esMayor: false,
-      },
-      {
-        nombre: "Créditos",
-        monto: "",
-        cantidadTotal: "",
-        desbloqueoPorVentas: "",
-        visible: true,
-        esMayor: false,
-      },
+      { nombre: "Premio Mayor", monto: "", cantidadTotal: "", desbloqueoPorVentas: "", visible: true, esMayor: true },
+      { nombre: "Premio $20.000", monto: "", cantidadTotal: "", desbloqueoPorVentas: "", visible: true, esMayor: false },
+      { nombre: "Premio $10.000", monto: "", cantidadTotal: "", desbloqueoPorVentas: "", visible: true, esMayor: false },
+      { nombre: "Créditos", monto: "", cantidadTotal: "", desbloqueoPorVentas: "", visible: true, esMayor: false },
     ],
     packs: [],
   });
 
   const [saving, setSaving] = useState(false);
+  const [cajas, setCajas] = useState([]);
+  const [selectedCaja, setSelectedCaja] = useState(null);
+
+  // 🔹 Cargar cajas existentes al inicio
+  useEffect(() => {
+    const loadCajas = async () => {
+      try {
+        const res = await fetch(`${API_URL}/admin/cajas`);
+        const data = await res.json();
+        setCajas(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Error cargando cajas:", err);
+      }
+    };
+    loadCajas();
+  }, []);
 
   /* =========================
      Cambios generales de la caja
@@ -61,8 +50,7 @@ export default function AdminCajas() {
   const handlePremioChange = (index, field, value) => {
     setForm((prev) => {
       const premios = [...prev.premios];
-      premios[index][field] =
-        field === "visible" ? Boolean(value) : value;
+      premios[index][field] = field === "visible" ? Boolean(value) : value;
       return { ...prev, premios };
     });
   };
@@ -73,18 +61,12 @@ export default function AdminCajas() {
   const addPack = () => {
     setForm((prev) => ({
       ...prev,
-      packs: [
-        ...prev.packs,
-        { cantidad: "", precio: "", destacado: false, activo: true },
-      ],
+      packs: [...prev.packs, { cantidad: "", precio: "", destacado: false, activo: true }],
     }));
   };
 
   const removePack = (index) => {
-    setForm((prev) => ({
-      ...prev,
-      packs: prev.packs.filter((_, i) => i !== index),
-    }));
+    setForm((prev) => ({ ...prev, packs: prev.packs.filter((_, i) => i !== index) }));
   };
 
   const handlePackChange = (index, field, value) => {
@@ -96,7 +78,7 @@ export default function AdminCajas() {
   };
 
   /* =========================
-     GUARDAR TODO
+     CREAR CAJA
   ========================= */
   const handleCrearCaja = async () => {
     if (!form.nombre) return alert("Completa el nombre de la caja");
@@ -129,8 +111,28 @@ export default function AdminCajas() {
 
       if (!res.ok) throw new Error("Error creando la caja");
 
+      const data = await res.json();
       alert("Caja creada correctamente ✅");
-      window.location.reload();
+
+      // actualizar listado y seleccionar la caja creada
+      const nuevaCaja = { id: data.id, ...form };
+      setCajas(prev => [...prev, nuevaCaja]);
+      setSelectedCaja(nuevaCaja);
+
+      // reset form
+      setForm({
+        nombre: "",
+        totalCajas: "",
+        precioCaja: "",
+        estado: "activa",
+        premios: [
+          { nombre: "Premio Mayor", monto: "", cantidadTotal: "", desbloqueoPorVentas: "", visible: true, esMayor: true },
+          { nombre: "Premio $20.000", monto: "", cantidadTotal: "", desbloqueoPorVentas: "", visible: true, esMayor: false },
+          { nombre: "Premio $10.000", monto: "", cantidadTotal: "", desbloqueoPorVentas: "", visible: true, esMayor: false },
+          { nombre: "Créditos", monto: "", cantidadTotal: "", desbloqueoPorVentas: "", visible: true, esMayor: false },
+        ],
+        packs: [],
+      });
     } catch (err) {
       console.error(err);
       alert("Error creando la caja");
@@ -140,139 +142,118 @@ export default function AdminCajas() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-8 text-white space-y-8">
-      <h2 className="text-3xl font-extrabold">Crear Nueva Caja</h2>
+    <div className="max-w-6xl mx-auto p-8 text-white space-y-8">
+      <h1 className="text-3xl font-extrabold">Cajas Admin</h1>
 
-      {/* DATOS GENERALES */}
+      {/* CREAR NUEVA CAJA */}
       <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-700 space-y-4">
-        <div>
-          <label className="block text-sm mb-1">Nombre de la caja</label>
+        <h2 className="text-xl font-bold text-yellow-400">Crear Nueva Caja</h2>
+        {/* input nombre, stock, precio, estado */}
+        <div className="grid md:grid-cols-4 gap-4">
           <input
             type="text"
             name="nombre"
             value={form.nombre}
             onChange={handleChange}
-            placeholder="Ej: Caja Enero 2026"
+            placeholder="Nombre de la caja"
             className="w-full p-3 rounded bg-black border border-zinc-700"
           />
+          <input
+            type="number"
+            name="totalCajas"
+            value={form.totalCajas}
+            onChange={handleChange}
+            placeholder="Stock total"
+            className="w-full p-3 rounded bg-black border border-zinc-700"
+          />
+          <input
+            type="number"
+            name="precioCaja"
+            value={form.precioCaja}
+            onChange={handleChange}
+            placeholder="Precio"
+            className="w-full p-3 rounded bg-black border border-zinc-700"
+          />
+          <select
+            name="estado"
+            value={form.estado}
+            onChange={handleChange}
+            className="w-full p-3 rounded bg-black border border-zinc-700"
+          >
+            <option value="activa">Activa</option>
+            <option value="pausada">Pausada</option>
+            <option value="cerrada">Cerrada</option>
+          </select>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm mb-1">Stock total de cajas</label>
-            <input
-              type="number"
-              name="totalCajas"
-              value={form.totalCajas}
-              onChange={handleChange}
-              placeholder="Ej: 500"
-              className="w-full p-3 rounded bg-black border border-zinc-700"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm mb-1">Precio de la caja</label>
-            <input
-              type="number"
-              name="precioCaja"
-              value={form.precioCaja}
-              onChange={handleChange}
-              placeholder="Ej: 1000"
-              className="w-full p-3 rounded bg-black border border-zinc-700"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm mb-1">Estado</label>
-            <select
-              name="estado"
-              value={form.estado}
-              onChange={handleChange}
-              className="w-full p-3 rounded bg-black border border-zinc-700"
-            >
-              <option value="activa">Activa</option>
-              <option value="pausada">Pausada</option>
-              <option value="cerrada">Cerrada</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* PREMIOS */}
-      <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-700 space-y-4">
-        <h3 className="text-xl font-bold text-yellow-400 mb-2">🎁 Premios</h3>
-
-        {form.premios.map((p, i) => (
-          <div key={i} className="bg-zinc-800 p-4 rounded-xl border border-zinc-700 space-y-2">
-            <div className="grid md:grid-cols-4 gap-3">
+        {/* PREMIOS */}
+        <div className="mt-4">
+          <h3 className="text-yellow-400 font-bold mb-2">🎁 Premios</h3>
+          {form.premios.map((p, i) => (
+            <div key={i} className="grid md:grid-cols-5 gap-2 mb-2 bg-zinc-800 p-2 rounded border border-zinc-700">
               <input
-                type="text"
-                placeholder="Nombre del premio"
+                placeholder="Nombre"
                 value={p.nombre}
-                onChange={(e) => handlePremioChange(i, "nombre", e.target.value)}
-                className="bg-black p-2 rounded"
+                onChange={e => handlePremioChange(i, "nombre", e.target.value)}
+                className="p-2 rounded bg-black/40 border border-white/10"
               />
               <input
                 type="number"
                 placeholder="Monto"
                 value={p.monto}
-                onChange={(e) => handlePremioChange(i, "monto", e.target.value)}
-                className="bg-black p-2 rounded"
+                onChange={e => handlePremioChange(i, "monto", e.target.value)}
+                className="p-2 rounded bg-black/40 border border-white/10"
               />
               <input
                 type="number"
                 placeholder="Cantidad total"
                 value={p.cantidadTotal}
-                onChange={(e) => handlePremioChange(i, "cantidadTotal", e.target.value)}
-                className="bg-black p-2 rounded"
+                onChange={e => handlePremioChange(i, "cantidadTotal", e.target.value)}
+                className="p-2 rounded bg-black/40 border border-white/10"
               />
               <input
                 type="number"
                 placeholder="Desbloqueo por venta #"
                 value={p.desbloqueoPorVentas}
-                onChange={(e) => handlePremioChange(i, "desbloqueoPorVentas", e.target.value)}
-                className="bg-black p-2 rounded"
+                onChange={e => handlePremioChange(i, "desbloqueoPorVentas", e.target.value)}
+                className="p-2 rounded bg-black/40 border border-white/10"
               />
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={p.visible}
+                  onChange={e => handlePremioChange(i, "visible", e.target.checked)}
+                />
+                Visible
+              </label>
             </div>
+          ))}
+        </div>
 
-            <label className="flex items-center gap-2 text-sm mt-2">
-              <input
-                type="checkbox"
-                checked={p.visible}
-                onChange={(e) => handlePremioChange(i, "visible", e.target.checked)}
-              />
-              Visible
-            </label>
-          </div>
-        ))}
-      </div>
-
-      {/* PACKS */}
-      <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-700 space-y-4">
-        <h3 className="text-xl font-bold text-yellow-400 mb-2">💰 Packs de compra</h3>
-
-        {form.packs.map((pack, index) => (
-          <div key={index} className="bg-zinc-800 p-4 rounded-xl border border-zinc-700 space-y-2">
-            <div className="grid md:grid-cols-4 gap-3">
+        {/* PACKS */}
+        <div className="mt-4">
+          <h3 className="text-yellow-400 font-bold mb-2">💰 Packs de compra</h3>
+          {form.packs.map((pack, i) => (
+            <div key={i} className="grid md:grid-cols-4 gap-2 mb-2 bg-zinc-800 p-2 rounded border border-zinc-700">
               <input
                 type="number"
-                placeholder="Cantidad de chances"
+                placeholder="Cantidad"
                 value={pack.cantidad}
-                onChange={(e) => handlePackChange(index, "cantidad", e.target.value)}
-                className="bg-black p-2 rounded"
+                onChange={e => handlePackChange(i, "cantidad", e.target.value)}
+                className="p-2 rounded bg-black/40 border border-white/10"
               />
               <input
                 type="number"
                 placeholder="Precio"
                 value={pack.precio}
-                onChange={(e) => handlePackChange(index, "precio", e.target.value)}
-                className="bg-black p-2 rounded"
+                onChange={e => handlePackChange(i, "precio", e.target.value)}
+                className="p-2 rounded bg-black/40 border border-white/10"
               />
               <label className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
                   checked={pack.destacado}
-                  onChange={(e) => handlePackChange(index, "destacado", e.target.checked)}
+                  onChange={e => handlePackChange(i, "destacado", e.target.checked)}
                 />
                 Destacado
               </label>
@@ -280,38 +261,50 @@ export default function AdminCajas() {
                 <input
                   type="checkbox"
                   checked={pack.activo}
-                  onChange={(e) => handlePackChange(index, "activo", e.target.checked)}
+                  onChange={e => handlePackChange(i, "activo", e.target.checked)}
                 />
                 Activo
               </label>
+              <button onClick={() => removePack(i)} className="text-red-500 text-sm mt-1">❌ Eliminar</button>
             </div>
-            <button
-              onClick={() => removePack(index)}
-              className="text-red-500 text-sm mt-2"
-            >
-              ❌ Eliminar pack
-            </button>
+          ))}
+          <button onClick={addPack} className="bg-yellow-400 text-black px-3 py-1 rounded mt-2 font-bold">➕ Agregar pack</button>
+        </div>
+
+        <div className="flex justify-end mt-4">
+          <button
+            onClick={handleCrearCaja}
+            disabled={saving}
+            className="bg-yellow-500 text-black px-6 py-3 rounded-xl font-bold hover:bg-yellow-400 disabled:opacity-50"
+          >
+            {saving ? "Creando..." : "Crear caja"}
+          </button>
+        </div>
+      </div>
+
+      {/* LISTADO DE CAJAS EXISTENTES */}
+      <div className="mt-10">
+        <h2 className="text-xl font-bold text-yellow-400 mb-4">Cajas existentes</h2>
+        {cajas.length === 0 && <p>No hay cajas creadas aún.</p>}
+        {cajas.map(c => (
+          <div key={c.id} className="p-4 mb-2 bg-zinc-800 rounded border border-zinc-700 cursor-pointer" onClick={() => setSelectedCaja(c)}>
+            <p className="font-bold">{c.nombre || c.titulo}</p>
+            <p className="text-gray-400 text-sm">
+              Total: {c.totalCajas} · Vendidas: {c.cajasVendidas || 0} · Estado: {c.estado}
+            </p>
           </div>
         ))}
-
-        <button
-          onClick={addPack}
-          className="bg-yellow-400 text-black font-bold px-4 py-2 rounded"
-        >
-          ➕ Agregar pack
-        </button>
       </div>
 
-      {/* BOTÓN CREAR */}
-      <div className="flex justify-end">
-        <button
-          onClick={handleCrearCaja}
-          disabled={saving}
-          className="bg-yellow-500 text-black font-bold px-6 py-3 rounded-xl hover:bg-yellow-400 disabled:opacity-50"
-        >
-          {saving ? "Creando..." : "Crear caja"}
-        </button>
-      </div>
+      {/* ADMIN PACKS DE LA CAJA SELECCIONADA */}
+      {selectedCaja && (
+        <div className="mt-6">
+          <h2 className="text-2xl font-bold text-yellow-400 mb-2">
+            Packs de la caja: {selectedCaja.nombre || selectedCaja.titulo}
+          </h2>
+          <AdminPacks cajaId={selectedCaja.id} />
+        </div>
+      )}
     </div>
   );
 }
