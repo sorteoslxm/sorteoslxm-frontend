@@ -119,9 +119,19 @@ export default function CajaDetalle() {
               ${Number(premioMayor.monto).toLocaleString()}
             </p>
 
-            <p className="text-sm text-gray-300">
-              Se sortea entre todos los participantes
-            </p>
+            <p className="text-sm text-gray-300 leading-relaxed">
+  <span className="font-semibold text-white">
+    Jugá con una chance o con varias. 🍀
+  </span>
+  <br />
+  <span className="text-yellow-400 font-bold">
+    El premio mayor puede ser tuyo.
+  </span>
+  <br />
+  <span className="text-xs text-gray-400">
+    La suerte arranca cuando participás.
+  </span>
+</p>
           </div>
         )}
 
