@@ -1,6 +1,6 @@
 // FILE: web/sorteos-lxm/src/pages/CajaDetalle.js
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import API_URL from "../config/api";
 import { getFakeProgress } from "../utils/fakeProgress";
 import PacksPublicos from "../components/PacksPublicos";
@@ -15,11 +15,7 @@ export default function CajaDetalle() {
     const loadCaja = async () => {
       try {
         const res = await fetch(`${API_URL}/cajas/${slug}`);
-
-        if (!res.ok) {
-          throw new Error("Caja no encontrada");
-        }
-
+        if (!res.ok) throw new Error("Caja no encontrada");
         const data = await res.json();
         setCaja(data);
       } catch (err) {
@@ -35,7 +31,7 @@ export default function CajaDetalle() {
 
   if (loading) {
     return (
-      <div className="text-center text-gray-400 py-20">
+      <div className="min-h-screen flex items-center justify-center text-gray-400">
         Cargando caja…
       </div>
     );
@@ -43,7 +39,7 @@ export default function CajaDetalle() {
 
   if (error || !caja) {
     return (
-      <div className="text-center text-red-400 py-20">
+      <div className="min-h-screen flex items-center justify-center text-red-400">
         {error || "Error cargando la caja"}
       </div>
     );
@@ -53,45 +49,97 @@ export default function CajaDetalle() {
   const progress = getFakeProgress();
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10 space-y-10">
-      {/* ===== PREMIO MAYOR ===== */}
-      {premioMayor && (
-        <div className="bg-gradient-to-r from-yellow-500/20 to-black p-6 rounded-xl border border-yellow-400">
-          <h2 className="text-2xl font-extrabold text-yellow-400">
-            🏆 Premio Mayor
-          </h2>
+    <div
+      className="min-h-screen px-4 py-10"
+      style={{
+        background:
+          "radial-gradient(circle at top, #1e1b4b 0%, #020617 65%)",
+      }}
+    >
+      <div className="max-w-6xl mx-auto space-y-12">
+        {/* VOLVER */}
+        <Link
+          to="/cajas"
+          className="inline-block text-yellow-400 text-sm hover:underline"
+        >
+          ← Volver a cajas
+        </Link>
 
-          <p className="text-4xl font-black my-2">
-            ${Number(premioMayor.monto).toLocaleString()}
+        {/* HERO CAJA */}
+        <div
+          className="
+            relative rounded-3xl p-8
+            border border-yellow-500/40
+            bg-gradient-to-b from-yellow-400/20 to-yellow-900/40
+            shadow-2xl
+          "
+        >
+          <span className="absolute top-4 right-4 bg-green-500 text-black px-3 py-1 rounded-full font-bold text-sm">
+            {caja.estado?.toUpperCase() || "ACTIVA"}
+          </span>
+
+          <h1 className="text-3xl md:text-4xl font-extrabold text-yellow-300 mb-2">
+            {caja.nombre}
+          </h1>
+
+          <p className="text-gray-200 mb-6">
+            {caja.premios?.length || 0} premios disponibles
           </p>
 
-          <p className="text-sm text-gray-300">
-            Se sortea entre todos los participantes
-          </p>
-
-          {/* Progreso */}
-          <div className="mt-4">
-            <div className="h-3 bg-zinc-800 rounded">
+          {/* PROGRESO */}
+          <div className="max-w-md">
+            <div className="flex justify-between text-xs text-gray-300 mb-1">
+              <span>Progreso</span>
+              <span>{progress}%</span>
+            </div>
+            <div className="w-full bg-black/40 rounded-full h-2 overflow-hidden">
               <div
-                className="h-3 bg-yellow-400 rounded transition-all"
+                className="bg-yellow-400 h-full transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-xs text-gray-400 mt-1">
-              {progress}% completado
-            </p>
           </div>
         </div>
-      )}
 
-      {/* ===== PACKS ===== */}
-      <PacksPublicos
-        cajaId={caja.id}
-        onComprar={(pack) => {
-          console.log("Comprar pack:", pack);
-          // acá engancha MercadoPago
-        }}
-      />
+        {/* PREMIO MAYOR */}
+        {premioMayor && (
+          <div
+            className="
+              rounded-3xl p-8
+              border border-yellow-500/40
+              bg-gradient-to-r from-yellow-500/20 to-black
+              shadow-xl
+            "
+          >
+            <h2 className="text-2xl font-extrabold text-yellow-400 mb-2">
+              🏆 Premio Mayor
+            </h2>
+
+            <p className="text-4xl font-black text-white mb-2">
+              ${Number(premioMayor.monto).toLocaleString()}
+            </p>
+
+            <p className="text-sm text-gray-300">
+              Se sortea entre todos los participantes
+            </p>
+          </div>
+        )}
+
+        {/* PACKS */}
+        <div>
+          <h2 className="text-2xl font-extrabold text-yellow-300 mb-6">
+            Elegí tu pack
+          </h2>
+
+          <PacksPublicos
+            cajaId={caja.id}
+            onComprar={(pack) => {
+              console.log("Comprar pack:", pack);
+              // MercadoPago acá
+            }}
+          />
+        </div>
+      </div>
     </div>
   );
 }
