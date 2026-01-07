@@ -30,9 +30,9 @@ export default function PacksPublicos({ cajaId, onComprar }) {
               ${p.precio}
             </p>
 
-            <p className="text-sm text-gray-300 mb-4">
-              🎟 {p.chances} chances
-            </p>
+           <p className="text-sm text-gray-300 mb-4">
+  🍀 {p.cantidad} chances
+</p>
 
             <button
               onClick={() => onComprar(p)}
