@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import API_URL from "../config/api";
-import { getFakeProgress } from "../utils/fakeProgress";
 import PacksPublicos from "../components/PacksPublicos";
 
 export default function CajaDetalle() {
@@ -46,7 +45,18 @@ export default function CajaDetalle() {
   }
 
   const premioMayor = caja.premios?.find((p) => p.esMayor);
-  const progress = getFakeProgress();
+
+  /* 📊 PROGRESO REAL */
+  const chancesVendidas = caja.chancesVendidas || 0;
+  const chancesTotales = caja.chancesTotales || 0;
+
+  const progress =
+    chancesTotales > 0
+      ? Math.min(
+          100,
+          Math.round((chancesVendidas / chancesTotales) * 100)
+        )
+      : 0;
 
   return (
     <div
@@ -86,18 +96,23 @@ export default function CajaDetalle() {
             {caja.premios?.length || 0} premios disponibles
           </p>
 
-          {/* PROGRESO */}
+          {/* PROGRESO REAL */}
           <div className="max-w-md">
             <div className="flex justify-between text-xs text-gray-300 mb-1">
-              <span>Progreso</span>
+              <span>Progreso real</span>
               <span>{progress}%</span>
             </div>
+
             <div className="w-full bg-black/40 rounded-full h-2 overflow-hidden">
               <div
-                className="bg-yellow-400 h-full transition-all duration-500"
+                className="bg-yellow-400 h-full transition-all duration-700"
                 style={{ width: `${progress}%` }}
               />
             </div>
+
+            <p className="text-xs text-gray-400 mt-1">
+              {chancesVendidas} / {chancesTotales} chances vendidas
+            </p>
           </div>
         </div>
 
@@ -120,18 +135,18 @@ export default function CajaDetalle() {
             </p>
 
             <p className="text-sm text-gray-300 leading-relaxed">
-  <span className="font-semibold text-white">
-    Jugá con una chance o con varias. 🍀
-  </span>
-  <br />
-  <span className="text-yellow-400 font-bold">
-    El premio mayor puede ser tuyo.
-  </span>
-  <br />
-  <span className="text-xs text-gray-400">
-    La suerte arranca cuando participás.
-  </span>
-</p>
+              <span className="font-semibold text-white">
+                Jugá con una chance o con varias. 🍀
+              </span>
+              <br />
+              <span className="text-yellow-400 font-bold">
+                El premio mayor puede ser tuyo.
+              </span>
+              <br />
+              <span className="text-xs text-gray-400">
+                La suerte arranca cuando participás.
+              </span>
+            </p>
           </div>
         )}
 
