@@ -21,7 +21,7 @@ import AdminEditarSorteo from "./pages/AdminEditarSorteo";
 import AdminCompras from "./pages/AdminCompras";
 import AdminChances from "./pages/AdminChances";
 import AdminDashboardVentas from "./pages/AdminDashboardVentas";
-import AdminPacks from "./components/AdminPacks"; // 👈 packs por caja
+import AdminPacks from "./components/AdminPacks";
 
 import AdminRoute from "./components/AdminRoute";
 
@@ -52,7 +52,7 @@ export default function App() {
         {/* 🔐 LOGIN ADMIN */}
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* 🛠️ ADMIN (PROTEGIDO) */}
+        {/* 🛠️ ADMIN (LAYOUT PROTEGIDO) */}
         <Route
           path="/admin"
           element={
@@ -61,9 +61,7 @@ export default function App() {
             </AdminRoute>
           }
         >
-          <Route index element={<AdminDashboard />} />
-
-          {/* 📦 CAJAS ADMIN */}
+          {/* 📦 CAJAS */}
           <Route path="cajas" element={<AdminCajas />} />
           <Route path="cajas/editar/:id" element={<AdminEditarCaja />} />
           <Route path="cajas/:cajaId/packs" element={<AdminPacks />} />
