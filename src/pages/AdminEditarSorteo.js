@@ -36,11 +36,12 @@ export default function AdminEditarSorteo() {
       try {
         const token = localStorage.getItem("adminToken");
 
-const res = await fetch(`${API_URL}/sorteos/${id}`, {
-  headers: {
-    "x-admin-token": token,
-  },
-});
+        const res = await fetch(`${API_URL}/sorteos/${id}`, {
+          headers: {
+            "x-admin-token": token,
+          },
+        });
+
         const data = await res.json();
 
         setForm({
@@ -90,7 +91,6 @@ const res = await fetch(`${API_URL}/sorteos/${id}`, {
     alert("✅ Cambios guardados correctamente");
   };
 
-  /* 🟥 ELIMINAR SORTEO */
   const handleEliminar = async () => {
     const confirmar = window.confirm(
       "⚠️ ¿Seguro que querés eliminar este sorteo?\n\nNo se borra definitivamente, pero dejará de mostrarse."
@@ -117,18 +117,18 @@ const res = await fetch(`${API_URL}/sorteos/${id}`, {
     }
   };
 
-  if (loading) return <p>Cargando...</p>;
+  if (loading) return <p className="text-gray-400">Cargando…</p>;
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">✏️ Editar Sorteo</h1>
+    <div className="p-6 max-w-xl mx-auto bg-zinc-900 text-white rounded-xl border border-zinc-700">
+      <h1 className="text-3xl font-extrabold mb-6">✏️ Editar Sorteo</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           name="titulo"
           value={form.titulo}
           onChange={handleChange}
-          className="border p-2 w-full rounded"
+          className="p-2 w-full rounded bg-black border border-zinc-700 text-white placeholder-gray-400"
           placeholder="Título"
         />
 
@@ -136,7 +136,7 @@ const res = await fetch(`${API_URL}/sorteos/${id}`, {
           name="descripcion"
           value={form.descripcion}
           onChange={handleChange}
-          className="border p-2 w-full rounded"
+          className="p-2 w-full rounded bg-black border border-zinc-700 text-white placeholder-gray-400"
           placeholder="Descripción"
         />
 
@@ -145,7 +145,7 @@ const res = await fetch(`${API_URL}/sorteos/${id}`, {
           type="number"
           value={form.precio}
           onChange={handleChange}
-          className="border p-2 w-full rounded"
+          className="p-2 w-full rounded bg-black border border-zinc-700 text-white"
           placeholder="Precio"
         />
 
@@ -154,7 +154,7 @@ const res = await fetch(`${API_URL}/sorteos/${id}`, {
           type="number"
           value={form.numerosTotales}
           onChange={handleChange}
-          className="border p-2 w-full rounded"
+          className="p-2 w-full rounded bg-black border border-zinc-700 text-white"
           placeholder="Total de chances"
         />
 
@@ -162,23 +162,21 @@ const res = await fetch(`${API_URL}/sorteos/${id}`, {
           name="imagenUrl"
           value={form.imagenUrl}
           onChange={handleChange}
-          className="border p-2 w-full rounded"
+          className="p-2 w-full rounded bg-black border border-zinc-700 text-white placeholder-gray-400"
           placeholder="URL imagen"
         />
 
-        {/* CUENTA MP */}
         <select
           name="mpCuenta"
           value={form.mpCuenta}
           onChange={handleChange}
-          className="border p-2 rounded w-full"
+          className="p-2 rounded w-full bg-black border border-zinc-700 text-white"
         >
           <option value="">Seleccionar Cuenta MP</option>
           <option value="MERCADOPAGO_ACCESS_TOKEN_1">Cuenta #1</option>
           <option value="MERCADOPAGO_ACCESS_TOKEN_2">Cuenta #2</option>
         </select>
 
-        {/* Destacado */}
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -190,7 +188,6 @@ const res = await fetch(`${API_URL}/sorteos/${id}`, {
           <span>⭐ Mostrar como destacado</span>
         </label>
 
-        {/* Principal */}
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -202,8 +199,7 @@ const res = await fetch(`${API_URL}/sorteos/${id}`, {
           <span>🔥 Marcar como principal</span>
         </label>
 
-        {/* ⏱️ CUENTA REGRESIVA */}
-        <div className="border rounded p-3">
+        <div className="border border-zinc-700 rounded p-3">
           <label className="flex items-center gap-2 mb-2">
             <input
               type="checkbox"
@@ -220,15 +216,16 @@ const res = await fetch(`${API_URL}/sorteos/${id}`, {
               name="textoCuentaRegresiva"
               value={form.textoCuentaRegresiva}
               onChange={handleChange}
-              className="border p-2 w-full rounded"
+              className="p-2 w-full rounded bg-black border border-zinc-700 text-white"
               placeholder="Ej: Sorteo termina pronto"
             />
           )}
         </div>
 
-        {/* 🔥 ÚLTIMAS CHANCES */}
-        <div className="border rounded p-3 bg-yellow-50">
-          <h3 className="font-bold mb-2">🔥 Últimas chances</h3>
+        <div className="border rounded p-3 bg-yellow-400/10 border-yellow-400">
+          <h3 className="font-bold mb-2 text-yellow-400">
+            🔥 Últimas chances
+          </h3>
 
           <label className="flex items-center gap-2 mb-2">
             <input
@@ -245,11 +242,11 @@ const res = await fetch(`${API_URL}/sorteos/${id}`, {
             name="textoUltimas"
             value={form.textoUltimas}
             onChange={handleChange}
-            className="border p-2 w-full rounded mb-2"
+            className="p-2 w-full rounded bg-black border border-zinc-700 text-white mb-2"
             placeholder="Ej: ¡Últimas chances disponibles!"
           />
 
-          <label className="text-sm text-gray-600">
+          <label className="text-sm text-gray-300">
             Activar automáticamente cuando queden menos de (% restante)
           </label>
 
@@ -258,31 +255,29 @@ const res = await fetch(`${API_URL}/sorteos/${id}`, {
             type="number"
             value={form.porcentajeAutoUltimas}
             onChange={handleChange}
-            className="border p-2 w-full rounded mt-1"
+            className="p-2 w-full rounded bg-black border border-zinc-700 text-white mt-1"
             placeholder="Ej: 10"
           />
         </div>
 
-        {/* Chances ocupadas */}
         <div>
           <label className="font-bold">📌 Chances ocupadas</label>
           <input
             disabled
             value={form.chancesOcupadas}
-            className="border p-2 rounded w-full mt-1 bg-gray-100"
+            className="p-2 rounded w-full mt-1 bg-zinc-800 border border-zinc-700 text-white"
           />
         </div>
 
-        <button className="bg-green-600 py-2 text-white rounded w-full">
+        <button className="bg-green-600 py-2 text-white rounded w-full font-bold">
           Guardar cambios
         </button>
       </form>
 
-      {/* 🟥 BOTÓN ELIMINAR */}
       <button
         onClick={handleEliminar}
         disabled={eliminando}
-        className="mt-6 bg-red-600 py-2 text-white rounded w-full"
+        className="mt-6 bg-red-600 py-2 text-white rounded w-full font-bold"
       >
         {eliminando ? "Eliminando..." : "🗑️ Eliminar sorteo"}
       </button>
