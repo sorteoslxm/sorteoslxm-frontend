@@ -42,11 +42,17 @@ export default function CajaDetalle() {
     );
   }
 
-  const premioMayor = caja.premios?.find(p => p.esMayor);
-  const premiosSecundarios =
-    Array.isArray(caja.premios)
-      ? caja.premios.filter(p => !p.esMayor && p?.nombre && p?.monto)
-      : [];
+  const premioMayor = Array.isArray(caja.premios)
+    ? caja.premios.find((p) => p.esMayor)
+    : null;
+
+  const premiosSecundarios = Array.isArray(caja.premios)
+    ? caja.premios.filter(
+        (p) => !p.esMayor && p?.nombre && p?.monto
+      )
+    : [];
+
+  const porcentaje = caja?.porcentajeVendido || 0;
 
   return (
     <div
@@ -57,7 +63,6 @@ export default function CajaDetalle() {
       }}
     >
       <div className="max-w-6xl mx-auto space-y-12">
-
         {/* VOLVER */}
         <Link
           to="/cajas"
@@ -83,24 +88,30 @@ export default function CajaDetalle() {
         {premioMayor && (
           <div className="rounded-3xl p-8 border border-yellow-500/40 bg-gradient-to-r from-yellow-500/20 to-black shadow-xl">
             <h2 className="text-2xl font-extrabold text-yellow-400 mb-2">
-              🏆 Premio Mayor
+              🎁 PREMIO MAYOR
             </h2>
 
             <p className="text-4xl font-black text-white mb-4">
-              ${Number(premioMayor.monto).toLocaleString()}
+              ${Number(premioMayor.monto).toLocaleString("es-AR")}
             </p>
 
-            <p className="text-sm leading-relaxed">
-              <span className="font-bold text-white">
-                Jugá con una caja o con varias. 🍀
-              </span>
+            {/* BARRA DE PROGRESO */}
+            <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden mb-2">
+              <div
+                className="bg-yellow-400 h-full transition-all duration-500"
+                style={{ width: `${porcentaje}%` }}
+              />
+            </div>
+
+            <p className="text-xs text-gray-300 mb-4">
+              {porcentaje}% completado
+            </p>
+
+            <p className="text-sm leading-relaxed text-gray-200">
+              Jugá con una o varias cajas.
               <br />
               <span className="font-bold text-yellow-400">
                 El premio mayor puede ser tuyo.
-              </span>
-              <br />
-              <span className="font-bold text-white">
-                Abrís la caja y ves el resultado al instante.
               </span>
             </p>
           </div>
@@ -121,7 +132,7 @@ export default function CajaDetalle() {
                 >
                   <span>{p.nombre}</span>
                   <span className="font-bold text-yellow-400">
-                    ${Number(p.monto).toLocaleString()}
+                    ${Number(p.monto).toLocaleString("es-AR")}
                   </span>
                 </li>
               ))}
@@ -139,15 +150,15 @@ export default function CajaDetalle() {
             cajaId={caja.id}
             onComprar={(pack) => {
               console.log("Comprar pack:", pack);
-              // MP acá
+              // MercadoPago acá
             }}
           />
         </div>
 
         {/* TEXTO INFERIOR */}
         <div className="text-center text-sm text-gray-400 space-y-1">
-          <p>🔥 Premios importantes aún en juego</p>
-          <p>⚡ Todo es automático y transparente</p>
+          <p>🔒 Compra segura • Sorteo transparente</p>
+          <p>⏳ Cupos limitados • Una vez cerrada no vuelve</p>
         </div>
       </div>
     </div>
