@@ -1,14 +1,47 @@
 // FILE: src/pages/CajaDetalle.js
-import React from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import API_URL from "../config/api";
 
-export default function CajaDetalle({ caja }) {
+export default function CajaDetalle() {
   const { id } = useParams();
 
-  if (!caja) {
+  const [caja, setCaja] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!id) return;
+
+    const loadCaja = async () => {
+      try {
+        const res = await fetch(`${API_URL}/cajas/${id}`);
+        if (!res.ok) throw new Error("Caja no encontrada");
+        const data = await res.json();
+        setCaja(data);
+      } catch (err) {
+        console.error(err);
+        setError("Caja no encontrada");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCaja();
+  }, [id]);
+
+  if (loading) {
     return (
       <div className="text-center py-20 text-gray-400">
         Cargando caja...
+      </div>
+    );
+  }
+
+  if (error || !caja) {
+    return (
+      <div className="text-center py-20 text-red-400">
+        {error || "Error al cargar la caja"}
       </div>
     );
   }
@@ -42,13 +75,9 @@ export default function CajaDetalle({ caja }) {
         </div>
       )}
 
-      {/* PREMIOS */}
+      {/* PREMIOS (solo lo cargado en admin) */}
       {premios.length > 0 && (
         <div className="mb-10">
-          <h2 className="text-xl font-semibold mb-4">
-            🎁 Premios en juego
-          </h2>
-
           <div className="grid gap-4 sm:grid-cols-2">
             {premios.map((premio, index) => (
               <div
@@ -59,7 +88,7 @@ export default function CajaDetalle({ caja }) {
                   {premio.nombre}
                 </span>
                 <span className="text-green-400 font-semibold">
-                  ${premio.monto}
+                  ${Number(premio.monto).toLocaleString()}
                 </span>
               </div>
             ))}
@@ -67,7 +96,7 @@ export default function CajaDetalle({ caja }) {
         </div>
       )}
 
-      {/* CTA */}
+      {/* CTA (comprar, NO abrir) */}
       <div className="mb-12">
         <Link
           to={`/comprar/${id}`}
