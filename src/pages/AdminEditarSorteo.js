@@ -34,7 +34,13 @@ export default function AdminEditarSorteo() {
   useEffect(() => {
     const cargar = async () => {
       try {
-        const res = await fetch(`${API_URL}/sorteos/${id}`);
+        const token = localStorage.getItem("adminToken");
+
+const res = await fetch(`${API_URL}/sorteos/${id}`, {
+  headers: {
+    "x-admin-token": token,
+  },
+});
         const data = await res.json();
 
         setForm({
