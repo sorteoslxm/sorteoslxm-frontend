@@ -33,7 +33,52 @@ export default function CajaDetalle() {
   }, [slug]);
 
   /* =============================
-     STATES
+     DATA DERIVADA (HOOK SAFE)
+  ============================== */
+  const premioMayor = useMemo(() => {
+    return caja?.premios?.find((p) => p.esMayor);
+  }, [caja]);
+
+  const premiosSecundarios = useMemo(() => {
+    return caja?.premios?.filter((p) => !p.esMayor) || [];
+  }, [caja]);
+
+  const totalCajas = Number(caja?.cajasTotales || 0);
+  const vendidas = Number(caja?.cajasVendidas || 0);
+  const restantes = Math.max(totalCajas - vendidas, 0);
+
+  const porcentajeRestante = useMemo(() => {
+    if (totalCajas === 0) return 100;
+    return Math.round((restantes / totalCajas) * 100);
+  }, [restantes, totalCajas]);
+
+  const estadoEscasez = useMemo(() => {
+    if (porcentajeRestante <= 5) return "ULTIMAS";
+    if (porcentajeRestante <= 25) return "ESCACES";
+    return "NORMAL";
+  }, [porcentajeRestante]);
+
+  const ctaTexto = useMemo(() => {
+    if (estadoEscasez === "ULTIMAS") return "Entrar ahora";
+    if (estadoEscasez === "ESCACES") return "Asegurar mi caja";
+    return "Abrir caja ahora";
+  }, [estadoEscasez]);
+
+  const ctaClasses = `
+    w-full py-4 rounded-xl font-extrabold text-lg
+    transition-all duration-300
+    ${
+      estadoEscasez === "ULTIMAS"
+        ? "bg-red-600 text-white animate-pulse shadow-[0_0_30px_rgba(239,68,68,0.7)]"
+        : estadoEscasez === "ESCACES"
+        ? "bg-yellow-400 text-black shadow-[0_0_20px_rgba(250,204,21,0.6)]"
+        : "bg-green-500 text-black"
+    }
+    hover:scale-[1.02] active:scale-[0.97]
+  `;
+
+  /* =============================
+     RETURNS (AL FINAL)
   ============================== */
   if (loading) {
     return (
@@ -51,54 +96,6 @@ export default function CajaDetalle() {
     );
   }
 
-  /* =============================
-     DATA DERIVADA
-  ============================== */
-
-  const premioMayor = caja.premios?.find((p) => p.esMayor);
-  const premiosSecundarios =
-    caja.premios?.filter((p) => !p.esMayor) || [];
-
-  // 🔥 progreso REAL por escasez
-  const totalCajas = Number(caja.cajasTotales || 0);
-  const vendidas = Number(caja.cajasVendidas || 0);
-  const restantes = Math.max(totalCajas - vendidas, 0);
-
-  // % restante (escasez inversa)
-  const porcentajeRestante =
-    totalCajas > 0 ? Math.round((restantes / totalCajas) * 100) : 100;
-
-  /* =============================
-     ESCENARIOS DE VENTA
-  ============================== */
-  const estadoEscasez = useMemo(() => {
-    if (porcentajeRestante <= 5) return "ULTIMAS";
-    if (porcentajeRestante <= 25) return "ESCACES";
-    return "NORMAL";
-  }, [porcentajeRestante]);
-
-  const ctaTexto = useMemo(() => {
-    if (estadoEscasez === "ULTIMAS") return "Entrar ahora";
-    if (estadoEscasez === "ESCACES") return "Asegurar mi caja";
-    return "Abrir caja ahora";
-  }, [estadoEscasez]);
-
-  /* =============================
-     STYLES CTA
-  ============================== */
-  const ctaClasses = `
-    w-full py-4 rounded-xl font-extrabold text-lg
-    transition-all duration-300
-    ${
-      estadoEscasez === "ULTIMAS"
-        ? "bg-red-600 text-white animate-pulse shadow-[0_0_30px_rgba(239,68,68,0.7)]"
-        : estadoEscasez === "ESCACES"
-        ? "bg-yellow-400 text-black shadow-[0_0_20px_rgba(250,204,21,0.6)]"
-        : "bg-green-500 text-black"
-    }
-    hover:scale-[1.02] active:scale-[0.97]
-  `;
-
   return (
     <div
       className="min-h-screen px-4 py-10"
@@ -108,7 +105,6 @@ export default function CajaDetalle() {
       }}
     >
       <div className="max-w-6xl mx-auto space-y-12">
-        {/* VOLVER */}
         <Link
           to="/cajas"
           className="inline-block text-yellow-400 text-sm hover:underline"
@@ -116,9 +112,7 @@ export default function CajaDetalle() {
           ← Volver a cajas
         </Link>
 
-        {/* =============================
-            HERO CAJA
-        ============================== */}
+        {/* HERO */}
         <div className="relative rounded-3xl p-8 border border-yellow-500/40 bg-gradient-to-b from-yellow-400/20 to-yellow-900/40 shadow-2xl">
           <span className="absolute top-4 right-4 bg-green-500 text-black px-3 py-1 rounded-full font-bold text-sm">
             {caja.estado?.toUpperCase() || "ACTIVA"}
@@ -132,7 +126,6 @@ export default function CajaDetalle() {
             Varias cajas ya se abrieron. Los premios siguen en juego.
           </p>
 
-          {/* PROGRESO DE ESCASEZ */}
           <div className="max-w-md">
             <div className="flex justify-between text-xs text-gray-300 mb-1">
               <span>Disponibilidad</span>
@@ -154,9 +147,7 @@ export default function CajaDetalle() {
           </div>
         </div>
 
-        {/* =============================
-            PREMIO MAYOR
-        ============================== */}
+        {/* PREMIO MAYOR */}
         {premioMayor && (
           <div className="rounded-3xl p-8 border border-yellow-500/40 bg-gradient-to-r from-yellow-500/20 to-black shadow-xl">
             <h2 className="text-2xl font-extrabold text-yellow-400 mb-2">
@@ -183,9 +174,7 @@ export default function CajaDetalle() {
           </div>
         )}
 
-        {/* =============================
-            PREMIOS SECUNDARIOS
-        ============================== */}
+        {/* PREMIOS SECUNDARIOS */}
         {premiosSecundarios.length > 0 && (
           <div className="rounded-3xl p-8 border border-zinc-700 bg-zinc-900 shadow-xl">
             <h3 className="text-xl font-extrabold text-white mb-4">
@@ -208,9 +197,7 @@ export default function CajaDetalle() {
           </div>
         )}
 
-        {/* =============================
-            CTA PRINCIPAL
-        ============================== */}
+        {/* CTA */}
         <div className="rounded-3xl p-8 bg-black/60 border border-zinc-700 shadow-xl text-center space-y-4">
           <h3 className="text-xl font-extrabold text-white">
             {caja.nombre}
@@ -229,21 +216,13 @@ export default function CajaDetalle() {
           )}
         </div>
 
-        {/* =============================
-            PACKS
-        ============================== */}
+        {/* PACKS */}
         <div>
           <h2 className="text-2xl font-extrabold text-yellow-300 mb-6">
             Elegí tu pack
           </h2>
 
-          <PacksPublicos
-            cajaId={caja.id}
-            onComprar={(pack) => {
-              console.log("Comprar pack:", pack);
-              // integración MP acá
-            }}
-          />
+          <PacksPublicos cajaId={caja.id} />
         </div>
       </div>
     </div>
