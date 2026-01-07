@@ -4,31 +4,26 @@ import { useParams, Link } from "react-router-dom";
 import API_URL from "../config/api";
 
 export default function CajaDetalle() {
-  const { id } = useParams();
+  const { slug } = useParams();
 
   const [caja, setCaja] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!id) return;
-
     const loadCaja = async () => {
       try {
-        const res = await fetch(`${API_URL}/cajas/${id}`);
-        if (!res.ok) throw new Error("Caja no encontrada");
+        const res = await fetch(`${API_URL}/cajas/${slug}`);
         const data = await res.json();
         setCaja(data);
       } catch (err) {
-        console.error(err);
-        setError("Caja no encontrada");
+        console.error("Error cargando caja:", err);
       } finally {
         setLoading(false);
       }
     };
 
     loadCaja();
-  }, [id]);
+  }, [slug]);
 
   if (loading) {
     return (
@@ -38,10 +33,10 @@ export default function CajaDetalle() {
     );
   }
 
-  if (error || !caja) {
+  if (!caja) {
     return (
       <div className="text-center py-20 text-red-400">
-        {error || "Error al cargar la caja"}
+        Caja no encontrada
       </div>
     );
   }
@@ -64,29 +59,20 @@ export default function CajaDetalle() {
         </p>
       )}
 
-      {/* IMAGEN */}
-      {caja.imagen && (
-        <div className="mb-8 rounded-xl overflow-hidden">
-          <img
-            src={caja.imagen}
-            alt={caja.nombre}
-            className="w-full object-cover"
-          />
-        </div>
-      )}
-
-      {/* PREMIOS (solo lo cargado en admin) */}
+      {/* PREMIOS */}
       {premios.length > 0 && (
         <div className="mb-10">
+          <h2 className="text-xl font-semibold mb-4">
+            🎁 Premios en juego
+          </h2>
+
           <div className="grid gap-4 sm:grid-cols-2">
             {premios.map((premio, index) => (
               <div
                 key={index}
                 className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex justify-between items-center"
               >
-                <span className="font-medium">
-                  {premio.nombre}
-                </span>
+                <span>{premio.nombre}</span>
                 <span className="text-green-400 font-semibold">
                   ${Number(premio.monto).toLocaleString()}
                 </span>
@@ -96,10 +82,10 @@ export default function CajaDetalle() {
         </div>
       )}
 
-      {/* CTA (comprar, NO abrir) */}
+      {/* CTA COMPRA */}
       <div className="mb-12">
         <Link
-          to={`/comprar/${id}`}
+          to={`/cajas/${slug}/comprar`}
           className="block w-full text-center bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-4 rounded-xl transition-all"
         >
           Comprar caja
