@@ -9,6 +9,11 @@ import ComoFunciona from "./pages/ComoFunciona";
 import CajasHome from "./pages/CajasHome";
 import CajaDetalle from "./pages/CajaDetalle";
 
+/* 🎁 APERTURA DE CAJAS */
+import AbrirCaja from "./pages/AbrirCaja";
+import ResultadoCajaPerder from "./pages/ResultadoCajaPerder";
+import ResultadoCajaGanar from "./pages/ResultadoCajaGanar";
+
 /* 🔐 ADMIN */
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -39,9 +44,16 @@ export default function App() {
         <Route path="/sorteo/:id" element={<SorteoDetalle />} />
         <Route path="/como-funciona" element={<ComoFunciona />} />
 
-        {/* 🧱 CAJAS (WEB) */}
+        {/* 🧱 CAJAS */}
         <Route path="/cajas" element={<CajasHome />} />
         <Route path="/cajas/:slug" element={<CajaDetalle />} />
+
+        {/* 🎁 APERTURA DE CAJA */}
+        <Route path="/abrir-caja" element={<AbrirCaja />} />
+
+        {/* 🎁 RESULTADO CAJA */}
+        <Route path="/resultado-caja/perder" element={<ResultadoCajaPerder />} />
+        <Route path="/resultado-caja/ganar" element={<ResultadoCajaGanar />} />
 
         {/* 💳 POST PAGO */}
         <Route path="/success" element={<Success />} />
