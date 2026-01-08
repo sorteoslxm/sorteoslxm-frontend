@@ -46,9 +46,10 @@ export default function CajaDetalle() {
     ? caja.premios.find((p) => p.esMayor)
     : null;
 
+  // 👉 SOLO premios secundarios, sin títulos del admin
   const premiosSecundarios = Array.isArray(caja.premios)
     ? caja.premios.filter(
-        (p) => !p.esMayor && p?.nombre && p?.monto
+        (p) => !p.esMayor && typeof p.monto === "number"
       )
     : [];
 
@@ -95,7 +96,7 @@ export default function CajaDetalle() {
               ${Number(premioMayor.monto).toLocaleString("es-AR")}
             </p>
 
-            {/* BARRA DE PROGRESO */}
+            {/* BARRA */}
             <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden mb-2">
               <div
                 className="bg-yellow-400 h-full transition-all duration-500"
@@ -107,12 +108,8 @@ export default function CajaDetalle() {
               {porcentaje}% completado
             </p>
 
-            <p className="text-sm leading-relaxed text-gray-200">
-              Jugá con una o varias cajas.
-              <br />
-              <span className="font-bold text-yellow-400">
-                El premio mayor puede ser tuyo.
-              </span>
+            <p className="text-sm text-gray-200">
+              Abrís la caja y ves el resultado al instante.
             </p>
           </div>
         )}
@@ -128,12 +125,9 @@ export default function CajaDetalle() {
               {premiosSecundarios.map((p, i) => (
                 <li
                   key={i}
-                  className="flex justify-between bg-black/40 p-3 rounded-lg"
+                  className="flex justify-center bg-black/40 p-3 rounded-lg font-bold text-yellow-400"
                 >
-                  <span>{p.nombre}</span>
-                  <span className="font-bold text-yellow-400">
-                    ${Number(p.monto).toLocaleString("es-AR")}
-                  </span>
+                  ${Number(p.monto).toLocaleString("es-AR")}
                 </li>
               ))}
             </ul>
@@ -146,19 +140,27 @@ export default function CajaDetalle() {
             Elegí tu pack
           </h2>
 
-          <PacksPublicos
-            cajaId={caja.id}
-            onComprar={(pack) => {
-              console.log("Comprar pack:", pack);
-              // MercadoPago acá
-            }}
-          />
+          <PacksPublicos cajaId={caja.id} />
         </div>
 
         {/* TEXTO INFERIOR */}
-        <div className="text-center text-sm text-gray-400 space-y-1">
-          <p>🔒 Compra segura • Sorteo transparente</p>
-          <p>⏳ Cupos limitados • Una vez cerrada no vuelve</p>
+        <div className="mt-16 rounded-3xl border border-zinc-800 bg-black/40 p-8 text-center space-y-4">
+          <p className="text-base font-semibold text-white">
+            🎁 Apertura de cajas ganadoras
+          </p>
+
+          <p className="text-sm text-gray-300 leading-relaxed max-w-xl mx-auto">
+            Comprás tu caja, la abrís y el resultado se muestra al instante.
+            <br />
+            Todo es automático y sin intermediarios.
+          </p>
+
+          <p className="text-sm text-gray-300">
+            💳 Pagá de forma segura con{" "}
+            <span className="font-bold text-blue-400">
+              MercadoPago
+            </span>
+          </p>
         </div>
       </div>
     </div>
