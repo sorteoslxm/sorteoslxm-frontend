@@ -49,7 +49,7 @@ export default function App() {
         <Route path="/cajas/:slug" element={<CajaDetalle />} />
 
         {/* 🎁 APERTURA DE CAJA */}
-        <Route path="/abrir-caja" element={<AbrirCaja />} />
+       <Route path="/abrir-caja/:id" element={<AbrirCaja />} />
 
         {/* 🎁 RESULTADO CAJA */}
         <Route path="/resultado-caja/perder" element={<ResultadoCajaPerder />} />

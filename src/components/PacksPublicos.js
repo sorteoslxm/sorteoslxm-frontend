@@ -1,7 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import usePacks from "../hooks/usePacks";
 
-export default function PacksPublicos({ cajaId, onComprar }) {
+export default function PacksPublicos({ cajaId }) {
   const { packs, loading } = usePacks(cajaId);
+  const navigate = useNavigate();
 
   if (loading) return <p className="text-gray-400">Cargando packs…</p>;
 
@@ -11,7 +13,7 @@ export default function PacksPublicos({ cajaId, onComprar }) {
         .sort((a, b) => a.orden - b.orden)
         .map((p) => (
           <div
-            key={p._id}
+            key={p.id || p._id}
             className={`p-5 rounded-xl border ${
               p.destacado
                 ? "border-yellow-400 bg-gradient-to-b from-yellow-400/10 to-black"
@@ -24,18 +26,20 @@ export default function PacksPublicos({ cajaId, onComprar }) {
               </span>
             )}
 
-            <h3 className="text-xl font-bold mt-2">{p.nombre}</h3>
+            <h3 className="text-xl font-bold mt-2">
+              {p.nombre || `${p.cantidad} chances`}
+            </h3>
 
             <p className="text-3xl font-extrabold text-yellow-400 my-2">
               ${p.precio}
             </p>
 
-           <p className="text-sm text-gray-300 mb-4">
-  🍀 {p.cantidad} chances
-</p>
+            <p className="text-sm text-gray-300 mb-4">
+              🍀 {p.cantidad} chances
+            </p>
 
             <button
-              onClick={() => onComprar(p)}
+              onClick={() => navigate(`/abrir-caja/${p.id || p._id}`)}
               className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-2 rounded"
             >
               Comprar

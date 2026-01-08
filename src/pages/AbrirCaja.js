@@ -1,64 +1,90 @@
 // FILE: src/pages/AbrirCaja.js
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Confetti from "react-confetti";
+import API_URL from "../config/api";
 
 export default function AbrirCaja() {
   const navigate = useNavigate();
+  const { id } = useParams(); // id de la caja
 
   const [fase, setFase] = useState("idle"); // idle | opening
-  const [resultado, setResultado] = useState(null); // win | lose
   const [showConfetti, setShowConfetti] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // 🔒 Anti-refresh / anti-repeat
+  const audioOpen = useRef(null);
+  const audioWin = useRef(null);
+  const audioLose = useRef(null);
+
+  /* 🔒 Anti refresh / repetir */
   useEffect(() => {
-    const yaAbierta = localStorage.getItem("caja_abierta");
+    const yaAbierta = sessionStorage.getItem(`caja_${id}_abierta`);
     if (yaAbierta) {
       navigate("/cajas");
     }
-  }, [navigate]);
+  }, [navigate, id]);
 
+  /* 🔊 preload sonidos */
   useEffect(() => {
-    if (fase === "opening") {
-      new Audio("/sonidos/open.mp3").play();
+    audioOpen.current = new Audio("/sonidos/open.mp3");
+    audioWin.current = new Audio("/sonidos/win.mp3");
+    audioLose.current = new Audio("/sonidos/lose.mp3");
+  }, []);
 
-      const timer = setTimeout(() => {
-        // 🎲 PROBABILIDAD (mock)
-        const win = Math.random() < 0.3; // 30% ganar
-        const res = win ? "win" : "lose";
+  /* 🎁 APERTURA REAL (BACKEND) */
+  useEffect(() => {
+    if (fase !== "opening" || loading) return;
 
-        setResultado(res);
-        localStorage.setItem("caja_abierta", "true");
+    const abrirCaja = async () => {
+      try {
+        setLoading(true);
+        audioOpen.current?.play();
 
-        if (win) {
-          new Audio("/sonidos/win.mp3").play();
+        const res = await fetch(`${API_URL}/cajas/abrir`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            cajaId: id,
+          }),
+        });
+
+        const data = await res.json();
+
+        sessionStorage.setItem(`caja_${id}_abierta`, "true");
+
+        if (data.win) {
+          audioWin.current?.play();
           setShowConfetti(true);
+
           setTimeout(() => {
             navigate("/resultado-caja/ganar", {
               state: {
-                premio: {
-                  nombre: "🔥 Premio Especial",
-                  descripcion: "Ganaste un premio exclusivo",
-                },
+                premio: data.premio,
               },
             });
-          }, 1600);
+          }, 1400);
         } else {
-          new Audio("/sonidos/lose.mp3").play();
+          audioLose.current?.play();
+
           setTimeout(() => {
             navigate("/resultado-caja/perder");
-          }, 1200);
+          }, 1100);
         }
-      }, 1800);
+      } catch (error) {
+        console.error("❌ Error abriendo caja:", error);
+        navigate("/cajas");
+      }
+    };
 
-      return () => clearTimeout(timer);
-    }
-  }, [fase, navigate]);
+    abrirCaja();
+  }, [fase, id, navigate, loading]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-zinc-900 to-black flex items-center justify-center px-4">
-      {showConfetti && <Confetti recycle={false} numberOfPieces={350} />}
+    <div className="min-h-screen bg-gradient-to-b from-black via-zinc-900 to-black flex items-center justify-center px-4 overflow-hidden">
+      {showConfetti && <Confetti recycle={false} numberOfPieces={400} />}
 
       <div className="max-w-md w-full text-center">
         {/* TITULO */}
@@ -78,12 +104,12 @@ export default function AbrirCaja() {
               animate={{
                 scale:
                   fase === "opening"
-                    ? [1, 1.08, 0.96, 1.04, 1]
+                    ? [1, 1.1, 0.95, 1.05, 1]
                     : 1,
                 opacity: 1,
                 rotate:
                   fase === "opening"
-                    ? [0, -3, 3, -2, 2, 0]
+                    ? [0, -4, 4, -2, 2, 0]
                     : 0,
               }}
               transition={{
@@ -92,10 +118,10 @@ export default function AbrirCaja() {
               }}
               className="relative"
             >
+              {/* GLOW */}
               {fase === "opening" && (
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: [0.3, 0.8, 0.3] }}
+                  animate={{ opacity: [0.3, 0.9, 0.3] }}
                   transition={{ duration: 1.2, repeat: Infinity }}
                   className="absolute inset-0 rounded-xl blur-3xl bg-yellow-400/60"
                 />
@@ -115,10 +141,10 @@ export default function AbrirCaja() {
         {fase === "idle" && (
           <button
             onClick={() => setFase("opening")}
-            className="w-full py-4 rounded-xl font-extrabold text-lg 
-                       bg-gradient-to-r from-yellow-400 to-orange-500 
-                       text-black shadow-2xl 
-                       hover:scale-[1.02] active:scale-95 transition"
+            className="w-full py-4 rounded-xl font-extrabold text-lg
+              bg-gradient-to-r from-yellow-400 to-orange-500
+              text-black shadow-2xl
+              hover:scale-[1.03] active:scale-95 transition"
           >
             🔓 Abrir mi caja
           </button>
