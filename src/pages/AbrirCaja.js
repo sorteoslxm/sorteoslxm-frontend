@@ -51,7 +51,12 @@ export default function AbrirCaja() {
           }),
         });
 
-        const data = await res.json();
+        if (!res.ok) {
+  navigate("/cajas");
+  return;
+}
+
+const data = await res.json();
 
         sessionStorage.setItem(`caja_${id}_abierta`, "true");
 
