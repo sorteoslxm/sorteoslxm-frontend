@@ -96,7 +96,7 @@ export default function SorteoDetalle() {
           </p>
         )}
 
-        {/* 🔥 BARRA DE PROGRESO MANUAL */}
+        {/* 🔥 BARRA DE PROGRESO */}
         {typeof sorteo.porcentajeVendido === "number" && (
           <div className="mt-6">
             <p className="mb-2 font-bold">
@@ -111,6 +111,19 @@ export default function SorteoDetalle() {
           </div>
         )}
 
+        {/* 🔒 SORTEO CERRADO */}
+        {sorteoCerrado && (
+          <div className="mt-10 p-6 rounded-2xl bg-red-900/40 border border-red-600 text-center">
+            <h2 className="text-2xl font-extrabold mb-2">
+              🔒 Sorteo cerrado
+            </h2>
+            <p className="text-red-200">
+              Este sorteo ya alcanzó su objetivo y no acepta más participaciones.
+            </p>
+          </div>
+        )}
+
+        {/* 🟢 PACKS */}
         {!sorteoCerrado && (
           <div className="grid md:grid-cols-3 gap-6 mt-10">
             {packs.map((p, i) => {

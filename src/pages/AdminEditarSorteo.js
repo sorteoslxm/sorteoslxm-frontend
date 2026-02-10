@@ -22,10 +22,11 @@ export default function AdminEditarSorteo() {
     oferta3Chances: 10,
     oferta3Precio: "",
 
-    masVendido: 2,              // 👈 NUEVO
-    porcentajeVendido: 0,       // 👈 NUEVO
+    masVendido: 2,
+    porcentajeVendido: 0,
 
     chancesOcupadas: 0,
+    cerrado: false, // 🔒 NUEVO
   });
 
   const [loading, setLoading] = useState(true);
@@ -61,6 +62,7 @@ export default function AdminEditarSorteo() {
           porcentajeVendido: data.porcentajeVendido || 0,
 
           chancesOcupadas: data.chancesOcupadas || 0,
+          cerrado: data.cerrado || false, // 🔒
         });
       } catch (err) {
         console.error("Error cargando sorteo:", err);
@@ -105,6 +107,28 @@ export default function AdminEditarSorteo() {
     }
   };
 
+  const toggleCerrado = async () => {
+    const confirmar = window.confirm(
+      form.cerrado
+        ? "¿Reabrir este sorteo?"
+        : "⚠️ ¿Cerrar este sorteo? No se podrán realizar más compras."
+    );
+    if (!confirmar) return;
+
+    await fetch(`${API_URL}/sorteos/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...form,
+        cerrado: !form.cerrado,
+      }),
+    });
+
+    setForm({ ...form, cerrado: !form.cerrado });
+
+    alert(form.cerrado ? "🔓 Sorteo reabierto" : "🔒 Sorteo cerrado");
+  };
+
   if (loading) return <p className="text-gray-400">Cargando…</p>;
 
   return (
@@ -113,23 +137,35 @@ export default function AdminEditarSorteo() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
 
-        <input name="titulo" value={form.titulo} onChange={handleChange}
+        <input
+          name="titulo"
+          value={form.titulo}
+          onChange={handleChange}
           className="p-2 w-full rounded bg-black border border-zinc-700"
           placeholder="Título"
         />
 
-        <textarea name="descripcion" value={form.descripcion} onChange={handleChange}
+        <textarea
+          name="descripcion"
+          value={form.descripcion}
+          onChange={handleChange}
           className="p-2 w-full rounded bg-black border border-zinc-700"
           placeholder="Descripción"
         />
 
-        <input name="numerosTotales" type="number" value={form.numerosTotales}
+        <input
+          name="numerosTotales"
+          type="number"
+          value={form.numerosTotales}
           onChange={handleChange}
           className="p-2 w-full rounded bg-black border border-zinc-700"
           placeholder="Total de chances"
         />
 
-        <input name="imagenUrl" value={form.imagenUrl} onChange={handleChange}
+        <input
+          name="imagenUrl"
+          value={form.imagenUrl}
+          onChange={handleChange}
           className="p-2 w-full rounded bg-black border border-zinc-700"
           placeholder="URL imagen"
         />
@@ -150,17 +186,26 @@ export default function AdminEditarSorteo() {
         <div className="border border-zinc-700 rounded p-3 space-y-3">
           <h3 className="font-bold">💰 Ofertas</h3>
 
-          <input name="oferta1Precio" value={form.oferta1Precio} onChange={handleChange}
+          <input
+            name="oferta1Precio"
+            value={form.oferta1Precio}
+            onChange={handleChange}
             className="p-2 w-full rounded bg-black border border-zinc-700"
             placeholder="1 chance - Precio"
           />
 
-          <input name="oferta2Precio" value={form.oferta2Precio} onChange={handleChange}
+          <input
+            name="oferta2Precio"
+            value={form.oferta2Precio}
+            onChange={handleChange}
             className="p-2 w-full rounded bg-black border border-zinc-700"
             placeholder="5 chances - Precio"
           />
 
-          <input name="oferta3Precio" value={form.oferta3Precio} onChange={handleChange}
+          <input
+            name="oferta3Precio"
+            value={form.oferta3Precio}
+            onChange={handleChange}
             className="p-2 w-full rounded bg-black border border-zinc-700"
             placeholder="10 chances - Precio"
           />
@@ -202,6 +247,16 @@ export default function AdminEditarSorteo() {
           Guardar cambios
         </button>
       </form>
+
+      {/* 🔒 CERRAR / REABRIR */}
+      <button
+        onClick={toggleCerrado}
+        className={`mt-4 py-2 rounded w-full font-bold ${
+          form.cerrado ? "bg-yellow-600" : "bg-orange-600"
+        }`}
+      >
+        {form.cerrado ? "🔓 Reabrir sorteo" : "🔒 Cerrar sorteo"}
+      </button>
 
       <button
         onClick={handleEliminar}
