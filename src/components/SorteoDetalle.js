@@ -1,6 +1,7 @@
 // /Users/mustamusic/web/sorteos-lxm/src/components/SorteoDetalle.js
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import PacksChancesPublicos from "./PacksChancesPublicos";
 
 export default function SorteoDetalle() {
   const { id } = useParams();
@@ -10,7 +11,7 @@ export default function SorteoDetalle() {
   useEffect(() => {
     const fetchSorteo = async () => {
       try {
-        const res = await fetch(`http://localhost:4000/api/sorteos/${id}`);
+        const res = await fetch(`http://localhost:4000/sorteos/${id}`);
         const data = await res.json();
         setSorteo(data);
       } catch (err) {
@@ -53,58 +54,13 @@ export default function SorteoDetalle() {
         Elegí tu pack de chances
       </h3>
 
-      {sorteo.ofertas?.length > 0 ? (
-        <div className="grid gap-4">
-          {sorteo.ofertas
-            .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-            .map((oferta, i) => (
-              <div
-                key={i}
-                className={`p-5 rounded-xl border ${
-                  oferta.destacado
-                    ? "border-yellow-400 bg-gradient-to-b from-yellow-400/10 to-black"
-                    : "border-zinc-700 bg-zinc-900"
-                }`}
-              >
-                {oferta.destacado && (
-                  <span className="inline-block mb-2 text-xs bg-yellow-400 text-black px-2 py-1 rounded font-bold">
-                    MÁS VENDIDO
-                  </span>
-                )}
-
-                <h4 className="text-lg font-bold">
-                  {oferta.nombre ||
-                    `${oferta.cantidad} chance${
-                      oferta.cantidad > 1 ? "s" : ""
-                    }`}
-                </h4>
-
-                <p className="text-3xl font-extrabold text-yellow-400 my-2">
-                  ${oferta.precio}
-                </p>
-
-                <p className="text-sm text-gray-300 mb-4">
-                  🍀 {oferta.cantidad} chance
-                  {oferta.cantidad > 1 ? "s" : ""}
-                </p>
-
-                <button
-                  onClick={() => {
-                    console.log("Comprar oferta:", oferta);
-                    // acá después conectamos MercadoPago
-                  }}
-                  className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-2 rounded"
-                >
-                  Comprar
-                </button>
-              </div>
-            ))}
-        </div>
-      ) : (
-        <p className="text-gray-400 mt-6">
-          No hay ofertas configuradas
-        </p>
-      )}
+      <PacksChancesPublicos
+        sorteoId={id}
+        onComprar={(pack) => {
+          console.log("Comprar pack:", pack);
+          // después conectamos MercadoPago
+        }}
+      />
     </div>
   );
 }
