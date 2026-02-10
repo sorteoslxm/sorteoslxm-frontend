@@ -27,6 +27,25 @@ export default function SorteoDetalle() {
   const sorteoCerrado =
     sorteo.cerrado === true || sorteo.chancesDisponibles <= 0;
 
+  // 👉 PACKS ARMADOS DESDE FIREBASE
+  const packs = [
+    {
+      cantidad: sorteo.oferta1Chances,
+      precio: 3500,
+      destacado: false,
+    },
+    {
+      cantidad: sorteo.oferta2Chances,
+      precio: 15000,
+      destacado: true,
+    },
+    {
+      cantidad: sorteo.oferta3Chances,
+      precio: 20000,
+      destacado: false,
+    },
+  ].filter((p) => p.cantidad && p.precio);
+
   const abrirModal = (oferta) => {
     if (sorteoCerrado) return;
     setOfertaSeleccionada(oferta);
@@ -102,18 +121,39 @@ export default function SorteoDetalle() {
         </div>
       )}
 
-      {/* 🎟️ OFERTAS */}
+      {/* 🎟️ PACKS */}
       {!sorteoCerrado && (
-        <div className="grid grid-cols-1 gap-3 my-6">
-          {sorteo.ofertas?.map((oferta, i) => (
-            <button
+        <div className="grid gap-4 my-6">
+          {packs.map((p, i) => (
+            <div
               key={i}
-              onClick={() => abrirModal(oferta)}
-              className="bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-lg"
+              className={`p-5 rounded-xl border ${
+                p.destacado
+                  ? "border-yellow-400 bg-gradient-to-b from-yellow-400/10 to-black"
+                  : "border-zinc-700 bg-zinc-900"
+              }`}
             >
-              {oferta.cantidad} chance{oferta.cantidad > 1 ? "s" : ""} · $
-              {oferta.precio}
-            </button>
+              {p.destacado && (
+                <span className="inline-block mb-2 text-xs bg-yellow-400 text-black px-2 py-1 rounded font-bold">
+                  MÁS VENDIDO
+                </span>
+              )}
+
+              <h4 className="text-lg font-bold">
+                {p.cantidad} chance{p.cantidad > 1 ? "s" : ""}
+              </h4>
+
+              <p className="text-3xl font-extrabold text-yellow-400 my-2">
+                ${p.precio}
+              </p>
+
+              <button
+                onClick={() => abrirModal(p)}
+                className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-2 rounded"
+              >
+                Comprar
+              </button>
+            </div>
           ))}
         </div>
       )}
