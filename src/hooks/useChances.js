@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "https://sorteoslxm-frontend.onrender.com";
+  import.meta.env.VITE_API_URL || "https://sorteoslxm-server-clean.onrender.com";
 
 export default function useChances(sorteoId) {
   const [packs, setPacks] = useState([]);
