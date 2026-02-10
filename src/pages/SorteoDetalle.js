@@ -6,7 +6,6 @@ import API_URL from "../config/api";
 export default function SorteoDetalle() {
   const { id } = useParams();
   const [sorteo, setSorteo] = useState(null);
-
   const [mostrarModal, setMostrarModal] = useState(false);
   const [telefono, setTelefono] = useState("");
   const [ofertaSeleccionada, setOfertaSeleccionada] = useState(null);
@@ -21,30 +20,17 @@ export default function SorteoDetalle() {
   }, [id]);
 
   if (!sorteo) {
-    return <p className="p-4 text-center">Cargando…</p>;
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        Cargando sorteo…
+      </div>
+    );
   }
 
   const sorteoCerrado =
     sorteo.cerrado === true || sorteo.chancesDisponibles <= 0;
 
-  // 👉 PACKS ARMADOS DESDE FIREBASE
-  const packs = [
-    {
-      cantidad: sorteo.oferta1Chances,
-      precio: 3500,
-      destacado: false,
-    },
-    {
-      cantidad: sorteo.oferta2Chances,
-      precio: 15000,
-      destacado: true,
-    },
-    {
-      cantidad: sorteo.oferta3Chances,
-      precio: 20000,
-      destacado: false,
-    },
-  ].filter((p) => p.cantidad && p.precio);
+  const packs = sorteo.ofertas?.filter(p => p.cantidad && p.precio) || [];
 
   const abrirModal = (oferta) => {
     if (sorteoCerrado) return;
@@ -53,17 +39,13 @@ export default function SorteoDetalle() {
     setConfirmado(false);
   };
 
-  /* ==========================
-     CONFIRMAR PAGO (TRANSFER)
-  =========================== */
   const confirmarPago = async () => {
     if (!telefono) return alert("Ingresá tu WhatsApp");
     if (!/^\d{10,13}$/.test(telefono))
-      return alert("Ingresá un WhatsApp válido (solo números)");
+      return alert("WhatsApp inválido (solo números)");
 
     try {
       setLoading(true);
-
       const res = await fetch(`${API_URL}/compras/crear`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -75,118 +57,121 @@ export default function SorteoDetalle() {
         }),
       });
 
-      if (!res.ok) throw new Error("Error creando compra");
-
+      if (!res.ok) throw new Error("Error compra");
       setConfirmado(true);
     } catch (err) {
-      console.error(err);
-      alert("❌ Error registrando la compra");
+      alert("Error registrando la compra");
     } finally {
       setLoading(false);
     }
   };
 
-  const copiarAlias = () => {
-    navigator.clipboard.writeText(sorteo.aliasPago);
-    alert("Alias copiado ✅");
-  };
-
   return (
-    <div className="max-w-3xl mx-auto p-4">
-      <img
-        src={sorteo.imagenUrl}
-        alt={sorteo.titulo}
-        className="rounded-xl w-full"
-      />
+    <div className="min-h-screen bg-zinc-950 text-white">
+      <div className="max-w-5xl mx-auto px-4 py-6">
 
-      <h1 className="text-3xl font-bold mt-3">{sorteo.titulo}</h1>
+        {/* IMAGEN */}
+        <img
+          src={sorteo.imagenUrl}
+          alt={sorteo.titulo}
+          className="w-full rounded-2xl shadow-2xl mb-6"
+        />
 
-      {sorteo.descripcion && (
-        <p className="text-gray-700 mt-2 whitespace-pre-line">
-          {sorteo.descripcion}
-        </p>
-      )}
+        {/* TITULO */}
+        <h1 className="text-4xl font-extrabold tracking-tight">
+          {sorteo.titulo}
+        </h1>
 
-      {/* 🔥 ÚLTIMAS CHANCES */}
-      {sorteo.chancesDisponibles > 0 &&
-        sorteo.chancesDisponibles <= 10 && (
-          <div className="bg-red-600 text-white text-center py-2 rounded-xl font-bold animate-pulse my-4">
-            🔥 Últimas {sorteo.chancesDisponibles} chances disponibles
+        {sorteo.descripcion && (
+          <p className="text-zinc-300 mt-3 whitespace-pre-line">
+            {sorteo.descripcion}
+          </p>
+        )}
+
+        {/* ALERTA CHANCES */}
+        {!sorteoCerrado && sorteo.chancesDisponibles <= 10 && (
+          <div className="mt-6 bg-red-600 text-white text-center py-3 rounded-xl font-bold animate-pulse">
+            🔥 ÚLTIMAS {sorteo.chancesDisponibles} CHANCES DISPONIBLES
           </div>
         )}
 
-      {sorteoCerrado && (
-        <div className="bg-gray-300 text-gray-800 text-center py-3 rounded-xl font-bold my-4">
-          ⛔ Sorteo cerrado
-        </div>
-      )}
+        {sorteoCerrado && (
+          <div className="mt-6 bg-zinc-300 text-black text-center py-3 rounded-xl font-bold">
+            ⛔ Sorteo cerrado
+          </div>
+        )}
 
-      {/* 🎟️ PACKS */}
-      {!sorteoCerrado && (
-        <div className="grid gap-4 my-6">
-          {packs.map((p, i) => (
-            <div
-              key={i}
-              className={`p-5 rounded-xl border ${
-                p.destacado
-                  ? "border-yellow-400 bg-gradient-to-b from-yellow-400/10 to-black"
-                  : "border-zinc-700 bg-zinc-900"
-              }`}
-            >
-              {p.destacado && (
-                <span className="inline-block mb-2 text-xs bg-yellow-400 text-black px-2 py-1 rounded font-bold">
-                  MÁS VENDIDO
-                </span>
-              )}
+        {/* PACKS */}
+        {!sorteoCerrado && (
+          <div className="grid md:grid-cols-3 gap-6 mt-10">
 
-              <h4 className="text-lg font-bold">
-                {p.cantidad} chance{p.cantidad > 1 ? "s" : ""}
-              </h4>
+            {packs.map((p, i) => {
+              const destacado = p.destacado;
 
-              <p className="text-3xl font-extrabold text-yellow-400 my-2">
-                ${p.precio}
-              </p>
+              return (
+                <div
+                  key={i}
+                  className={`relative rounded-2xl p-6 border transition-all duration-300
+                    ${destacado
+                      ? "border-yellow-400 bg-gradient-to-br from-yellow-400/20 to-black scale-105 shadow-yellow-400/30 shadow-2xl"
+                      : "border-zinc-800 bg-zinc-900 hover:border-zinc-600"
+                    }
+                  `}
+                >
+                  {destacado && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-black px-4 py-1 rounded-full text-xs font-extrabold tracking-wide">
+                      🔥 MÁS VENDIDO
+                    </div>
+                  )}
 
-              <button
-                onClick={() => abrirModal(p)}
-                className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-2 rounded"
-              >
-                Comprar
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+                  <h3 className="text-xl font-bold mt-2">
+                    {p.cantidad} chance{p.cantidad > 1 ? "s" : ""}
+                  </h3>
 
-      {/* 🪟 MODAL */}
+                  <p className="text-4xl font-extrabold text-yellow-400 mt-4">
+                    ${p.precio}
+                  </p>
+
+                  <button
+                    onClick={() => abrirModal(p)}
+                    className="mt-6 w-full bg-gradient-to-r from-yellow-400 to-yellow-300 text-black font-extrabold py-3 rounded-xl
+                    hover:scale-105 transition-transform shadow-lg"
+                  >
+                    COMPRAR AHORA
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* MODAL */}
       {mostrarModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+          <div className="bg-white text-black rounded-2xl p-6 w-full max-w-md">
+
             {!confirmado ? (
               <>
-                <h2 className="text-xl font-bold mb-2">
-                  {ofertaSeleccionada.cantidad} chance
-                  {ofertaSeleccionada.cantidad > 1 ? "s" : ""} · $
-                  {ofertaSeleccionada.precio}
+                <h2 className="text-2xl font-extrabold mb-2">
+                  {ofertaSeleccionada.cantidad} chances
                 </h2>
 
-                <p className="text-gray-600 mb-3">
-                  Transferí al siguiente alias y luego confirmá el pago.
+                <p className="text-lg font-bold text-yellow-600 mb-4">
+                  Total: ${ofertaSeleccionada.precio}
                 </p>
 
-                <div className="bg-gray-100 p-3 rounded flex justify-between items-center mb-3">
-                  <span className="font-bold">{sorteo.aliasPago}</span>
-                  <button
-                    onClick={copiarAlias}
-                    className="text-blue-600 underline text-sm"
-                  >
-                    Copiar
-                  </button>
+                <p className="text-sm text-gray-600 mb-3">
+                  Transferí al alias y luego confirmá el pago
+                </p>
+
+                <div className="bg-gray-100 rounded-lg p-3 mb-4 font-bold text-center">
+                  {sorteo.aliasPago}
                 </div>
 
                 <input
-                  className="border p-3 w-full mb-4 rounded"
-                  placeholder="Tu WhatsApp (solo números)"
+                  className="w-full border rounded-lg p-3 mb-4"
+                  placeholder="Tu WhatsApp"
                   value={telefono}
                   onChange={(e) => setTelefono(e.target.value)}
                 />
@@ -194,30 +179,31 @@ export default function SorteoDetalle() {
                 <button
                   onClick={confirmarPago}
                   disabled={loading}
-                  className="w-full bg-green-600 text-white py-3 rounded-xl font-bold"
+                  className="w-full bg-green-600 text-white font-bold py-3 rounded-xl"
                 >
-                  {loading ? "Confirmando..." : "Ya pagué"}
+                  {loading ? "Confirmando..." : "YA PAGUÉ"}
                 </button>
 
                 <button
                   onClick={() => setMostrarModal(false)}
-                  className="underline text-gray-600 mt-3 block mx-auto"
+                  className="block mx-auto mt-4 text-sm underline text-gray-500"
                 >
                   Cancelar
                 </button>
               </>
             ) : (
               <>
-                <h2 className="text-xl font-bold text-green-600 mb-2">
+                <h2 className="text-2xl font-extrabold text-green-600 text-center">
                   ✅ Pago informado
                 </h2>
-                <p className="text-gray-700 text-center">
+
+                <p className="text-center text-gray-700 mt-3">
                   En breve validamos tu pago y se acreditan tus chances.
                 </p>
 
                 <button
                   onClick={() => setMostrarModal(false)}
-                  className="mt-4 bg-blue-600 text-white py-2 px-4 rounded mx-auto block"
+                  className="mt-6 w-full bg-blue-600 text-white py-2 rounded-lg font-bold"
                 >
                   Cerrar
                 </button>
