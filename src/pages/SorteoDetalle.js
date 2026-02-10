@@ -21,7 +21,7 @@ export default function SorteoDetalle() {
 
   if (!sorteo) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white">
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
         Cargando sorteo…
       </div>
     );
@@ -30,7 +30,24 @@ export default function SorteoDetalle() {
   const sorteoCerrado =
     sorteo.cerrado === true || sorteo.chancesDisponibles <= 0;
 
-  const packs = sorteo.ofertas?.filter(p => p.cantidad && p.precio) || [];
+  // ✅ PACKS REALES (compatibles con tu Firebase actual)
+  const packs = [
+    {
+      cantidad: sorteo.oferta1Chances,
+      precio: sorteo.precio,
+      destacado: false,
+    },
+    {
+      cantidad: sorteo.oferta2Chances,
+      precio: 15000,
+      destacado: true, // 👈 MÁS VENDIDO
+    },
+    {
+      cantidad: sorteo.oferta3Chances,
+      precio: 20000,
+      destacado: false,
+    },
+  ].filter((p) => p.cantidad && p.precio);
 
   const abrirModal = (oferta) => {
     if (sorteoCerrado) return;
@@ -68,8 +85,24 @@ export default function SorteoDetalle() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      <div className="max-w-5xl mx-auto px-4 py-6">
+      {/* 🎬 Animación de entrada */}
+      <style>{`
+        @keyframes fadeUp {
+          from {
+            opacity: 0;
+            transform: translateY(16px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .fade-up {
+          animation: fadeUp 0.45s ease-out;
+        }
+      `}</style>
 
+      <div className="max-w-5xl mx-auto px-4 py-6 fade-up">
         {/* IMAGEN */}
         <img
           src={sorteo.imagenUrl}
@@ -104,44 +137,39 @@ export default function SorteoDetalle() {
         {/* PACKS */}
         {!sorteoCerrado && (
           <div className="grid md:grid-cols-3 gap-6 mt-10">
-
-            {packs.map((p, i) => {
-              const destacado = p.destacado;
-
-              return (
-                <div
-                  key={i}
-                  className={`relative rounded-2xl p-6 border transition-all duration-300
-                    ${destacado
+            {packs.map((p, i) => (
+              <div
+                key={i}
+                className={`relative rounded-2xl p-6 border transition-all duration-300
+                  ${
+                    p.destacado
                       ? "border-yellow-400 bg-gradient-to-br from-yellow-400/20 to-black scale-105 shadow-yellow-400/30 shadow-2xl"
                       : "border-zinc-800 bg-zinc-900 hover:border-zinc-600"
-                    }
-                  `}
+                  }`}
+              >
+                {p.destacado && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-black px-4 py-1 rounded-full text-xs font-extrabold tracking-wide">
+                    🔥 MÁS VENDIDO
+                  </div>
+                )}
+
+                <h3 className="text-xl font-bold mt-2">
+                  {p.cantidad} chance{p.cantidad > 1 ? "s" : ""}
+                </h3>
+
+                <p className="text-4xl font-extrabold text-yellow-400 mt-4">
+                  ${p.precio}
+                </p>
+
+                <button
+                  onClick={() => abrirModal(p)}
+                  className="mt-6 w-full bg-gradient-to-r from-yellow-400 to-yellow-300 text-black font-extrabold py-3 rounded-xl
+                  hover:scale-105 transition-transform shadow-lg"
                 >
-                  {destacado && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-black px-4 py-1 rounded-full text-xs font-extrabold tracking-wide">
-                      🔥 MÁS VENDIDO
-                    </div>
-                  )}
-
-                  <h3 className="text-xl font-bold mt-2">
-                    {p.cantidad} chance{p.cantidad > 1 ? "s" : ""}
-                  </h3>
-
-                  <p className="text-4xl font-extrabold text-yellow-400 mt-4">
-                    ${p.precio}
-                  </p>
-
-                  <button
-                    onClick={() => abrirModal(p)}
-                    className="mt-6 w-full bg-gradient-to-r from-yellow-400 to-yellow-300 text-black font-extrabold py-3 rounded-xl
-                    hover:scale-105 transition-transform shadow-lg"
-                  >
-                    COMPRAR AHORA
-                  </button>
-                </div>
-              );
-            })}
+                  COMPRAR AHORA
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -149,8 +177,7 @@ export default function SorteoDetalle() {
       {/* MODAL */}
       {mostrarModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
-          <div className="bg-white text-black rounded-2xl p-6 w-full max-w-md">
-
+          <div className="bg-white text-black rounded-2xl p-6 w-full max-w-md fade-up">
             {!confirmado ? (
               <>
                 <h2 className="text-2xl font-extrabold mb-2">
