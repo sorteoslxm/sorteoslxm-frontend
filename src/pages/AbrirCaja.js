@@ -1,13 +1,16 @@
 // FILE: src/pages/AbrirCaja.js
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Confetti from "react-confetti";
 import API_URL from "../config/api";
 
 export default function AbrirCaja() {
   const navigate = useNavigate();
   const { id } = useParams(); // id de la caja
+  const [searchParams] = useSearchParams();
+
+  const pagoId = searchParams.get("pago"); // ✅ ID del pago aprobado
 
   const [fase, setFase] = useState("idle"); // idle | opening
   const [showConfetti, setShowConfetti] = useState(false);
@@ -17,7 +20,14 @@ export default function AbrirCaja() {
   const audioWin = useRef(null);
   const audioLose = useRef(null);
 
-  /* 🔒 Anti refresh / repetir */
+  /* 🚫 SI NO VIENE DE MERCADOPAGO */
+  useEffect(() => {
+    if (!pagoId) {
+      navigate("/cajas");
+    }
+  }, [pagoId, navigate]);
+
+  /* 🔒 Anti refresh */
   useEffect(() => {
     const yaAbierta = sessionStorage.getItem(`caja_${id}_abierta`);
     if (yaAbierta) {
@@ -32,7 +42,7 @@ export default function AbrirCaja() {
     audioLose.current = new Audio("/sonidos/lose.mp3");
   }, []);
 
-  /* 🎁 APERTURA REAL (BACKEND) */
+  /* 🎁 APERTURA REAL */
   useEffect(() => {
     if (fase !== "opening" || loading) return;
 
@@ -43,20 +53,19 @@ export default function AbrirCaja() {
 
         const res = await fetch(`${API_URL}/cajas/abrir`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             cajaId: id,
+            pagoId, // 🔥 NOMBRE CORRECTO
           }),
         });
 
         if (!res.ok) {
-  navigate("/cajas");
-  return;
-}
+          navigate("/cajas");
+          return;
+        }
 
-const data = await res.json();
+        const data = await res.json();
 
         sessionStorage.setItem(`caja_${id}_abierta`, "true");
 
@@ -66,14 +75,11 @@ const data = await res.json();
 
           setTimeout(() => {
             navigate("/resultado-caja/ganar", {
-              state: {
-                premio: data.premio,
-              },
+              state: { premio: data.premio },
             });
           }, 1400);
         } else {
           audioLose.current?.play();
-
           setTimeout(() => {
             navigate("/resultado-caja/perder");
           }, 1100);
@@ -85,14 +91,13 @@ const data = await res.json();
     };
 
     abrirCaja();
-  }, [fase, id, navigate, loading]);
+  }, [fase, id, navigate, loading, pagoId]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-zinc-900 to-black flex items-center justify-center px-4 overflow-hidden">
       {showConfetti && <Confetti recycle={false} numberOfPieces={400} />}
 
       <div className="max-w-md w-full text-center">
-        {/* TITULO */}
         <h1 className="text-2xl font-extrabold text-white mb-2">
           🎁 Tu caja está lista
         </h1>
@@ -100,7 +105,6 @@ const data = await res.json();
           Respirá… el resultado se revela ahora
         </p>
 
-        {/* CAJA */}
         <div className="relative flex justify-center mb-10">
           <AnimatePresence mode="wait">
             <motion.div
@@ -123,7 +127,6 @@ const data = await res.json();
               }}
               className="relative"
             >
-              {/* GLOW */}
               {fase === "opening" && (
                 <motion.div
                   animate={{ opacity: [0.3, 0.9, 0.3] }}
@@ -142,7 +145,6 @@ const data = await res.json();
           </AnimatePresence>
         </div>
 
-        {/* CTA */}
         {fase === "idle" && (
           <button
             onClick={() => setFase("opening")}

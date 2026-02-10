@@ -13,7 +13,17 @@ export default function AdminEditarSorteo() {
     precio: "",
     numerosTotales: "",
     imagenUrl: "",
-    mpCuenta: "",
+
+    // 🔑 PAGO MANUAL
+    aliasPago: "",
+
+    // 💰 OFERTAS
+    oferta1Chances: 1,
+    oferta1Precio: "",
+    oferta2Chances: 5,
+    oferta2Precio: "",
+    oferta3Chances: 10,
+    oferta3Precio: "",
 
     destacado: false,
     sorteoPrincipal: false,
@@ -37,9 +47,7 @@ export default function AdminEditarSorteo() {
         const token = localStorage.getItem("adminToken");
 
         const res = await fetch(`${API_URL}/sorteos/${id}`, {
-          headers: {
-            "x-admin-token": token,
-          },
+          headers: { "x-admin-token": token },
         });
 
         const data = await res.json();
@@ -50,7 +58,15 @@ export default function AdminEditarSorteo() {
           precio: data.precio || "",
           numerosTotales: data.numerosTotales || "",
           imagenUrl: data.imagenUrl || "",
-          mpCuenta: data.mpCuenta || "",
+
+          aliasPago: data.aliasPago || "",
+
+          oferta1Chances: data.oferta1Chances || 1,
+          oferta1Precio: data.oferta1Precio || "",
+          oferta2Chances: data.oferta2Chances || 5,
+          oferta2Precio: data.oferta2Precio || "",
+          oferta3Chances: data.oferta3Chances || 10,
+          oferta3Precio: data.oferta3Precio || "",
 
           destacado: data.destacado || false,
           sorteoPrincipal: data.sorteoPrincipal || false,
@@ -92,26 +108,15 @@ export default function AdminEditarSorteo() {
   };
 
   const handleEliminar = async () => {
-    const confirmar = window.confirm(
-      "⚠️ ¿Seguro que querés eliminar este sorteo?\n\nNo se borra definitivamente, pero dejará de mostrarse."
-    );
-
-    if (!confirmar) return;
+    if (!window.confirm("⚠️ ¿Eliminar este sorteo?")) return;
 
     try {
       setEliminando(true);
-
-      const res = await fetch(`${API_URL}/sorteos/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) throw new Error("Error eliminando sorteo");
-
-      alert("🗑️ Sorteo eliminado correctamente");
+      await fetch(`${API_URL}/sorteos/${id}`, { method: "DELETE" });
+      alert("🗑️ Sorteo eliminado");
       navigate("/admin");
-    } catch (err) {
-      console.error(err);
-      alert("❌ Error al eliminar sorteo");
+    } catch {
+      alert("❌ Error al eliminar");
     } finally {
       setEliminando(false);
     }
@@ -124,152 +129,33 @@ export default function AdminEditarSorteo() {
       <h1 className="text-3xl font-extrabold mb-6">✏️ Editar Sorteo</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          name="titulo"
-          value={form.titulo}
-          onChange={handleChange}
-          className="p-2 w-full rounded bg-black border border-zinc-700 text-white placeholder-gray-400"
-          placeholder="Título"
-        />
+        <input name="titulo" value={form.titulo} onChange={handleChange} className="p-2 w-full rounded bg-black border border-zinc-700" placeholder="Título" />
+        <textarea name="descripcion" value={form.descripcion} onChange={handleChange} className="p-2 w-full rounded bg-black border border-zinc-700" placeholder="Descripción" />
+        <input name="numerosTotales" type="number" value={form.numerosTotales} onChange={handleChange} className="p-2 w-full rounded bg-black border border-zinc-700" placeholder="Total de chances" />
+        <input name="imagenUrl" value={form.imagenUrl} onChange={handleChange} className="p-2 w-full rounded bg-black border border-zinc-700" placeholder="URL imagen" />
 
-        <textarea
-          name="descripcion"
-          value={form.descripcion}
-          onChange={handleChange}
-          className="p-2 w-full rounded bg-black border border-zinc-700 text-white placeholder-gray-400"
-          placeholder="Descripción"
-        />
-
-        <input
-          name="precio"
-          type="number"
-          value={form.precio}
-          onChange={handleChange}
-          className="p-2 w-full rounded bg-black border border-zinc-700 text-white"
-          placeholder="Precio"
-        />
-
-        <input
-          name="numerosTotales"
-          type="number"
-          value={form.numerosTotales}
-          onChange={handleChange}
-          className="p-2 w-full rounded bg-black border border-zinc-700 text-white"
-          placeholder="Total de chances"
-        />
-
-        <input
-          name="imagenUrl"
-          value={form.imagenUrl}
-          onChange={handleChange}
-          className="p-2 w-full rounded bg-black border border-zinc-700 text-white placeholder-gray-400"
-          placeholder="URL imagen"
-        />
-
-        <select
-          name="mpCuenta"
-          value={form.mpCuenta}
-          onChange={handleChange}
-          className="p-2 rounded w-full bg-black border border-zinc-700 text-white"
-        >
-          <option value="">Seleccionar Cuenta MP</option>
-          <option value="MERCADOPAGO_ACCESS_TOKEN_1">Cuenta #1</option>
-          <option value="MERCADOPAGO_ACCESS_TOKEN_2">Cuenta #2</option>
-        </select>
-
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={form.destacado}
-            onChange={(e) =>
-              setForm({ ...form, destacado: e.target.checked })
-            }
-          />
-          <span>⭐ Mostrar como destacado</span>
-        </label>
-
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={form.sorteoPrincipal}
-            onChange={(e) =>
-              setForm({ ...form, sorteoPrincipal: e.target.checked })
-            }
-          />
-          <span>🔥 Marcar como principal</span>
-        </label>
-
+        {/* 💳 ALIAS */}
         <div className="border border-zinc-700 rounded p-3">
-          <label className="flex items-center gap-2 mb-2">
-            <input
-              type="checkbox"
-              checked={form.mostrarCuentaRegresiva}
-              onChange={(e) =>
-                setForm({ ...form, mostrarCuentaRegresiva: e.target.checked })
-              }
-            />
-            <span>⏱️ Mostrar cuenta regresiva</span>
-          </label>
-
-          {form.mostrarCuentaRegresiva && (
-            <input
-              name="textoCuentaRegresiva"
-              value={form.textoCuentaRegresiva}
-              onChange={handleChange}
-              className="p-2 w-full rounded bg-black border border-zinc-700 text-white"
-              placeholder="Ej: Sorteo termina pronto"
-            />
-          )}
-        </div>
-
-        <div className="border rounded p-3 bg-yellow-400/10 border-yellow-400">
-          <h3 className="font-bold mb-2 text-yellow-400">
-            🔥 Últimas chances
-          </h3>
-
-          <label className="flex items-center gap-2 mb-2">
-            <input
-              type="checkbox"
-              checked={form.ultimasChances}
-              onChange={(e) =>
-                setForm({ ...form, ultimasChances: e.target.checked })
-              }
-            />
-            <span>Activar mensaje de últimas chances</span>
-          </label>
-
+          <h3 className="font-bold mb-2">💳 Pago por transferencia</h3>
           <input
-            name="textoUltimas"
-            value={form.textoUltimas}
+            name="aliasPago"
+            value={form.aliasPago}
             onChange={handleChange}
-            className="p-2 w-full rounded bg-black border border-zinc-700 text-white mb-2"
-            placeholder="Ej: ¡Últimas chances disponibles!"
-          />
-
-          <label className="text-sm text-gray-300">
-            Activar automáticamente cuando queden menos de (% restante)
-          </label>
-
-          <input
-            name="porcentajeAutoUltimas"
-            type="number"
-            value={form.porcentajeAutoUltimas}
-            onChange={handleChange}
-            className="p-2 w-full rounded bg-black border border-zinc-700 text-white mt-1"
-            placeholder="Ej: 10"
+            className="p-2 w-full rounded bg-black border border-zinc-700"
+            placeholder="alias.mp"
           />
         </div>
 
-        <div>
-          <label className="font-bold">📌 Chances ocupadas</label>
-          <input
-            disabled
-            value={form.chancesOcupadas}
-            className="p-2 rounded w-full mt-1 bg-zinc-800 border border-zinc-700 text-white"
-          />
+        {/* 💰 OFERTAS */}
+        <div className="border border-zinc-700 rounded p-3 space-y-3">
+          <h3 className="font-bold">💰 Ofertas de chances</h3>
+
+          <input name="oferta1Precio" value={form.oferta1Precio} onChange={handleChange} className="p-2 w-full rounded bg-black border border-zinc-700" placeholder="1 chance - Precio" />
+          <input name="oferta2Precio" value={form.oferta2Precio} onChange={handleChange} className="p-2 w-full rounded bg-black border border-zinc-700" placeholder="5 chances - Precio" />
+          <input name="oferta3Precio" value={form.oferta3Precio} onChange={handleChange} className="p-2 w-full rounded bg-black border border-zinc-700" placeholder="10 chances - Precio" />
         </div>
 
-        <button className="bg-green-600 py-2 text-white rounded w-full font-bold">
+        <button className="bg-green-600 py-2 rounded w-full font-bold">
           Guardar cambios
         </button>
       </form>
@@ -277,7 +163,7 @@ export default function AdminEditarSorteo() {
       <button
         onClick={handleEliminar}
         disabled={eliminando}
-        className="mt-6 bg-red-600 py-2 text-white rounded w-full font-bold"
+        className="mt-6 bg-red-600 py-2 rounded w-full font-bold"
       >
         {eliminando ? "Eliminando..." : "🗑️ Eliminar sorteo"}
       </button>

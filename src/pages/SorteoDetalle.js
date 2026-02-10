@@ -6,9 +6,12 @@ import API_URL from "../config/api";
 export default function SorteoDetalle() {
   const { id } = useParams();
   const [sorteo, setSorteo] = useState(null);
+
   const [mostrarModal, setMostrarModal] = useState(false);
   const [telefono, setTelefono] = useState("");
-  const [loadingCompra, setLoadingCompra] = useState(false);
+  const [ofertaSeleccionada, setOfertaSeleccionada] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [confirmado, setConfirmado] = useState(false);
 
   useEffect(() => {
     fetch(`${API_URL}/sorteos/${id}`)
@@ -18,56 +21,55 @@ export default function SorteoDetalle() {
   }, [id]);
 
   if (!sorteo) {
-    return <p className="p-4 text-center">Cargando...</p>;
+    return <p className="p-4 text-center">Cargando…</p>;
   }
 
   const sorteoCerrado =
     sorteo.cerrado === true || sorteo.chancesDisponibles <= 0;
 
-  const continuarAlPago = async () => {
-    if (sorteoCerrado || loadingCompra) return;
+  const abrirModal = (oferta) => {
+    if (sorteoCerrado) return;
+    setOfertaSeleccionada(oferta);
+    setMostrarModal(true);
+    setConfirmado(false);
+  };
 
-    if (!telefono) {
-      return alert("Ingresá tu WhatsApp");
-    }
-
-    if (!/^\d{10,13}$/.test(telefono)) {
+  /* ==========================
+     CONFIRMAR PAGO (TRANSFER)
+  =========================== */
+  const confirmarPago = async () => {
+    if (!telefono) return alert("Ingresá tu WhatsApp");
+    if (!/^\d{10,13}$/.test(telefono))
       return alert("Ingresá un WhatsApp válido (solo números)");
-    }
 
     try {
-      setLoadingCompra(true);
-      setMostrarModal(false);
+      setLoading(true);
 
-      const res = await fetch(`${API_URL}/mercadopago/crear-preferencia`, {
+      const res = await fetch(`${API_URL}/compras/crear`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sorteoId: sorteo.id,
-          titulo: sorteo.titulo,
-          precio: sorteo.precio,
-          cantidad: 1,
           telefono,
-          mpCuenta: sorteo.mpCuenta || "default",
+          cantidad: ofertaSeleccionada.cantidad,
+          mpAccount: "transferencia",
         }),
       });
 
-      const data = await res.json();
+      if (!res.ok) throw new Error("Error creando compra");
 
-      if (!res.ok || !data.init_point) {
-        console.error("Error MP:", data);
-        alert("❌ No se pudo iniciar el pago. Intentá nuevamente.");
-        setLoadingCompra(false);
-        return;
-      }
-
-      // 🔁 Redirección a MercadoPago
-      window.location.href = data.init_point;
+      setConfirmado(true);
     } catch (err) {
       console.error(err);
-      alert("❌ Error conectando con MercadoPago");
-      setLoadingCompra(false);
+      alert("❌ Error registrando la compra");
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const copiarAlias = () => {
+    navigator.clipboard.writeText(sorteo.aliasPago);
+    alert("Alias copiado ✅");
   };
 
   return (
@@ -86,70 +88,101 @@ export default function SorteoDetalle() {
         </p>
       )}
 
-      <p className="text-2xl text-green-600 font-bold my-4">
-        ${sorteo.precio}
-      </p>
-
       {/* 🔥 ÚLTIMAS CHANCES */}
       {sorteo.chancesDisponibles > 0 &&
         sorteo.chancesDisponibles <= 10 && (
-          <div className="bg-red-600 text-white text-center py-2 rounded-xl font-bold animate-pulse mb-4">
+          <div className="bg-red-600 text-white text-center py-2 rounded-xl font-bold animate-pulse my-4">
             🔥 Últimas {sorteo.chancesDisponibles} chances disponibles
           </div>
         )}
 
-      {/* 🚫 SORTEO CERRADO */}
       {sorteoCerrado && (
-        <div className="bg-gray-300 text-gray-800 text-center py-3 rounded-xl font-bold mb-4">
-          ⛔ Sorteo cerrado — no hay más chances disponibles
+        <div className="bg-gray-300 text-gray-800 text-center py-3 rounded-xl font-bold my-4">
+          ⛔ Sorteo cerrado
         </div>
       )}
 
-      <button
-        className={`w-full py-3 rounded-xl text-white ${
-          sorteoCerrado || loadingCompra
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-blue-600"
-        }`}
-        onClick={() => setMostrarModal(true)}
-        disabled={sorteoCerrado || loadingCompra}
-      >
-        {loadingCompra
-          ? "Redirigiendo a MercadoPago..."
-          : sorteoCerrado
-          ? "Sorteo cerrado"
-          : "Participar"}
-      </button>
+      {/* 🎟️ OFERTAS */}
+      {!sorteoCerrado && (
+        <div className="grid grid-cols-1 gap-3 my-6">
+          {sorteo.ofertas?.map((oferta, i) => (
+            <button
+              key={i}
+              onClick={() => abrirModal(oferta)}
+              className="bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-lg"
+            >
+              {oferta.cantidad} chance{oferta.cantidad > 1 ? "s" : ""} · $
+              {oferta.precio}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {mostrarModal && !sorteoCerrado && !loadingCompra && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4">
+      {/* 🪟 MODAL */}
+      {mostrarModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
           <div className="bg-white p-6 rounded-xl w-full max-w-md">
-            <h2 className="font-bold mb-2 text-xl">Tu WhatsApp</h2>
+            {!confirmado ? (
+              <>
+                <h2 className="text-xl font-bold mb-2">
+                  {ofertaSeleccionada.cantidad} chance
+                  {ofertaSeleccionada.cantidad > 1 ? "s" : ""} · $
+                  {ofertaSeleccionada.precio}
+                </h2>
 
-            <p className="text-gray-600 mb-3">
-              Necesitamos tu WhatsApp para poder contactarte si resultás ganador 🎉
-            </p>
+                <p className="text-gray-600 mb-3">
+                  Transferí al siguiente alias y luego confirmá el pago.
+                </p>
 
-            <input
-              className="border p-3 w-full mb-4 rounded"
-              placeholder="Ejemplo: 1122334455"
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
-            />
+                <div className="bg-gray-100 p-3 rounded flex justify-between items-center mb-3">
+                  <span className="font-bold">{sorteo.aliasPago}</span>
+                  <button
+                    onClick={copiarAlias}
+                    className="text-blue-600 underline text-sm"
+                  >
+                    Copiar
+                  </button>
+                </div>
 
-            <button
-              className="w-full bg-green-600 text-white py-3 rounded-xl mb-2"
-              onClick={continuarAlPago}
-            >
-              Ir a pagar
-            </button>
+                <input
+                  className="border p-3 w-full mb-4 rounded"
+                  placeholder="Tu WhatsApp (solo números)"
+                  value={telefono}
+                  onChange={(e) => setTelefono(e.target.value)}
+                />
 
-            <button
-              onClick={() => setMostrarModal(false)}
-              className="underline text-gray-600"
-            >
-              Cancelar
-            </button>
+                <button
+                  onClick={confirmarPago}
+                  disabled={loading}
+                  className="w-full bg-green-600 text-white py-3 rounded-xl font-bold"
+                >
+                  {loading ? "Confirmando..." : "Ya pagué"}
+                </button>
+
+                <button
+                  onClick={() => setMostrarModal(false)}
+                  className="underline text-gray-600 mt-3 block mx-auto"
+                >
+                  Cancelar
+                </button>
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl font-bold text-green-600 mb-2">
+                  ✅ Pago informado
+                </h2>
+                <p className="text-gray-700 text-center">
+                  En breve validamos tu pago y se acreditan tus chances.
+                </p>
+
+                <button
+                  onClick={() => setMostrarModal(false)}
+                  className="mt-4 bg-blue-600 text-white py-2 px-4 rounded mx-auto block"
+                >
+                  Cerrar
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
