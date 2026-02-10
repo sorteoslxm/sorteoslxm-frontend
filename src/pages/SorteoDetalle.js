@@ -30,23 +30,10 @@ export default function SorteoDetalle() {
   const sorteoCerrado =
     sorteo.cerrado === true || sorteo.chancesDisponibles <= 0;
 
-  // ✅ PACKS REALES (compatibles con tu Firebase actual)
   const packs = [
-    {
-      cantidad: sorteo.oferta1Chances,
-      precio: sorteo.precio,
-      destacado: false,
-    },
-    {
-      cantidad: sorteo.oferta2Chances,
-      precio: 15000,
-      destacado: true, // 👈 MÁS VENDIDO
-    },
-    {
-      cantidad: sorteo.oferta3Chances,
-      precio: 20000,
-      destacado: false,
-    },
+    { cantidad: sorteo.oferta1Chances, precio: sorteo.oferta1Precio, index: 1 },
+    { cantidad: sorteo.oferta2Chances, precio: sorteo.oferta2Precio, index: 2 },
+    { cantidad: sorteo.oferta3Chances, precio: sorteo.oferta3Precio, index: 3 },
   ].filter((p) => p.cantidad && p.precio);
 
   const abrirModal = (oferta) => {
@@ -63,20 +50,21 @@ export default function SorteoDetalle() {
 
     try {
       setLoading(true);
-      const res = await fetch(`${API_URL}/compras/crear`, {
+      const res = await fetch(`${API_URL}/compras`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sorteoId: sorteo.id,
           telefono,
           cantidad: ofertaSeleccionada.cantidad,
-          mpAccount: "transferencia",
+          precio: ofertaSeleccionada.precio,
+          aliasPago: sorteo.aliasPago,
         }),
       });
 
       if (!res.ok) throw new Error("Error compra");
       setConfirmado(true);
-    } catch (err) {
+    } catch {
       alert("Error registrando la compra");
     } finally {
       setLoading(false);
@@ -85,35 +73,22 @@ export default function SorteoDetalle() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      {/* 🎬 Animación de entrada */}
       <style>{`
         @keyframes fadeUp {
-          from {
-            opacity: 0;
-            transform: translateY(16px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(16px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        .fade-up {
-          animation: fadeUp 0.45s ease-out;
-        }
+        .fade-up { animation: fadeUp .45s ease-out; }
       `}</style>
 
       <div className="max-w-5xl mx-auto px-4 py-6 fade-up">
-        {/* IMAGEN */}
         <img
           src={sorteo.imagenUrl}
           alt={sorteo.titulo}
           className="w-full rounded-2xl shadow-2xl mb-6"
         />
 
-        {/* TITULO */}
-        <h1 className="text-4xl font-extrabold tracking-tight">
-          {sorteo.titulo}
-        </h1>
+        <h1 className="text-4xl font-extrabold">{sorteo.titulo}</h1>
 
         {sorteo.descripcion && (
           <p className="text-zinc-300 mt-3 whitespace-pre-line">
@@ -121,75 +96,84 @@ export default function SorteoDetalle() {
           </p>
         )}
 
-        {/* ALERTA CHANCES */}
-        {!sorteoCerrado && sorteo.chancesDisponibles <= 10 && (
-          <div className="mt-6 bg-red-600 text-white text-center py-3 rounded-xl font-bold animate-pulse">
-            🔥 ÚLTIMAS {sorteo.chancesDisponibles} CHANCES DISPONIBLES
+        {/* 🔥 BARRA DE PROGRESO MANUAL */}
+        {typeof sorteo.porcentajeVendido === "number" && (
+          <div className="mt-6">
+            <p className="mb-2 font-bold">
+              🔥 {sorteo.porcentajeVendido}% del sorteo vendido
+            </p>
+            <div className="w-full bg-zinc-800 rounded-full h-4 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-yellow-400 to-yellow-300 transition-all"
+                style={{ width: `${sorteo.porcentajeVendido}%` }}
+              />
+            </div>
           </div>
         )}
 
-        {sorteoCerrado && (
-          <div className="mt-6 bg-zinc-300 text-black text-center py-3 rounded-xl font-bold">
-            ⛔ Sorteo cerrado
-          </div>
-        )}
-
-        {/* PACKS */}
         {!sorteoCerrado && (
           <div className="grid md:grid-cols-3 gap-6 mt-10">
-            {packs.map((p, i) => (
-              <div
-                key={i}
-                className={`relative rounded-2xl p-6 border transition-all duration-300
-                  ${
-                    p.destacado
-                      ? "border-yellow-400 bg-gradient-to-br from-yellow-400/20 to-black scale-105 shadow-yellow-400/30 shadow-2xl"
-                      : "border-zinc-800 bg-zinc-900 hover:border-zinc-600"
-                  }`}
-              >
-                {p.destacado && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-black px-4 py-1 rounded-full text-xs font-extrabold tracking-wide">
-                    🔥 MÁS VENDIDO
-                  </div>
-                )}
+            {packs.map((p, i) => {
+              const esMasVendido = sorteo.masVendido === p.index;
 
-                <h3 className="text-xl font-bold mt-2">
-                  {p.cantidad} chance{p.cantidad > 1 ? "s" : ""}
-                </h3>
-
-                <p className="text-4xl font-extrabold text-yellow-400 mt-4">
-                  ${p.precio}
-                </p>
-
-                <button
-                  onClick={() => abrirModal(p)}
-                  className="mt-6 w-full bg-gradient-to-r from-yellow-400 to-yellow-300 text-black font-extrabold py-3 rounded-xl
-                  hover:scale-105 transition-transform shadow-lg"
+              return (
+                <div
+                  key={i}
+                  className={`relative rounded-2xl p-6 border transition-all
+                    ${
+                      esMasVendido
+                        ? "border-yellow-400 bg-gradient-to-br from-yellow-400/20 to-black scale-105 shadow-2xl"
+                        : "border-zinc-800 bg-zinc-900"
+                    }`}
                 >
-                  COMPRAR AHORA
-                </button>
-              </div>
-            ))}
+                  {esMasVendido && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-black px-4 py-1 rounded-full text-xs font-extrabold">
+                      🔥 MÁS VENDIDO
+                    </div>
+                  )}
+
+                  <h3 className="text-xl font-bold">
+                    {p.cantidad} chance{p.cantidad > 1 ? "s" : ""}
+                  </h3>
+
+                  <p className="text-4xl font-extrabold text-yellow-400 mt-4">
+                    ${p.precio}
+                  </p>
+
+                  <button
+                    onClick={() => abrirModal(p)}
+                    className="mt-6 w-full bg-gradient-to-r from-yellow-400 to-yellow-300 text-black font-extrabold py-3 rounded-xl hover:scale-105 transition"
+                  >
+                    COMPRAR AHORA
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* MODAL */}
+      {/* 🧾 MODAL COMPRA */}
       {mostrarModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
           <div className="bg-white text-black rounded-2xl p-6 w-full max-w-md fade-up">
             {!confirmado ? (
               <>
-                <h2 className="text-2xl font-extrabold mb-2">
-                  {ofertaSeleccionada.cantidad} chances
+                <h2 className="text-2xl font-extrabold mb-1">
+                  {ofertaSeleccionada.cantidad} chance
+                  {ofertaSeleccionada.cantidad > 1 ? "s" : ""}
                 </h2>
 
-                <p className="text-lg font-bold text-yellow-600 mb-4">
+                <p className="text-lg font-bold mb-3">
                   Total: ${ofertaSeleccionada.precio}
                 </p>
 
-                <p className="text-sm text-gray-600 mb-3">
-                  Transferí al alias y luego confirmá el pago
+                <p className="text-sm text-gray-700 mb-3">
+                  Transferí al alias y luego confirmá el pago.
+                  <br />
+                  <span className="font-bold text-red-600">
+                    Las chances se acreditan cuando llega la transferencia.
+                  </span>
                 </p>
 
                 <div className="bg-gray-100 rounded-lg p-3 mb-4 font-bold text-center">
@@ -197,11 +181,14 @@ export default function SorteoDetalle() {
                 </div>
 
                 <input
-                  className="w-full border rounded-lg p-3 mb-4"
+                  className="w-full border rounded-lg p-3 mb-1"
                   placeholder="Tu WhatsApp"
                   value={telefono}
                   onChange={(e) => setTelefono(e.target.value)}
                 />
+                <p className="text-xs text-gray-500 mb-4">
+                  Para comunicarnos por si ganás
+                </p>
 
                 <button
                   onClick={confirmarPago}
@@ -223,11 +210,9 @@ export default function SorteoDetalle() {
                 <h2 className="text-2xl font-extrabold text-green-600 text-center">
                   ✅ Pago informado
                 </h2>
-
-                <p className="text-center text-gray-700 mt-3">
+                <p className="text-center mt-3 text-gray-700">
                   En breve validamos tu pago y se acreditan tus chances.
                 </p>
-
                 <button
                   onClick={() => setMostrarModal(false)}
                   className="mt-6 w-full bg-blue-600 text-white py-2 rounded-lg font-bold"

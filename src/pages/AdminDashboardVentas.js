@@ -10,60 +10,35 @@ export default function AdminDashboardVentas() {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("adminToken");
-
         const res = await fetch(`${API_URL}/admin/dashboard/ventas`, {
-          headers: {
-            "x-admin-token": token,
-          },
+          headers: { "x-admin-token": token },
         });
-
-        if (!res.ok) throw new Error("Error cargando ventas");
-
         const json = await res.json();
         setData(json);
       } catch (e) {
-        console.error("Error cargando dashboard ventas:", e);
+        console.error(e);
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
-  if (loading)
-    return <p className="p-6 text-gray-400">Cargando dashboard…</p>;
-
-  if (!data)
-    return (
-      <p className="p-6 text-red-500 font-bold">
-        Error cargando datos de ventas
-      </p>
-    );
+  if (loading) return <p className="p-6 text-gray-400">Cargando…</p>;
+  if (!data) return <p className="p-6 text-red-500">Error</p>;
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto p-6 text-white">
       <h2 className="text-3xl font-extrabold mb-6">📊 Dashboard de Ventas</h2>
 
-      {/* RESUMEN */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <Card
-          titulo="💰 Total Recaudado"
-          valor={`$${data.totales.totalRecaudado}`}
-        />
-        <Card
-          titulo="🎟️ Chances Vendidas"
-          valor={data.totales.totalChancesVendidas}
-        />
-        <Card
-          titulo="📦 Sorteos con ventas"
-          valor={data.totales.sorteosConVentas}
-        />
+        <Card titulo="💰 Total recaudado" valor={`$${data.totales.totalRecaudado}`} />
+        <Card titulo="🎟️ Chances vendidas" valor={data.totales.totalChancesVendidas} />
+        <Card titulo="📦 Sorteos activos" valor={data.totales.sorteosConVentas} />
       </div>
 
-      {/* TABLA */}
-      <div className="bg-zinc-800 rounded-xl shadow border border-zinc-700 overflow-hidden">
-        <table className="w-full text-left text-white">
+      <div className="bg-zinc-800 rounded-xl border border-zinc-700 overflow-hidden">
+        <table className="w-full">
           <thead className="bg-zinc-700">
             <tr>
               <th className="p-3">Sorteo</th>
@@ -73,11 +48,8 @@ export default function AdminDashboardVentas() {
           </thead>
           <tbody>
             {data.ventasPorSorteo.map((s) => (
-              <tr
-                key={s.sorteoId}
-                className="border-t border-zinc-700 hover:bg-zinc-700/40"
-              >
-                <td className="p-3 font-medium">{s.titulo}</td>
+              <tr key={s.sorteoId} className="border-t border-zinc-700">
+                <td className="p-3">{s.titulo}</td>
                 <td className="p-3 text-center">{s.chancesVendidas}</td>
                 <td className="p-3 text-right font-bold text-green-400">
                   ${s.totalRecaudado}
@@ -93,9 +65,9 @@ export default function AdminDashboardVentas() {
 
 function Card({ titulo, valor }) {
   return (
-    <div className="bg-zinc-800 rounded-xl border border-zinc-700 p-4 shadow">
+    <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
       <p className="text-gray-400 text-sm">{titulo}</p>
-      <p className="text-2xl font-extrabold mt-1 text-white">{valor}</p>
+      <p className="text-2xl font-extrabold">{valor}</p>
     </div>
   );
 }
