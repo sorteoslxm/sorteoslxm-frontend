@@ -26,6 +26,7 @@ import AdminEditarSorteo from "./pages/AdminEditarSorteo";
 import AdminCompras from "./pages/AdminCompras";
 import AdminChances from "./pages/AdminChances";
 import AdminDashboardVentas from "./pages/AdminDashboardVentas";
+import AdminVentasPendientes from "./pages/AdminVentasPendientes"; // ✅ NUEVO
 import AdminPacks from "./components/AdminPacks";
 
 import AdminRoute from "./components/AdminRoute";
@@ -49,7 +50,7 @@ export default function App() {
         <Route path="/cajas/:slug" element={<CajaDetalle />} />
 
         {/* 🎁 APERTURA DE CAJA */}
-       <Route path="/abrir-caja/:id" element={<AbrirCaja />} />
+        <Route path="/abrir-caja/:id" element={<AbrirCaja />} />
 
         {/* 🎁 RESULTADO CAJA */}
         <Route path="/resultado-caja/perder" element={<ResultadoCajaPerder />} />
@@ -83,10 +84,13 @@ export default function App() {
           <Route path="sorteos/nuevo" element={<AdminNuevoSorteo />} />
           <Route path="sorteos/editar/:id" element={<AdminEditarSorteo />} />
 
-          {/* 💰 OTROS */}
+          {/* 💰 VENTAS */}
+          <Route path="dashboard/ventas" element={<AdminDashboardVentas />} />
+          <Route path="ventas-pendientes" element={<AdminVentasPendientes />} /> {/* ✅ NUEVO */}
+
+          {/* 📦 OTROS */}
           <Route path="compras" element={<AdminCompras />} />
           <Route path="chances" element={<AdminChances />} />
-          <Route path="dashboard/ventas" element={<AdminDashboardVentas />} />
           <Route path="banners" element={<AdminBanners />} />
         </Route>
       </Routes>
