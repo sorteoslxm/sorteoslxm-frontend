@@ -25,8 +25,10 @@ export default function AdminEditarSorteo() {
     masVendido: 2,
     porcentajeVendido: 0,
 
+    objetivoMonetario: "", // ✅ NUEVO
+
     chancesOcupadas: 0,
-    cerrado: false, // 🔒 NUEVO
+    cerrado: false,
   });
 
   const [loading, setLoading] = useState(true);
@@ -61,8 +63,10 @@ export default function AdminEditarSorteo() {
           masVendido: data.masVendido || 2,
           porcentajeVendido: data.porcentajeVendido || 0,
 
+          objetivoMonetario: data.objetivoMonetario || "", // ✅
+
           chancesOcupadas: data.chancesOcupadas || 0,
-          cerrado: data.cerrado || false, // 🔒
+          cerrado: data.cerrado || false,
         });
       } catch (err) {
         console.error("Error cargando sorteo:", err);
@@ -86,6 +90,7 @@ export default function AdminEditarSorteo() {
         ...form,
         masVendido: Number(form.masVendido),
         porcentajeVendido: Number(form.porcentajeVendido),
+        objetivoMonetario: Number(form.objetivoMonetario || 0), // ✅ IMPORTANTE
       }),
     });
 
@@ -170,6 +175,22 @@ export default function AdminEditarSorteo() {
           placeholder="URL imagen"
         />
 
+        {/* 🎯 OBJETIVO MONETARIO */}
+        <div className="border border-green-600 rounded p-3 bg-green-900/10">
+          <h3 className="font-bold mb-2">🎯 Objetivo Monetario</h3>
+          <input
+            type="number"
+            name="objetivoMonetario"
+            value={form.objetivoMonetario}
+            onChange={handleChange}
+            className="p-2 w-full rounded bg-black border border-zinc-700"
+            placeholder="Ej: 2000000"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            Este valor se usa en el dashboard para calcular el progreso.
+          </p>
+        </div>
+
         {/* 💳 ALIAS */}
         <div className="border border-zinc-700 rounded p-3">
           <h3 className="font-bold mb-2">💳 Alias de pago</h3>
@@ -211,44 +232,11 @@ export default function AdminEditarSorteo() {
           />
         </div>
 
-        {/* ⭐ MAS VENDIDO */}
-        <div className="border border-zinc-700 rounded p-3">
-          <h3 className="font-bold mb-2">⭐ Pack más vendido</h3>
-          <select
-            name="masVendido"
-            value={form.masVendido}
-            onChange={handleChange}
-            className="w-full p-2 bg-black border border-zinc-700 rounded"
-          >
-            <option value={1}>1 chance</option>
-            <option value={2}>5 chances</option>
-            <option value={3}>10 chances</option>
-          </select>
-        </div>
-
-        {/* 📊 PORCENTAJE */}
-        <div className="border border-zinc-700 rounded p-3">
-          <h3 className="font-bold mb-2">📊 % vendido</h3>
-          <input
-            type="number"
-            min="0"
-            max="100"
-            name="porcentajeVendido"
-            value={form.porcentajeVendido}
-            onChange={handleChange}
-            className="w-full p-2 bg-black border border-zinc-700 rounded"
-          />
-          <p className="text-xs text-gray-400 mt-1">
-            Se muestra como barra de progreso en el sorteo
-          </p>
-        </div>
-
         <button className="bg-green-600 py-2 rounded w-full font-bold">
           Guardar cambios
         </button>
       </form>
 
-      {/* 🔒 CERRAR / REABRIR */}
       <button
         onClick={toggleCerrado}
         className={`mt-4 py-2 rounded w-full font-bold ${
