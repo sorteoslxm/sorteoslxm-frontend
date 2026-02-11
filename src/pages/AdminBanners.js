@@ -4,7 +4,8 @@ import API_URL from "../config/api";
 import { useNavigate } from "react-router-dom";
 
 export default function AdminBanners() {
-  const [banners, setBanners] = useState([]);
+  const [principal, setPrincipal] = useState(null);
+  const [secundarios, setSecundarios] = useState([]);
   const [file, setFile] = useState(null);
   const [link, setLink] = useState("");
   const navigate = useNavigate();
@@ -18,14 +19,13 @@ export default function AdminBanners() {
     const res = await fetch(`${API_URL}/banners`);
     const data = await res.json();
 
-    // Ordenamos primero principal arriba y luego secundarios por 'orden'
-    const sorted = data.sort((a, b) => {
-      if (a.destacado && !b.destacado) return -1;
-      if (!a.destacado && b.destacado) return 1;
-      return (a.orden ?? 0) - (b.orden ?? 0);
-    });
+    const p = data.find(b => b.destacado) || null;
+    const s = data
+      .filter(b => !b.destacado)
+      .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
 
-    setBanners(sorted);
+    setPrincipal(p);
+    setSecundarios(s);
   };
 
   useEffect(() => {
@@ -90,8 +90,6 @@ export default function AdminBanners() {
 
   const updateOrden = async (id, newOrden) => {
     const token = localStorage.getItem("adminToken");
-
-    // Evitamos que el orden sea negativo
     const ordenFinal = Math.max(newOrden, 0);
 
     await fetch(`${API_URL}/banners/${id}/orden`, {
@@ -128,9 +126,42 @@ export default function AdminBanners() {
         </button>
       </div>
 
-      {/* LISTA DE BANNERS */}
+      {/* BANNER PRINCIPAL */}
+      {principal && (
+        <div className="bg-white shadow rounded p-3 mb-6">
+          <img
+            src={principal.url}
+            alt="banner principal"
+            className="w-full h-32 object-cover rounded"
+          />
+          <div className="flex flex-col gap-2 mt-2">
+            <input
+              type="text"
+              className="border p-2 rounded w-full"
+              value={principal.link || ""}
+              placeholder="Agregar/editar link"
+              onChange={(e) => updateLink(principal.id, e.target.value)}
+            />
+            <button
+              onClick={() => togglePrincipal(principal.id)}
+              className="bg-red-600 text-white px-3 py-1 rounded w-full"
+            >
+              ❌ Quitar principal
+            </button>
+            <button
+              onClick={() => deleteBanner(principal.id)}
+              className="bg-red-600 text-white px-3 py-1 rounded w-full"
+            >
+              🗑 Eliminar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* BANNERS SECUNDARIOS */}
+      <h2 className="text-xl font-bold mb-4">Banners secundarios</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {banners.map((b, index) => (
+        {secundarios.map((b, index) => (
           <div key={b.id} className="bg-white shadow rounded p-3">
             <img
               src={b.url}
@@ -139,29 +170,28 @@ export default function AdminBanners() {
             />
 
             <div className="flex items-center justify-between mt-2 text-sm">
-              <span className="font-bold">
-                Orden: {b.orden ?? index}
-              </span>
+              <span className="font-bold">Orden: {b.orden ?? index}</span>
 
-              {!b.destacado && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => updateOrden(b.id, (b.orden ?? index) - 1)}
-                    className="px-2 py-1 bg-gray-200 rounded"
-                  >
-                    ⬆
-                  </button>
-                  <button
-                    onClick={() => updateOrden(b.id, (b.orden ?? index) + 1)}
-                    className="px-2 py-1 bg-gray-200 rounded"
-                  >
-                    ⬇
-                  </button>
-                </div>
-              )}
+              <div className="flex gap-2">
+                <button
+                  onClick={() =>
+                    updateOrden(b.id, (b.orden ?? index) - 1)
+                  }
+                  className="px-2 py-1 bg-gray-200 rounded"
+                >
+                  ⬆
+                </button>
+                <button
+                  onClick={() =>
+                    updateOrden(b.id, (b.orden ?? index) + 1)
+                  }
+                  className="px-2 py-1 bg-gray-200 rounded"
+                >
+                  ⬇
+                </button>
+              </div>
             </div>
 
-            {/* LINK */}
             <input
               type="text"
               className="border p-2 rounded w-full mt-3"
@@ -170,17 +200,13 @@ export default function AdminBanners() {
               onChange={(e) => updateLink(b.id, e.target.value)}
             />
 
-            {/* PRINCIPAL */}
             <button
               onClick={() => togglePrincipal(b.id)}
-              className={`px-3 py-1 rounded mt-3 w-full text-white ${
-                b.destacado ? "bg-red-600" : "bg-blue-600"
-              }`}
+              className="px-3 py-1 rounded mt-3 w-full text-white bg-blue-600"
             >
-              {b.destacado ? "❌ Quitar principal" : "🥇 Banner principal"}
+              🥇 Hacer principal
             </button>
 
-            {/* ELIMINAR */}
             <button
               onClick={() => deleteBanner(b.id)}
               className="bg-red-600 text-white px-3 py-1 rounded mt-2 w-full"
