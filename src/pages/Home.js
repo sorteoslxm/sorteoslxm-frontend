@@ -16,36 +16,36 @@ export default function Home() {
       try {
         setLoading(true);
 
-        /* =========================
-           SORTEOS
-        ========================== */
+        // =========================
+        // SORTEOS
+        // =========================
         const res = await fetch(`${API_URL}/sorteos`);
         const lista = await res.json();
 
-        setSorteoPrincipal(lista.find(s => s.sorteoPrincipal) || null);
+        setSorteoPrincipal(lista.find((s) => s.sorteoPrincipal) || null);
 
         const destacados = lista
-          .filter(s => s.destacado && !s.sorteoPrincipal)
+          .filter((s) => s.destacado && !s.sorteoPrincipal)
           .sort((a, b) => (a.ordenDestacado || 0) - (b.ordenDestacado || 0));
 
-        const otros = lista.filter(
-          s => !s.destacado && !s.sorteoPrincipal
-        );
+        const otros = lista.filter((s) => !s.destacado && !s.sorteoPrincipal);
 
         setResto([...destacados, ...otros]);
 
-        /* =========================
-           BANNERS
-        ========================== */
+        // =========================
+        // BANNERS
+        // =========================
         const resPrincipal = await fetch(`${API_URL}/banners/principal`);
         const principal = await resPrincipal.json();
 
         const resInferiores = await fetch(`${API_URL}/banners/inferiores`);
         const inferiores = await resInferiores.json();
 
+        // Ordenamos inferiores por 'orden' para que las flechas funcionen
+        inferiores.sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
+
         setBannerPrincipal(principal || null);
         setBannersSecundarios(inferiores || []);
-
       } catch (err) {
         console.error("Error cargando home:", err);
       } finally {
@@ -56,20 +56,23 @@ export default function Home() {
     load();
   }, []);
 
-  /* =========================
-     BLOQUES DE SORTEOS CON BANNERS SECUNDARIOS
-  ========================== */
+  // =========================
+  // BLOQUES DE SORTEOS CON BANNERS SECUNDARIOS
+  // =========================
   const bloques = [];
+  let bannerIndex = 0;
+
   for (let i = 0; i < resto.length; i += 2) {
     bloques.push({
-      banner: bannersSecundarios[Math.floor(i / 2)],
+      banner: bannersSecundarios[bannerIndex] || null,
       sorteos: resto.slice(i, i + 2),
     });
+    bannerIndex++;
   }
 
-  /* =========================
-     MONEDAS ANIMADAS
-  ========================== */
+  // =========================
+  // MONEDAS ANIMADAS
+  // =========================
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -87,7 +90,7 @@ export default function Home() {
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      coins.forEach(c => {
+      coins.forEach((c) => {
         c.y += c.v;
         if (c.y > canvas.height) {
           c.y = 0;
@@ -118,19 +121,21 @@ export default function Home() {
   return (
     <div
       className="w-full min-h-screen px-4 py-6 relative overflow-hidden"
-      style={{
-        background: "linear-gradient(180deg, #2563eb 0%, #ffffff 60%)",
-      }}
+      style={{ background: "linear-gradient(180deg, #2563eb 0%, #ffffff 60%)" }}
     >
       <canvas
         ref={canvasRef}
         className="pointer-events-none absolute inset-0 z-0"
       />
 
-      {/* 🔥 BANNER HERO ARRIBA DE TODO */}
+      {/* 🔥 BANNER PRINCIPAL ARRIBA DE TODO */}
       {bannerPrincipal && (
         <div className="mb-14 relative z-10">
-          <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
+          <a
+            href={bannerPrincipal.link || "#"}
+            target="_blank"
+            rel="noreferrer"
+          >
             <div className="w-full aspect-[16/9] max-h-[300px] rounded-3xl overflow-hidden shadow-2xl mx-auto">
               <img
                 src={bannerPrincipal.url}
@@ -174,7 +179,7 @@ export default function Home() {
                 <div className="w-full h-[140px] md:h-[200px] rounded-3xl overflow-hidden shadow-xl hover:scale-[1.02] transition mx-auto">
                   <img
                     src={bloque.banner.url}
-                    alt="Banner"
+                    alt="Banner secundario"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -183,7 +188,7 @@ export default function Home() {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {bloque.sorteos.map(s => (
+            {bloque.sorteos.map((s) => (
               <Link
                 key={s.id}
                 to={`/sorteo/${s.id}`}

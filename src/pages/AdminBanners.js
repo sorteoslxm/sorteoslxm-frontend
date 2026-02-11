@@ -1,3 +1,4 @@
+// FILE: src/pages/AdminBanners.js
 import React, { useEffect, useState } from "react";
 import API_URL from "../config/api";
 import { useNavigate } from "react-router-dom";
@@ -17,10 +18,14 @@ export default function AdminBanners() {
     const res = await fetch(`${API_URL}/banners`);
     const data = await res.json();
 
-    // 👉 ordenamos por orden (los secundarios)
-    setBanners(
-      data.sort((a, b) => (a.orden || 0) - (b.orden || 0))
-    );
+    // Ordenamos primero principal arriba y luego secundarios por 'orden'
+    const sorted = data.sort((a, b) => {
+      if (a.destacado && !b.destacado) return -1;
+      if (!a.destacado && b.destacado) return 1;
+      return (a.orden ?? 0) - (b.orden ?? 0);
+    });
+
+    setBanners(sorted);
   };
 
   useEffect(() => {
@@ -37,9 +42,7 @@ export default function AdminBanners() {
 
     await fetch(`${API_URL}/banners/upload`, {
       method: "POST",
-      headers: {
-        "x-admin-token": token,
-      },
+      headers: { "x-admin-token": token },
       body: formData,
     });
 
@@ -53,9 +56,7 @@ export default function AdminBanners() {
 
     await fetch(`${API_URL}/banners/${id}`, {
       method: "DELETE",
-      headers: {
-        "x-admin-token": token,
-      },
+      headers: { "x-admin-token": token },
     });
 
     fetchBanners();
@@ -64,12 +65,9 @@ export default function AdminBanners() {
   const togglePrincipal = async (id) => {
     const token = localStorage.getItem("adminToken");
 
-    await fetch(`${API_URL}/banners/${id}/principal`, {
+    await fetch(`${API_URL}/banners/${id}/destacar`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "x-admin-token": token,
-      },
+      headers: { "x-admin-token": token },
     });
 
     fetchBanners();
@@ -86,11 +84,15 @@ export default function AdminBanners() {
       },
       body: JSON.stringify({ link: newLink }),
     });
+
+    fetchBanners();
   };
 
-  // ⬆⬇ ORDEN
   const updateOrden = async (id, newOrden) => {
     const token = localStorage.getItem("adminToken");
+
+    // Evitamos que el orden sea negativo
+    const ordenFinal = Math.max(newOrden, 0);
 
     await fetch(`${API_URL}/banners/${id}/orden`, {
       method: "PATCH",
@@ -98,7 +100,7 @@ export default function AdminBanners() {
         "Content-Type": "application/json",
         "x-admin-token": token,
       },
-      body: JSON.stringify({ orden: newOrden }),
+      body: JSON.stringify({ orden: ordenFinal }),
     });
 
     fetchBanners();
@@ -108,10 +110,9 @@ export default function AdminBanners() {
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-6">Banners</h1>
 
-      {/* SUBIR */}
+      {/* SUBIR BANNER */}
       <div className="mb-8 space-y-2">
         <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-
         <input
           type="text"
           placeholder="Link (opcional)"
@@ -119,7 +120,6 @@ export default function AdminBanners() {
           onChange={(e) => setLink(e.target.value)}
           className="border p-2 rounded w-full"
         />
-
         <button
           onClick={uploadBanner}
           className="bg-blue-600 text-white px-4 py-2 rounded"
@@ -128,7 +128,7 @@ export default function AdminBanners() {
         </button>
       </div>
 
-      {/* LISTA */}
+      {/* LISTA DE BANNERS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {banners.map((b, index) => (
           <div key={b.id} className="bg-white shadow rounded p-3">
@@ -139,9 +139,11 @@ export default function AdminBanners() {
             />
 
             <div className="flex items-center justify-between mt-2 text-sm">
-              <span className="font-bold">Orden: {b.orden ?? index}</span>
+              <span className="font-bold">
+                Orden: {b.orden ?? index}
+              </span>
 
-              {!b.bannerPrincipal && (
+              {!b.destacado && (
                 <div className="flex gap-2">
                   <button
                     onClick={() => updateOrden(b.id, (b.orden ?? index) - 1)}
@@ -172,10 +174,10 @@ export default function AdminBanners() {
             <button
               onClick={() => togglePrincipal(b.id)}
               className={`px-3 py-1 rounded mt-3 w-full text-white ${
-                b.bannerPrincipal ? "bg-red-600" : "bg-blue-600"
+                b.destacado ? "bg-red-600" : "bg-blue-600"
               }`}
             >
-              {b.bannerPrincipal ? "❌ Quitar principal" : "🥇 Banner principal"}
+              {b.destacado ? "❌ Quitar principal" : "🥇 Banner principal"}
             </button>
 
             {/* ELIMINAR */}
