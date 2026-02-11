@@ -44,7 +44,7 @@ export default function Home() {
         // 👉 filtramos solo banners válidos
         inferiores = inferiores.filter(b => b.url);
 
-        // Ordenamos inferiores por 'orden' para que las flechas funcionen
+        // Ordenamos inferiores por 'orden'
         inferiores.sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
 
         setBannerPrincipal(principal || null);
@@ -140,14 +140,10 @@ export default function Home() {
         className="pointer-events-none absolute inset-0 z-0"
       />
 
-      {/* 🔥 BANNER PRINCIPAL ARRIBA DE TODO */}
+      {/* 🔥 BANNER PRINCIPAL */}
       {bannerPrincipal && (
         <div className="mb-14 relative z-10">
-          <a
-            href={bannerPrincipal.link || "#"}
-            target="_blank"
-            rel="noreferrer"
-          >
+          <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
             <div className="w-full aspect-[16/9] max-h-[300px] rounded-3xl overflow-hidden shadow-2xl mx-auto">
               <img
                 src={bannerPrincipal.url}
@@ -197,7 +193,6 @@ export default function Home() {
               </a>
             </div>
           )}
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {bloque.sorteos.map((s) => (
               <Link
@@ -213,9 +208,7 @@ export default function Home() {
                   />
                 </div>
                 <div className="p-4">
-                  <h4 className="font-bold text-lg text-gray-800">
-                    {s.titulo}
-                  </h4>
+                  <h4 className="font-bold text-lg text-gray-800">{s.titulo}</h4>
                 </div>
               </Link>
             ))}

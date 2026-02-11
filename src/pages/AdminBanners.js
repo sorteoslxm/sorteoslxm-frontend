@@ -20,9 +20,9 @@ export default function AdminBanners() {
     const res = await fetch(`${API_URL}/banners`);
     const data = await res.json();
 
-    const p = data.find(b => b.destacado) || null;
+    const p = data.find((b) => b.destacado) || null;
     const s = data
-      .filter(b => !b.destacado)
+      .filter((b) => !b.destacado)
       .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
 
     setPrincipal(p);
@@ -93,7 +93,6 @@ export default function AdminBanners() {
       },
       body: JSON.stringify({ orden: newOrden }),
     });
-    fetchBanners();
   };
 
   const onDragEnd = async (result) => {
@@ -103,12 +102,12 @@ export default function AdminBanners() {
     const [reordered] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reordered);
 
+    setSecundarios(items);
+
     // Actualizamos orden en backend
     for (let i = 0; i < items.length; i++) {
       await updateOrden(items[i].id, i);
     }
-
-    setSecundarios(items);
   };
 
   return (
