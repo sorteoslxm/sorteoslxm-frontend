@@ -37,19 +37,14 @@ export default function Home() {
         /* =========================
            BANNERS
         ========================== */
-        const resBanners = await fetch(`${API_URL}/banners`);
-        const banners = await resBanners.json();
+        const resPrincipal = await fetch(`${API_URL}/banners/principal`);
+        const principal = await resPrincipal.json();
 
-        // 🔥 PRINCIPAL CORRECTO
-        const principal = banners.find(b => b.bannerPrincipal);
-
-        // 🔥 SECUNDARIOS ORDENADOS
-        const secundarios = banners
-          .filter(b => !b.bannerPrincipal)
-          .sort((a, b) => (a.orden || 0) - (b.orden || 0));
+        const resInferiores = await fetch(`${API_URL}/banners/inferiores`);
+        const inferiores = await resInferiores.json();
 
         setBannerPrincipal(principal || null);
-        setBannersSecundarios(secundarios);
+        setBannersSecundarios(inferiores || []);
 
       } catch (err) {
         console.error("Error cargando home:", err);
@@ -62,7 +57,7 @@ export default function Home() {
   }, []);
 
   /* =========================
-     BLOQUES
+     BLOQUES DE SORTEOS CON BANNERS SECUNDARIOS
   ========================== */
   const bloques = [];
   for (let i = 0; i < resto.length; i += 2) {
