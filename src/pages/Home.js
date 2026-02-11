@@ -1,3 +1,5 @@
+// FILE: src/pages/Home.js
+
 import React, { useEffect, useState, useRef } from "react";
 import API_URL from "../config/api";
 import { Link } from "react-router-dom";
@@ -15,6 +17,9 @@ export default function Home() {
       try {
         setLoading(true);
 
+        /* ==============================
+           SORTEOS
+        ============================== */
         const res = await fetch(`${API_URL}/sorteos`);
         const lista = await res.json();
 
@@ -30,11 +35,21 @@ export default function Home() {
 
         setResto([...destacados, ...otros]);
 
+        /* ==============================
+           BANNERS
+        ============================== */
         const resBanners = await fetch(`${API_URL}/banners`);
         const banners = await resBanners.json();
 
-        setBannerPrincipal(banners.find(b => b.destacado) || null);
-        setBannersSecundarios(banners.filter(b => !b.destacado));
+        const principal = banners.find(b => b.bannerPrincipal) || null;
+
+        const secundarios = banners
+          .filter(b => !b.bannerPrincipal)
+          .sort((a, b) => (a.orden || 0) - (b.orden || 0));
+
+        setBannerPrincipal(principal);
+        setBannersSecundarios(secundarios);
+
       } catch (err) {
         console.error("Error cargando home:", err);
       } finally {
@@ -45,6 +60,9 @@ export default function Home() {
     load();
   }, []);
 
+  /* ==============================
+     BLOQUES (2 sorteos + 1 banner)
+  ============================== */
   const bloques = [];
   for (let i = 0; i < resto.length; i += 2) {
     bloques.push({
@@ -53,11 +71,14 @@ export default function Home() {
     });
   }
 
-  // 💰 Monedas animadas
+  /* ==============================
+     EFECTO MONEDAS
+  ============================== */
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
+
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
@@ -111,22 +132,30 @@ export default function Home() {
         className="pointer-events-none absolute inset-0 z-0"
       />
 
-      {/* 🔥 BANNER HERO */}
+      {/* ==============================
+         🥇 BANNER PRINCIPAL (ARRIBA DE TODO)
+      ============================== */}
       {bannerPrincipal && (
-        <div className="mb-14 relative z-10">
-          <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
-            <div className="w-full aspect-[16/9] max-h-[300px] rounded-3xl overflow-hidden shadow-2xl mx-auto">
+        <div className="mb-16 relative z-10">
+          <a
+            href={bannerPrincipal.link || "#"}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <div className="w-full rounded-3xl overflow-hidden shadow-2xl hover:scale-[1.01] transition">
               <img
                 src={bannerPrincipal.url}
                 alt="Banner principal"
-                className="w-full h-full object-cover"
+                className="w-full h-[220px] sm:h-[280px] md:h-[340px] lg:h-[400px] object-cover"
               />
             </div>
           </a>
         </div>
       )}
 
-      {/* 🥇 SORTEO PRINCIPAL (NO TOCAR) */}
+      {/* ==============================
+         🥇 SORTEO PRINCIPAL
+      ============================== */}
       {sorteoPrincipal && (
         <Link
           to={`/sorteo/${sorteoPrincipal.id}`}
@@ -138,7 +167,7 @@ export default function Home() {
             className="w-full h-96 object-cover"
           />
 
-          <div className="absolute inset-0 flex flex-col justify-end p-6 text-white bg-gradient-to-t from-black/40 to-transparent">
+          <div className="absolute inset-0 flex flex-col justify-end p-6 text-white bg-gradient-to-t from-black/50 to-transparent">
             <span className="bg-red-500 px-4 py-1 rounded-full w-fit mb-3 animate-pulse">
               🥇 SORTEO PRINCIPAL
             </span>
@@ -149,27 +178,19 @@ export default function Home() {
         </Link>
       )}
 
-      {/* BLOQUES */}
+      {/* ==============================
+         BLOQUES
+      ============================== */}
       {bloques.map((bloque, index) => (
         <section key={index} className="mb-16 relative z-10">
           {bloque.banner && (
             <div className="mb-8">
-              <a href={bloque.banner.link || "#"} target="_blank" rel="noreferrer">
-                <div
-                  className="
-                    w-full
-                    h-[100px]
-                    sm:h-[120px]
-                    md:h-[160px]
-                    lg:h-[200px]
-                    rounded-3xl
-                    overflow-hidden
-                    shadow-xl
-                    hover:scale-[1.02]
-                    transition
-                    mx-auto
-                  "
-                >
+              <a
+                href={bloque.banner.link || "#"}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <div className="w-full h-[120px] sm:h-[150px] md:h-[180px] lg:h-[220px] rounded-3xl overflow-hidden shadow-xl hover:scale-[1.02] transition mx-auto">
                   <img
                     src={bloque.banner.url}
                     alt="Banner"
@@ -205,7 +226,9 @@ export default function Home() {
         </section>
       ))}
 
-      {/* 📘 COMO FUNCIONA */}
+      {/* ==============================
+         📘 COMO FUNCIONA
+      ============================== */}
       <div className="mt-20 flex justify-center relative z-10">
         <Link
           to="/como-funciona"
