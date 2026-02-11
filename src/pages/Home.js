@@ -1,5 +1,4 @@
 // FILE: src/pages/Home.js
-
 import React, { useEffect, useState, useRef } from "react";
 import API_URL from "../config/api";
 import { Link } from "react-router-dom";
@@ -17,9 +16,9 @@ export default function Home() {
       try {
         setLoading(true);
 
-        /* ==============================
+        /* =========================
            SORTEOS
-        ============================== */
+        ========================== */
         const res = await fetch(`${API_URL}/sorteos`);
         const lista = await res.json();
 
@@ -35,19 +34,21 @@ export default function Home() {
 
         setResto([...destacados, ...otros]);
 
-        /* ==============================
+        /* =========================
            BANNERS
-        ============================== */
+        ========================== */
         const resBanners = await fetch(`${API_URL}/banners`);
         const banners = await resBanners.json();
 
-        const principal = banners.find(b => b.bannerPrincipal) || null;
+        // 🔥 PRINCIPAL CORRECTO
+        const principal = banners.find(b => b.bannerPrincipal);
 
+        // 🔥 SECUNDARIOS ORDENADOS
         const secundarios = banners
           .filter(b => !b.bannerPrincipal)
           .sort((a, b) => (a.orden || 0) - (b.orden || 0));
 
-        setBannerPrincipal(principal);
+        setBannerPrincipal(principal || null);
         setBannersSecundarios(secundarios);
 
       } catch (err) {
@@ -60,9 +61,9 @@ export default function Home() {
     load();
   }, []);
 
-  /* ==============================
-     BLOQUES (2 sorteos + 1 banner)
-  ============================== */
+  /* =========================
+     BLOQUES
+  ========================== */
   const bloques = [];
   for (let i = 0; i < resto.length; i += 2) {
     bloques.push({
@@ -71,14 +72,13 @@ export default function Home() {
     });
   }
 
-  /* ==============================
-     EFECTO MONEDAS
-  ============================== */
+  /* =========================
+     MONEDAS ANIMADAS
+  ========================== */
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
@@ -132,30 +132,22 @@ export default function Home() {
         className="pointer-events-none absolute inset-0 z-0"
       />
 
-      {/* ==============================
-         🥇 BANNER PRINCIPAL (ARRIBA DE TODO)
-      ============================== */}
+      {/* 🔥 BANNER HERO ARRIBA DE TODO */}
       {bannerPrincipal && (
-        <div className="mb-16 relative z-10">
-          <a
-            href={bannerPrincipal.link || "#"}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <div className="w-full rounded-3xl overflow-hidden shadow-2xl hover:scale-[1.01] transition">
+        <div className="mb-14 relative z-10">
+          <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
+            <div className="w-full aspect-[16/9] max-h-[300px] rounded-3xl overflow-hidden shadow-2xl mx-auto">
               <img
                 src={bannerPrincipal.url}
                 alt="Banner principal"
-                className="w-full h-[220px] sm:h-[280px] md:h-[340px] lg:h-[400px] object-cover"
+                className="w-full h-full object-cover"
               />
             </div>
           </a>
         </div>
       )}
 
-      {/* ==============================
-         🥇 SORTEO PRINCIPAL
-      ============================== */}
+      {/* 🥇 SORTEO PRINCIPAL */}
       {sorteoPrincipal && (
         <Link
           to={`/sorteo/${sorteoPrincipal.id}`}
@@ -167,7 +159,7 @@ export default function Home() {
             className="w-full h-96 object-cover"
           />
 
-          <div className="absolute inset-0 flex flex-col justify-end p-6 text-white bg-gradient-to-t from-black/50 to-transparent">
+          <div className="absolute inset-0 flex flex-col justify-end p-6 text-white bg-gradient-to-t from-black/40 to-transparent">
             <span className="bg-red-500 px-4 py-1 rounded-full w-fit mb-3 animate-pulse">
               🥇 SORTEO PRINCIPAL
             </span>
@@ -178,19 +170,13 @@ export default function Home() {
         </Link>
       )}
 
-      {/* ==============================
-         BLOQUES
-      ============================== */}
+      {/* BLOQUES */}
       {bloques.map((bloque, index) => (
         <section key={index} className="mb-16 relative z-10">
           {bloque.banner && (
             <div className="mb-8">
-              <a
-                href={bloque.banner.link || "#"}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <div className="w-full h-[120px] sm:h-[150px] md:h-[180px] lg:h-[220px] rounded-3xl overflow-hidden shadow-xl hover:scale-[1.02] transition mx-auto">
+              <a href={bloque.banner.link || "#"} target="_blank" rel="noreferrer">
+                <div className="w-full h-[140px] md:h-[200px] rounded-3xl overflow-hidden shadow-xl hover:scale-[1.02] transition mx-auto">
                   <img
                     src={bloque.banner.url}
                     alt="Banner"
@@ -225,18 +211,6 @@ export default function Home() {
           </div>
         </section>
       ))}
-
-      {/* ==============================
-         📘 COMO FUNCIONA
-      ============================== */}
-      <div className="mt-20 flex justify-center relative z-10">
-        <Link
-          to="/como-funciona"
-          className="bg-blue-600 text-white px-8 py-4 rounded-2xl text-lg font-bold hover:bg-blue-700 transition shadow-xl"
-        >
-          📘 ¿Cómo funciona Sorteos LXM?
-        </Link>
-      </div>
     </div>
   );
 }
