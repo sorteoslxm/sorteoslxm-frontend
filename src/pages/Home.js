@@ -39,7 +39,10 @@ export default function Home() {
         const principal = await resPrincipal.json();
 
         const resInferiores = await fetch(`${API_URL}/banners/inferiores`);
-        const inferiores = await resInferiores.json();
+        let inferiores = await resInferiores.json();
+
+        // 👉 filtramos solo banners válidos
+        inferiores = inferiores.filter(b => b.url);
 
         // Ordenamos inferiores por 'orden' para que las flechas funcionen
         inferiores.sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
@@ -63,11 +66,20 @@ export default function Home() {
   let bannerIndex = 0;
 
   for (let i = 0; i < resto.length; i += 2) {
+    let banner = null;
+
+    // Primer bloque debajo del sorteo principal toma el primer banner secundario
+    if (i === 0 && bannersSecundarios.length) {
+      banner = bannersSecundarios[0];
+    } else {
+      banner = bannersSecundarios[bannerIndex] || null;
+      bannerIndex++;
+    }
+
     bloques.push({
-      banner: bannersSecundarios[bannerIndex] || null,
+      banner,
       sorteos: resto.slice(i, i + 2),
     });
-    bannerIndex++;
   }
 
   // =========================
@@ -158,7 +170,6 @@ export default function Home() {
             alt={sorteoPrincipal.titulo}
             className="w-full h-96 object-cover"
           />
-
           <div className="absolute inset-0 flex flex-col justify-end p-6 text-white bg-gradient-to-t from-black/40 to-transparent">
             <span className="bg-red-500 px-4 py-1 rounded-full w-fit mb-3 animate-pulse">
               🥇 SORTEO PRINCIPAL

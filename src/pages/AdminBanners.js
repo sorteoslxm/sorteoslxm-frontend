@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import API_URL from "../config/api";
 import { useNavigate } from "react-router-dom";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 export default function AdminBanners() {
   const [principal, setPrincipal] = useState(null);
@@ -53,29 +54,24 @@ export default function AdminBanners() {
 
   const deleteBanner = async (id) => {
     const token = localStorage.getItem("adminToken");
-
     await fetch(`${API_URL}/banners/${id}`, {
       method: "DELETE",
       headers: { "x-admin-token": token },
     });
-
     fetchBanners();
   };
 
   const togglePrincipal = async (id) => {
     const token = localStorage.getItem("adminToken");
-
     await fetch(`${API_URL}/banners/${id}/destacar`, {
       method: "PATCH",
       headers: { "x-admin-token": token },
     });
-
     fetchBanners();
   };
 
   const updateLink = async (id, newLink) => {
     const token = localStorage.getItem("adminToken");
-
     await fetch(`${API_URL}/banners/${id}/link`, {
       method: "PATCH",
       headers: {
@@ -84,24 +80,35 @@ export default function AdminBanners() {
       },
       body: JSON.stringify({ link: newLink }),
     });
-
     fetchBanners();
   };
 
   const updateOrden = async (id, newOrden) => {
     const token = localStorage.getItem("adminToken");
-    const ordenFinal = Math.max(newOrden, 0);
-
     await fetch(`${API_URL}/banners/${id}/orden`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         "x-admin-token": token,
       },
-      body: JSON.stringify({ orden: ordenFinal }),
+      body: JSON.stringify({ orden: newOrden }),
     });
-
     fetchBanners();
+  };
+
+  const onDragEnd = async (result) => {
+    if (!result.destination) return;
+
+    const items = Array.from(secundarios);
+    const [reordered] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reordered);
+
+    // Actualizamos orden en backend
+    for (let i = 0; i < items.length; i++) {
+      await updateOrden(items[i].id, i);
+    }
+
+    setSecundarios(items);
   };
 
   return (
@@ -160,62 +167,62 @@ export default function AdminBanners() {
 
       {/* BANNERS SECUNDARIOS */}
       <h2 className="text-xl font-bold mb-4">Banners secundarios</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {secundarios.map((b, index) => (
-          <div key={b.id} className="bg-white shadow rounded p-3">
-            <img
-              src={b.url}
-              alt="banner"
-              className="w-full h-32 object-cover rounded"
-            />
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId="secundarios">
+          {(provided) => (
+            <div
+              className="grid grid-cols-1 md:grid-cols-3 gap-4"
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+            >
+              {secundarios.map((b, index) => (
+                <Draggable key={b.id} draggableId={b.id.toString()} index={index}>
+                  {(provided) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                      className="bg-white shadow rounded p-3"
+                    >
+                      <img
+                        src={b.url}
+                        alt="banner"
+                        className="w-full h-32 object-cover rounded"
+                      />
+                      <div className="flex items-center justify-between mt-2 text-sm">
+                        <span className="font-bold">Orden: {index}</span>
+                      </div>
 
-            <div className="flex items-center justify-between mt-2 text-sm">
-              <span className="font-bold">Orden: {b.orden ?? index}</span>
+                      <input
+                        type="text"
+                        className="border p-2 rounded w-full mt-3"
+                        value={b.link || ""}
+                        placeholder="Agregar/editar link"
+                        onChange={(e) => updateLink(b.id, e.target.value)}
+                      />
 
-              <div className="flex gap-2">
-                <button
-                  onClick={() =>
-                    updateOrden(b.id, (b.orden ?? index) - 1)
-                  }
-                  className="px-2 py-1 bg-gray-200 rounded"
-                >
-                  ⬆
-                </button>
-                <button
-                  onClick={() =>
-                    updateOrden(b.id, (b.orden ?? index) + 1)
-                  }
-                  className="px-2 py-1 bg-gray-200 rounded"
-                >
-                  ⬇
-                </button>
-              </div>
+                      <button
+                        onClick={() => togglePrincipal(b.id)}
+                        className="px-3 py-1 rounded mt-3 w-full text-white bg-blue-600"
+                      >
+                        🥇 Hacer principal
+                      </button>
+
+                      <button
+                        onClick={() => deleteBanner(b.id)}
+                        className="bg-red-600 text-white px-3 py-1 rounded mt-2 w-full"
+                      >
+                        🗑 Eliminar
+                      </button>
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
             </div>
-
-            <input
-              type="text"
-              className="border p-2 rounded w-full mt-3"
-              value={b.link || ""}
-              placeholder="Agregar/editar link"
-              onChange={(e) => updateLink(b.id, e.target.value)}
-            />
-
-            <button
-              onClick={() => togglePrincipal(b.id)}
-              className="px-3 py-1 rounded mt-3 w-full text-white bg-blue-600"
-            >
-              🥇 Hacer principal
-            </button>
-
-            <button
-              onClick={() => deleteBanner(b.id)}
-              className="bg-red-600 text-white px-3 py-1 rounded mt-2 w-full"
-            >
-              🗑 Eliminar
-            </button>
-          </div>
-        ))}
-      </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     </div>
   );
 }
