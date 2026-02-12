@@ -28,7 +28,9 @@ export default function Home() {
           .filter((s) => s.destacado && !s.sorteoPrincipal)
           .sort((a, b) => (a.ordenDestacado || 0) - (b.ordenDestacado || 0));
 
-        const otros = lista.filter((s) => !s.destacado && !s.sorteoPrincipal);
+        const otros = lista.filter(
+          (s) => !s.destacado && !s.sorteoPrincipal
+        );
 
         setResto([...destacados, ...otros]);
 
@@ -41,14 +43,14 @@ export default function Home() {
         const resInferiores = await fetch(`${API_URL}/banners/inferiores`);
         let inferiores = await resInferiores.json();
 
-        // 👉 filtramos solo banners válidos
-        inferiores = inferiores.filter(b => b.url);
+        // Filtrar banners válidos
+        inferiores = (inferiores || []).filter((b) => b.url);
 
-        // Ordenamos inferiores por 'orden'
+        // Ordenar por campo "orden"
         inferiores.sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
 
         setBannerPrincipal(principal || null);
-        setBannersSecundarios(inferiores || []);
+        setBannersSecundarios(inferiores);
       } catch (err) {
         console.error("Error cargando home:", err);
       } finally {
@@ -63,22 +65,12 @@ export default function Home() {
   // BLOQUES DE SORTEOS CON BANNERS SECUNDARIOS
   // =========================
   const bloques = [];
-  let bannerIndex = 0;
+  const totalBloques = Math.ceil(resto.length / 2);
 
-  for (let i = 0; i < resto.length; i += 2) {
-    let banner = null;
-
-    // Primer bloque debajo del sorteo principal toma el primer banner secundario
-    if (i === 0 && bannersSecundarios.length) {
-      banner = bannersSecundarios[0];
-    } else {
-      banner = bannersSecundarios[bannerIndex] || null;
-      bannerIndex++;
-    }
-
+  for (let i = 0; i < totalBloques; i++) {
     bloques.push({
-      banner,
-      sorteos: resto.slice(i, i + 2),
+      banner: bannersSecundarios[i] || null,
+      sorteos: resto.slice(i * 2, i * 2 + 2),
     });
   }
 
@@ -88,6 +80,7 @@ export default function Home() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
     const ctx = canvas.getContext("2d");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -102,17 +95,21 @@ export default function Home() {
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       coins.forEach((c) => {
         c.y += c.v;
+
         if (c.y > canvas.height) {
           c.y = 0;
           c.x = Math.random() * canvas.width;
         }
+
         ctx.beginPath();
         ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255,215,0,${c.a})`;
         ctx.fill();
       });
+
       requestAnimationFrame(animate);
     }
 
@@ -133,7 +130,9 @@ export default function Home() {
   return (
     <div
       className="w-full min-h-screen px-4 py-6 relative overflow-hidden"
-      style={{ background: "linear-gradient(180deg, #2563eb 0%, #ffffff 60%)" }}
+      style={{
+        background: "linear-gradient(180deg, #2563eb 0%, #ffffff 60%)",
+      }}
     >
       <canvas
         ref={canvasRef}
@@ -143,7 +142,11 @@ export default function Home() {
       {/* 🔥 BANNER PRINCIPAL */}
       {bannerPrincipal && (
         <div className="mb-14 relative z-10">
-          <a href={bannerPrincipal.link || "#"} target="_blank" rel="noreferrer">
+          <a
+            href={bannerPrincipal.link || "#"}
+            target="_blank"
+            rel="noreferrer"
+          >
             <div className="w-full aspect-[16/9] max-h-[300px] rounded-3xl overflow-hidden shadow-2xl mx-auto">
               <img
                 src={bannerPrincipal.url}
@@ -166,6 +169,7 @@ export default function Home() {
             alt={sorteoPrincipal.titulo}
             className="w-full h-96 object-cover"
           />
+
           <div className="absolute inset-0 flex flex-col justify-end p-6 text-white bg-gradient-to-t from-black/40 to-transparent">
             <span className="bg-red-500 px-4 py-1 rounded-full w-fit mb-3 animate-pulse">
               🥇 SORTEO PRINCIPAL
@@ -182,7 +186,11 @@ export default function Home() {
         <section key={index} className="mb-16 relative z-10">
           {bloque.banner && (
             <div className="mb-8">
-              <a href={bloque.banner.link || "#"} target="_blank" rel="noreferrer">
+              <a
+                href={bloque.banner.link || "#"}
+                target="_blank"
+                rel="noreferrer"
+              >
                 <div className="w-full h-[140px] md:h-[200px] rounded-3xl overflow-hidden shadow-xl hover:scale-[1.02] transition mx-auto">
                   <img
                     src={bloque.banner.url}
@@ -193,6 +201,7 @@ export default function Home() {
               </a>
             </div>
           )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {bloque.sorteos.map((s) => (
               <Link
@@ -207,8 +216,11 @@ export default function Home() {
                     className="w-full h-full object-contain"
                   />
                 </div>
+
                 <div className="p-4">
-                  <h4 className="font-bold text-lg text-gray-800">{s.titulo}</h4>
+                  <h4 className="font-bold text-lg text-gray-800">
+                    {s.titulo}
+                  </h4>
                 </div>
               </Link>
             ))}
