@@ -102,23 +102,11 @@ export default function AdminEditarSorteo() {
 
     try {
       setEliminando(true);
-      const token = localStorage.getItem("adminToken");
-      const res = await fetch(`${API_URL}/sorteos/${id}`, {
-        method: "DELETE",
-        headers: { "x-admin-token": token },
-      });
-      const json = await res.json();
-
-      if (!res.ok) {
-        throw new Error(json?.error || "Error eliminando sorteo");
-      }
-
-      alert(
-        `🗑️ Sorteo eliminado. Chances borradas: ${json.chancesEliminadas || 0}. Compras anuladas: ${json.comprasAnuladas || 0}.`
-      );
+      await fetch(`${API_URL}/sorteos/${id}`, { method: "DELETE" });
+      alert("🗑️ Sorteo eliminado");
       navigate("/admin");
-    } catch (error) {
-      alert(error.message || "❌ Error al eliminar");
+    } catch {
+      alert("❌ Error al eliminar");
     } finally {
       setEliminando(false);
     }
