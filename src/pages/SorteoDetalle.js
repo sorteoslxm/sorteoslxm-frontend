@@ -44,26 +44,9 @@ export default function SorteoDetalle() {
   };
 
   const confirmarPago = async () => {
-    const telefonoNormalizado = telefono.replace(/\D/g, "");
-    const cantidad = Number(ofertaSeleccionada?.cantidad);
-    const precio = Number(ofertaSeleccionada?.precio);
-
-    if (!ofertaSeleccionada) {
-      alert("Volvé a elegir un pack antes de confirmar.");
-      return;
-    }
-
-    if (!telefonoNormalizado) return alert("Ingresá tu WhatsApp");
-    if (!/^\d{10,13}$/.test(telefonoNormalizado))
+    if (!telefono) return alert("Ingresá tu WhatsApp");
+    if (!/^\d{10,13}$/.test(telefono))
       return alert("WhatsApp inválido (solo números)");
-    if (!Number.isFinite(cantidad) || cantidad <= 0) {
-      alert("No pudimos identificar la cantidad de chances del pack.");
-      return;
-    }
-    if (!Number.isFinite(precio) || precio <= 0) {
-      alert("No pudimos identificar el precio del pack.");
-      return;
-    }
 
     try {
       setLoading(true);
@@ -72,37 +55,17 @@ export default function SorteoDetalle() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sorteoId: sorteo.id,
-          telefono: telefonoNormalizado,
-          cantidad,
-          precio,
+          telefono,
+          cantidad: ofertaSeleccionada.cantidad,
+          precio: ofertaSeleccionada.precio,
           aliasPago: sorteo.aliasPago,
         }),
       });
 
-      const raw = await res.text();
-      let payload = null;
-
-      if (raw) {
-        try {
-          payload = JSON.parse(raw);
-        } catch {
-          payload = raw;
-        }
-      }
-
-      if (!res.ok) {
-        const mensaje =
-          (payload && typeof payload === "object" && payload.error) ||
-          (payload && typeof payload === "object" && payload.message) ||
-          (typeof payload === "string" && payload) ||
-          "Error registrando la compra";
-        throw new Error(mensaje);
-      }
-
-      setTelefono(telefonoNormalizado);
+      if (!res.ok) throw new Error("Error compra");
       setConfirmado(true);
-    } catch (error) {
-      alert(error.message || "Error registrando la compra");
+    } catch {
+      alert("Error registrando la compra");
     } finally {
       setLoading(false);
     }
