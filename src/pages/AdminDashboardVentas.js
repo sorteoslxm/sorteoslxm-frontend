@@ -6,6 +6,7 @@ export default function AdminDashboardVentas() {
     totales: {},
     ventasPorSorteo: [],
   });
+  const [pendientes, setPendientes] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,9 +24,17 @@ export default function AdminDashboardVentas() {
         headers: { "x-admin-token": token },
       });
 
-      if (!res.ok) throw new Error("Error al traer dashboard");
+      const resPendientes = await fetch(`${API_URL}/admin/ventas/pendientes`, {
+        headers: { "x-admin-token": token },
+      });
 
-      const json = await res.json();
+      if (!res.ok) throw new Error("Error al traer dashboard");
+      if (!resPendientes.ok) throw new Error("Error al traer pendientes");
+
+      const [json, jsonPendientes] = await Promise.all([
+        res.json(),
+        resPendientes.json(),
+      ]);
 
       setData({
         totales: json?.totales || {},
@@ -33,6 +42,7 @@ export default function AdminDashboardVentas() {
           ? json.ventasPorSorteo
           : [],
       });
+      setPendientes(Array.isArray(jsonPendientes) ? jsonPendientes : []);
     } catch (e) {
       console.error(e);
       setError("Error al cargar datos");
@@ -84,6 +94,26 @@ export default function AdminDashboardVentas() {
   const ranking = [...ventasFiltradas].sort(
     (a, b) => b.totalRecaudado - a.totalRecaudado
   );
+
+  const confirmarPendiente = async (ventaId) => {
+    if (!window.confirm("¿Confirmar este pago manual?")) return;
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${API_URL}/admin/ventas/${ventaId}/confirmar`, {
+        method: "PUT",
+        headers: { "x-admin-token": token },
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "Error confirmando pago");
+
+      fetchData();
+    } catch (e) {
+      console.error(e);
+      alert(e.message || "Error confirmando pago");
+    }
+  };
 
   if (loading)
     return <p className="p-6 text-gray-400">Cargando dashboard...</p>;
@@ -145,6 +175,55 @@ export default function AdminDashboardVentas() {
           title="🏆 Sorteos"
           value={ventasFiltradas.length}
         />
+      </div>
+
+      <div className="mb-10">
+        <h3 className="text-xl font-bold mb-4">
+          ⏳ Transferencias pendientes
+        </h3>
+
+        {pendientes.length === 0 ? (
+          <p className="text-gray-400">
+            No hay pagos pendientes por aprobar.
+          </p>
+        ) : (
+          <div className="bg-zinc-800 border border-zinc-700 rounded-xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-zinc-700 text-gray-300 uppercase">
+                <tr>
+                  <th className="p-3 text-left">Sorteo</th>
+                  <th className="p-3 text-center">Chances</th>
+                  <th className="p-3 text-center">Monto</th>
+                  <th className="p-3 text-center">WhatsApp</th>
+                  <th className="p-3 text-right">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendientes.map((venta) => (
+                  <tr
+                    key={venta.id}
+                    className="border-t border-zinc-700 hover:bg-zinc-700/40"
+                  >
+                    <td className="p-3">{venta.sorteoTitulo || "Sorteo"}</td>
+                    <td className="p-3 text-center">{venta.cantidad || 1}</td>
+                    <td className="p-3 text-center text-green-400 font-bold">
+                      $ {formatMoney(venta.precio || 0)}
+                    </td>
+                    <td className="p-3 text-center">{venta.telefono || "—"}</td>
+                    <td className="p-3 text-right">
+                      <button
+                        onClick={() => confirmarPendiente(venta.id)}
+                        className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-bold"
+                      >
+                        Aprobar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* RANKING + OBJETIVO */}
