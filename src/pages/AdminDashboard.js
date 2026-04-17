@@ -31,13 +31,7 @@ export default function AdminDashboard() {
     const fetchSorteos = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem("adminToken");
-
-        const res = await fetch(`${API_URL}/sorteos`, {
-          headers: {
-            "x-admin-token": token,
-          },
-        });
+        const res = await fetch(`${API_URL}/sorteos`);
 
         if (!res.ok) throw new Error("Error cargando sorteos");
 
