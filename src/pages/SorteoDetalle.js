@@ -3,6 +3,14 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import API_URL from "../config/api";
 
+function parseMoney(value) {
+  if (typeof value === "number") return value;
+  if (typeof value !== "string") return Number(value) || 0;
+
+  const normalized = value.replace(/\./g, "").replace(/,/g, ".");
+  return Number(normalized) || 0;
+}
+
 export default function SorteoDetalle() {
   const { id } = useParams();
   const [sorteo, setSorteo] = useState(null);
@@ -46,7 +54,7 @@ export default function SorteoDetalle() {
   const confirmarPago = async () => {
     const telefonoNormalizado = telefono.replace(/\D/g, "");
     const cantidad = Number(ofertaSeleccionada?.cantidad);
-    const precio = Number(ofertaSeleccionada?.precio);
+    const precio = parseMoney(ofertaSeleccionada?.precio);
 
     if (!ofertaSeleccionada) {
       alert("Volvé a elegir un pack antes de confirmar.");
