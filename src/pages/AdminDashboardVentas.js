@@ -153,6 +153,30 @@ export default function AdminDashboardVentas() {
     }
   };
 
+  const eliminarPendiente = async (ventaId) => {
+    if (!window.confirm("¿Eliminar esta transferencia pendiente?")) return;
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${API_URL}/admin/ventas/${ventaId}/pendiente`, {
+        method: "DELETE",
+        headers: { "x-admin-token": token },
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(
+          json?.error || "Error eliminando transferencia pendiente"
+        );
+      }
+
+      fetchData();
+    } catch (e) {
+      console.error(e);
+      alert(e.message || "Error eliminando transferencia pendiente");
+    }
+  };
+
   const anularVenta = async (ventaId) => {
     if (!window.confirm("¿Anular esta venta y borrar sus chances asociadas?")) {
       return;
@@ -464,12 +488,20 @@ export default function AdminDashboardVentas() {
                     </td>
                     <td className="p-3 text-center">{venta.telefono || "—"}</td>
                     <td className="p-3 text-right">
-                      <button
-                        onClick={() => confirmarPendiente(venta.id)}
-                        className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-bold"
-                      >
-                        Aprobar
-                      </button>
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => confirmarPendiente(venta.id)}
+                          className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-bold"
+                        >
+                          Aprobar
+                        </button>
+                        <button
+                          onClick={() => eliminarPendiente(venta.id)}
+                          className="bg-red-700 hover:bg-red-600 px-4 py-2 rounded font-bold"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
