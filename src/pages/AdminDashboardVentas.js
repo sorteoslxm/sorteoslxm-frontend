@@ -85,6 +85,26 @@ export default function AdminDashboardVentas() {
     );
   }, [data, sorteoSeleccionado]);
 
+  const pendientesFiltradas = useMemo(() => {
+    if (sorteoSeleccionado === "todos") {
+      return pendientes;
+    }
+
+    return pendientes.filter(
+      (venta) => venta.sorteoId === sorteoSeleccionado
+    );
+  }, [pendientes, sorteoSeleccionado]);
+
+  const confirmadasFiltradas = useMemo(() => {
+    if (sorteoSeleccionado === "todos") {
+      return confirmadas;
+    }
+
+    return confirmadas.filter(
+      (venta) => venta.sorteoId === sorteoSeleccionado
+    );
+  }, [confirmadas, sorteoSeleccionado]);
+
   /* ===============================
      MÉTRICAS PRINCIPALES
   ================================ */
@@ -162,7 +182,7 @@ export default function AdminDashboardVentas() {
   };
 
   const toggleTodasConfirmadas = () => {
-    const ids = confirmadas.map((venta) => venta.id);
+    const ids = confirmadasFiltradas.map((venta) => venta.id);
     const todasSeleccionadas =
       ids.length > 0 && ids.every((id) => ventasSeleccionadas[id]);
 
@@ -176,7 +196,7 @@ export default function AdminDashboardVentas() {
   };
 
   const anularSeleccionadas = async () => {
-    const ids = confirmadas
+    const ids = confirmadasFiltradas
       .map((venta) => venta.id)
       .filter((id) => ventasSeleccionadas[id]);
 
@@ -391,7 +411,7 @@ export default function AdminDashboardVentas() {
           ⏳ Transferencias pendientes
         </h3>
 
-        {pendientes.length === 0 ? (
+        {pendientesFiltradas.length === 0 ? (
           <p className="text-gray-400">
             No hay pagos pendientes por aprobar.
           </p>
@@ -408,7 +428,7 @@ export default function AdminDashboardVentas() {
                 </tr>
               </thead>
               <tbody>
-                {pendientes.map((venta) => (
+                {pendientesFiltradas.map((venta) => (
                   <tr
                     key={venta.id}
                     className="border-t border-zinc-700 hover:bg-zinc-700/40"
@@ -440,7 +460,7 @@ export default function AdminDashboardVentas() {
           ✅ Ventas confirmadas manuales
         </h3>
 
-        {confirmadas.length === 0 ? (
+        {confirmadasFiltradas.length === 0 ? (
           <p className="text-gray-400">
             Todavía no hay ventas confirmadas.
           </p>
@@ -472,7 +492,7 @@ export default function AdminDashboardVentas() {
                 </tr>
               </thead>
               <tbody>
-                {confirmadas.map((venta) => (
+                {confirmadasFiltradas.map((venta) => (
                   <tr
                     key={venta.id}
                     className="border-t border-zinc-700 hover:bg-zinc-700/40"
