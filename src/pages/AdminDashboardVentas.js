@@ -8,6 +8,7 @@ export default function AdminDashboardVentas() {
   });
   const [pendientes, setPendientes] = useState([]);
   const [confirmadas, setConfirmadas] = useState([]);
+  const [ventasSeleccionadas, setVentasSeleccionadas] = useState({});
   const [manualForm, setManualForm] = useState({
     sorteoId: "",
     telefono: "",
@@ -150,6 +151,63 @@ export default function AdminDashboardVentas() {
     } catch (e) {
       console.error(e);
       alert(e.message || "Error anulando venta");
+    }
+  };
+
+  const toggleVenta = (ventaId) => {
+    setVentasSeleccionadas((prev) => ({
+      ...prev,
+      [ventaId]: !prev[ventaId],
+    }));
+  };
+
+  const toggleTodasConfirmadas = () => {
+    const ids = confirmadas.map((venta) => venta.id);
+    const todasSeleccionadas =
+      ids.length > 0 && ids.every((id) => ventasSeleccionadas[id]);
+
+    setVentasSeleccionadas((prev) => {
+      const next = { ...prev };
+      ids.forEach((id) => {
+        next[id] = !todasSeleccionadas;
+      });
+      return next;
+    });
+  };
+
+  const anularSeleccionadas = async () => {
+    const ids = confirmadas
+      .map((venta) => venta.id)
+      .filter((id) => ventasSeleccionadas[id]);
+
+    if (ids.length === 0) {
+      alert("Seleccioná al menos una venta.");
+      return;
+    }
+
+    if (!window.confirm(`¿Anular ${ids.length} venta(s) y borrar sus chances asociadas?`)) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${API_URL}/admin/ventas/bulk`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-token": token,
+        },
+        body: JSON.stringify({ ids }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "Error anulando ventas");
+
+      setVentasSeleccionadas({});
+      fetchData();
+    } catch (e) {
+      console.error(e);
+      alert(e.message || "Error anulando ventas");
     }
   };
 
@@ -388,9 +446,24 @@ export default function AdminDashboardVentas() {
           </p>
         ) : (
           <div className="bg-zinc-800 border border-zinc-700 rounded-xl overflow-hidden">
+            <div className="flex gap-3 p-4 border-b border-zinc-700">
+              <button
+                onClick={toggleTodasConfirmadas}
+                className="bg-zinc-700 hover:bg-zinc-600 px-4 py-2 rounded font-bold"
+              >
+                Seleccionar todas
+              </button>
+              <button
+                onClick={anularSeleccionadas}
+                className="bg-red-700 hover:bg-red-600 px-4 py-2 rounded font-bold"
+              >
+                Anular seleccionadas
+              </button>
+            </div>
             <table className="w-full text-sm">
               <thead className="bg-zinc-700 text-gray-300 uppercase">
                 <tr>
+                  <th className="p-3 text-center">Sel.</th>
                   <th className="p-3 text-left">Sorteo</th>
                   <th className="p-3 text-center">Chances</th>
                   <th className="p-3 text-center">Monto</th>
@@ -404,6 +477,13 @@ export default function AdminDashboardVentas() {
                     key={venta.id}
                     className="border-t border-zinc-700 hover:bg-zinc-700/40"
                   >
+                    <td className="p-3 text-center">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(ventasSeleccionadas[venta.id])}
+                        onChange={() => toggleVenta(venta.id)}
+                      />
+                    </td>
                     <td className="p-3">
                       {data.ventasPorSorteo.find(
                         (s) => s.sorteoId === venta.sorteoId
