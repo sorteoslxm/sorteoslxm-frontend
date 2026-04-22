@@ -232,6 +232,37 @@ export default function AdminEditarSorteo() {
           />
         </div>
 
+        <div className="border border-yellow-600 rounded p-3 bg-yellow-900/10 space-y-3">
+          <h3 className="font-bold">🔥 Progreso y destacado</h3>
+
+          <input
+            type="number"
+            min="0"
+            max="100"
+            name="porcentajeVendido"
+            value={form.porcentajeVendido}
+            onChange={handleChange}
+            className="p-2 w-full rounded bg-black border border-zinc-700"
+            placeholder="% vendido"
+          />
+
+          <select
+            name="masVendido"
+            value={form.masVendido}
+            onChange={handleChange}
+            className="p-2 w-full rounded bg-black border border-zinc-700"
+          >
+            <option value={1}>Destacar oferta 1</option>
+            <option value={2}>Destacar oferta 2</option>
+            <option value={3}>Destacar oferta 3</option>
+          </select>
+
+          <p className="text-xs text-gray-400">
+            Esto controla la barra de porcentaje visible en la web y cuál pack
+            aparece como más vendido.
+          </p>
+        </div>
+
         <button className="bg-green-600 py-2 rounded w-full font-bold">
           Guardar cambios
         </button>
