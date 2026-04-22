@@ -191,8 +191,8 @@ export default function AdminDashboardVentas() {
 
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await fetch(`${API_URL}/admin/ventas/bulk`, {
-        method: "DELETE",
+      const res = await fetch(`${API_URL}/admin/ventas/bulk/anular`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           "x-admin-token": token,
