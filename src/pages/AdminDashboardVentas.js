@@ -9,6 +9,7 @@ export default function AdminDashboardVentas() {
   const [pendientes, setPendientes] = useState([]);
   const [confirmadas, setConfirmadas] = useState([]);
   const [ventasSeleccionadas, setVentasSeleccionadas] = useState({});
+  const [editandoMonto, setEditandoMonto] = useState({});
   const [manualForm, setManualForm] = useState({
     sorteoId: "",
     telefono: "",
@@ -266,6 +267,29 @@ export default function AdminDashboardVentas() {
     }
   };
 
+  const guardarMonto = async (ventaId) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const precio = Number(editandoMonto[ventaId] || 0);
+      const res = await fetch(`${API_URL}/admin/ventas/${ventaId}/monto`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-token": token,
+        },
+        body: JSON.stringify({ precio }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "Error actualizando monto");
+
+      fetchData();
+    } catch (e) {
+      console.error(e);
+      alert(e.message || "Error actualizando monto");
+    }
+  };
+
   if (loading)
     return <p className="p-6 text-gray-400">Cargando dashboard...</p>;
 
@@ -510,10 +534,34 @@ export default function AdminDashboardVentas() {
                       )?.titulo || "Sorteo"}
                     </td>
                     <td className="p-3 text-center">{venta.cantidad || 1}</td>
-                    <td className="p-3 text-center text-green-400 font-bold">
-                      $ {formatMoney(venta.precio || venta.total || 0)}
+                    <td className="p-3 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          value={
+                            editandoMonto[venta.id] ??
+                            String(venta.precio || venta.total || 0)
+                          }
+                          onChange={(e) =>
+                            setEditandoMonto((prev) => ({
+                              ...prev,
+                              [venta.id]: e.target.value,
+                            }))
+                          }
+                          className="w-28 bg-zinc-900 border border-zinc-600 rounded px-2 py-1 text-green-400 font-bold text-center"
+                        />
+                        <button
+                          onClick={() => guardarMonto(venta.id)}
+                          className="bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded font-bold"
+                        >
+                          Guardar
+                        </button>
+                      </div>
                     </td>
-                    <td className="p-3 text-center">{venta.telefono || "—"}</td>
+                    <td className="p-3 text-center">
+                      {venta.telefono || "—"}
+                    </td>
                     <td className="p-3 text-right">
                       <button
                         onClick={() => anularVenta(venta.id)}
