@@ -227,6 +227,15 @@ export default function Home() {
           </div>
         </section>
       ))}
+
+      <div className="relative z-10 mt-4 flex justify-center pb-10">
+        <Link
+          to="/como-funciona"
+          className="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-xl transition hover:scale-105 hover:bg-blue-700"
+        >
+          ¿Cómo funciona?
+        </Link>
+      </div>
     </div>
   );
 }
