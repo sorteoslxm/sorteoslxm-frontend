@@ -472,6 +472,7 @@ export default function AdminDashboardVentas() {
                   <th className="p-3 text-center">Chances</th>
                   <th className="p-3 text-center">Monto</th>
                   <th className="p-3 text-center">WhatsApp</th>
+                  <th className="p-3 text-center">Fecha</th>
                   <th className="p-3 text-right">Acción</th>
                 </tr>
               </thead>
@@ -487,6 +488,9 @@ export default function AdminDashboardVentas() {
                       $ {formatMoney(venta.precio || 0)}
                     </td>
                     <td className="p-3 text-center">{venta.telefono || "—"}</td>
+                    <td className="p-3 text-center text-gray-300">
+                      {formatSaleDate(venta)}
+                    </td>
                     <td className="p-3 text-right">
                       <div className="flex justify-end gap-2">
                         <button
@@ -544,6 +548,7 @@ export default function AdminDashboardVentas() {
                   <th className="p-3 text-center">Chances</th>
                   <th className="p-3 text-center">Monto</th>
                   <th className="p-3 text-center">WhatsApp</th>
+                  <th className="p-3 text-center">Fecha</th>
                   <th className="p-3 text-right">Acción</th>
                 </tr>
               </thead>
@@ -593,6 +598,9 @@ export default function AdminDashboardVentas() {
                     </td>
                     <td className="p-3 text-center">
                       {venta.telefono || "—"}
+                    </td>
+                    <td className="p-3 text-center text-gray-300">
+                      {formatSaleDate(venta)}
                     </td>
                     <td className="p-3 text-right">
                       <button
@@ -703,4 +711,26 @@ function MetricCard({ title, value, highlight = false }) {
 ================================ */
 function formatMoney(value) {
   return Number(value || 0).toLocaleString("es-AR");
+}
+
+function formatSaleDate(venta) {
+  const rawDate =
+    venta?.createdAt ||
+    venta?.fecha ||
+    venta?.fechaVenta ||
+    venta?.created_at ||
+    venta?.updatedAt;
+
+  if (!rawDate) return "—";
+
+  const date = new Date(rawDate);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return date.toLocaleString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
